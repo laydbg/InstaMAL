@@ -14,7 +14,7 @@ let users = User(TruncatedNormal(15, 4));
 let data = Data(8+Uniform(7-9, 2*2));
 ```
 
-Add associations between specified assets using `connect` clauses, each containing a connection rules.
+Add associations between specified assets using `connect` clauses, each containing a list of connection rules.
 
 ```
 connect {
