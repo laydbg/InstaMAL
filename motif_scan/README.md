@@ -1,6 +1,4 @@
-# Evaluation
-
-## Description
+# Motif Scanner
 
 Find the most common network motifs in all model instances within a specified directory.
 
@@ -15,7 +13,7 @@ export FANMOD_PLUS_PATH="<path_to_binary>"
 2. Run the evaluation script:
 
 ```console
-evaluate.sh <language_path> <model_directory> <output_directory>
+motif_scan.sh <language_path> <model_directory> <output_directory>
 ```
 
 ## Restrictions
