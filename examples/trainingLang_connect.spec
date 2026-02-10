@@ -11,18 +11,18 @@ connect {
 }
 
 /*
- If some asset sets will not be reused you could equivalently choose to instantiate
- them in the connect clause directly, like so:
- 
- 
- let networks = Network(2);
- let hosts = Host(10);
-
- connect {
-     1.0: networks --> [toNetworks] networks;
-     0.5: hosts --> [networks] networks;
-     0.5: User(TruncatedNormal(15, 4)) --> [hosts] hosts;
-     0.7: Data(8+Uniform(7-9, 2*2)) --> [hosts] hosts;
- }
-
+ * If some asset sets will not be reused you could equivalently choose to instantiate
+ * them in the connect clause directly, like so:
+ * 
+ * 
+ * let networks = Network(2);
+ * let hosts = Host(10);
+ *
+ * connect {
+ *     1.0: networks --> [toNetworks] networks;
+ *     0.5: hosts --> [networks] networks;
+ *     0.5: User(TruncatedNormal(15, 4)) --> [hosts] hosts;
+ *     0.7: Data(8+Uniform(7-9, 2*2)) --> [hosts] hosts;
+ * }
+ *
  */

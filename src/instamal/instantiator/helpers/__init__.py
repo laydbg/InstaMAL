@@ -11,6 +11,7 @@ from .distributions import (
 from .SpecLexer import SpecLexer
 from .SpecParser import SpecParser
 from .SpecVisitor import SpecVisitor
+from .SpecAnalyzer import AnalyzerError, SpecAnalyzer
 
 __all__ = [
     "bernoulli",
@@ -24,4 +25,6 @@ __all__ = [
     "SpecLexer",
     "SpecParser",
     "SpecVisitor",
+    "AnalyzerError",
+    "SpecAnalyzer",
 ]
