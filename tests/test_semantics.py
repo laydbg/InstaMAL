@@ -88,3 +88,23 @@ let Data = Network(2); // <- line 2
         instantiate(spec, lang_src, n=5)
 
     assert "line 2" in str(exc_info.value).lower()
+
+
+def test_no_exception_on_valid_spec(instantiate):
+    spec: str = \
+"""
+let networks = Network(2);
+let hosts = Host(10);
+let users = User(TruncatedNormal(15, 4));   // Use distributions for variability in asset numbers
+let data = Data(8+Uniform(7-9, 2*2));       // Expressions are evaluated as expected
+
+connect {
+    1.0: networks --> [toNetworks] networks;
+    0.5: hosts --> [networks] networks;
+    0.5: users --> [hosts] hosts;
+    0.7: data --> [hosts] hosts;
+}
+"""
+    lang_src = TRAININGLANG_PATH
+
+    instantiate(spec, lang_src, n=5)
