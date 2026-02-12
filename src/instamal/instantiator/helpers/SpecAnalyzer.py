@@ -1,4 +1,4 @@
-from typing import Dict, Optional, Set, Tuple
+from typing import Any, Dict, Optional, Set, Tuple
 
 from antlr4 import *
 from maltoolbox.language import LanguageGraph
@@ -40,11 +40,19 @@ class SpecAnalyzer(SpecVisitor):
             }
         )
         self._variable_types: Dict[str, str] = {}
+        self._defined_subsystems: Dict[str, Dict[str, str]] = {}
+        self._in_subsystem_context: bool = False
+        self._subsystem_variable_types: Dict[str, str] = {}
+        self._current_variable: str = ""
         self._spec_ctx: SpecParser.SpecContext = None
 
     def analyze(self, spec_ctx: SpecParser.SpecContext) -> Optional[AnalyzerError]:
         """Analyze the specified system domain specification and return the first semantical error found or None in the case of no errors."""
         self._variable_types = {}
+        self._defined_subsystems = {}
+        self._in_subsystem_context: bool = False
+        self._subsystem_variable_types = {}
+        self._current_variable = ""
         self._spec_ctx = spec_ctx
         self.visit(spec_ctx)
         return self._error
@@ -58,6 +66,36 @@ class SpecAnalyzer(SpecVisitor):
             return None
         return super().visit(tree)
 
+    def visitSubsystem(self, ctx: SpecParser.SubsystemContext):
+        subsystemName: str = ctx.ID().getText()
+        if subsystemName in self._lang_assets:
+            self._report_error(
+                ctx.ID().getSymbol(),
+                f"Cannot use asset name '{subsystemName}' as subset name.",
+            )
+            return None
+        if subsystemName in self._variable_types:
+            self._report_error(
+                ctx.ID().getSymbol(),
+                f"Subset name '{subsystemName}' has already been used as a variable.",
+            )
+            return None
+        if subsystemName in self._defined_subsystems:
+            self._report_error(
+                ctx.ID().getSymbol(),
+                f"Subsystem '{subsystemName}' has already been defined.",
+            )
+            return None
+        
+        self._in_subsystem_context = True
+        self.visitChildren(ctx)
+        self._in_subsystem_context = False
+        
+        self._defined_subsystems[subsystemName] = self._subsystem_variable_types
+        self._subsystem_variable_types = {}
+
+        return None
+
     def visitLet(self, ctx: SpecParser.LetContext):
         variableName: str = ctx.variable().ID().getText()
         if variableName in self._lang_assets:
@@ -66,42 +104,72 @@ class SpecAnalyzer(SpecVisitor):
                 f"Cannot use asset name '{variableName}' as variable name.",
             )
             return None
+        elif variableName in self._defined_subsystems:
+            self._report_error(
+                ctx.variable().ID().getSymbol(),
+                f"Cannot use subset name '{variableName}' as variable name.",
+            )
+            return None
+        
+        setType: str = self.visit(ctx.assetSet())
+        if not self._in_subsystem_context:
+            self._variable_types[variableName] = setType
+        else:
+            self._subsystem_variable_types[variableName] = setType
 
-        assetType: str = self.visit(ctx.assetSet())
-        self._variable_types[variableName] = assetType
-
+        self._current_variable = variableName
         return self.visitChildren(ctx)
 
     def visitAssetSet(self, ctx: SpecParser.AssetSetContext) -> str:
         if ctx.variable():
-            variableName: str = ctx.variable().getText()
-            if variableName not in self._variable_types:
+            variableName: str = ctx.variable().ID().getText()
+            types: Dict[str, str] = self._variable_types if not self._in_subsystem_context else self._subsystem_variable_types
+            if variableName not in types:
                 self._report_error(
                     ctx.variable().ID().getSymbol(),
                     f"Variable name '{variableName}' has not been declared yet.",
                 )
                 return None
-            return self._variable_types[ctx.variable().ID().getText()]
+            return types[variableName]
         elif ctx.assetInstantiation():
             self.visit(ctx.assetInstantiation())
             return ctx.assetInstantiation().ID().getText()
+        elif ctx.subsystemSetAccess():
+            accessName: str = ctx.subsystemSetAccess().getText()
+            types: Dict[str, str] = self._variable_types if not self._in_subsystem_context else self._subsystem_variable_types
+            if accessName not in types:
+                self._report_error(
+                    ctx.subsystemSetAccess().ID(0).getSymbol(),
+                    f"Invalid access of subsystem: '{accessName}'.",
+                )
+                return None
+            return types[accessName]
         else:
             raise RuntimeError("Unexpexted error in SpecAnalyzer.visitAssetSet.")
 
     def visitAssetInstantiation(self, ctx: SpecParser.AssetInstantiationContext):
         assetType: str = ctx.ID().getText()
         if assetType not in self._lang_assets:
-            self._report_error(
-                ctx.ID().getSymbol(),
-                f"Asset '{assetType}' does not exist in {self._lang_info}",
-            )
-            return None
-        return self.visitChildren(ctx)
+            if assetType in self._defined_subsystems:
+                variableName: str = self._current_variable
+                for set, type in self._defined_subsystems[assetType].items():
+                    print(variableName, set, type)
+                    self._variable_types[f"{variableName}.{set}"] = type
+            else:
+                self._report_error(
+                    ctx.ID().getSymbol(),
+                    f"Asset '{assetType}' does not exist in {self._lang_info}",
+                )
+                return None
 
+        return self.visitChildren(ctx)
+        
     def visitConnectionRule(self, ctx: SpecParser.ConnectionRuleContext):
         left_type: str = self.visit(ctx.assetSet(0))
         right_fieldname: str = ctx.associationFieldname().ID().getText()
         right_type: str = self.visit(ctx.assetSet(1))
+
+        # raise Exception(f"{left_type} --> [{right_fieldname}] {right_type}")
 
         if not (left_type, right_fieldname, right_type) in self._lang_associations:
             self._report_error(
