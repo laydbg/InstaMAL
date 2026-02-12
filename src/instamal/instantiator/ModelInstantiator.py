@@ -2,7 +2,7 @@ import math
 import itertools as it
 import os
 import random
-from typing import Dict, List, Set, Tuple
+from typing import Dict, List, Optional, Set, Tuple
 
 from antlr4 import *
 from maltoolbox.language import LanguageGraph
@@ -48,8 +48,13 @@ class ModelInstantiator(SpecVisitor):
 
         spec_ctx = parser.spec()
 
+        analyzer: SpecAnalyzer = SpecAnalyzer(lang_graph)
+        error: Optional[AnalyzerError] = analyzer.analyze(spec_ctx)
+        if error is not None:
+            raise Exception(f"Semantic error on line {error.line}, col {error.column}: {error.description}")
+
         self._model: Model = None
-        self._lang_graph = lang_graph
+        self._lang_graph: LanguageGraph = lang_graph
         self._spec_ctx: SpecParser.SpecContext = spec_ctx
         self._variables: Dict[str, Set[str]] = {}
         self._types: Dict[str, str] = {}

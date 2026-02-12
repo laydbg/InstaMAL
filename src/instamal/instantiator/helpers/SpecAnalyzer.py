@@ -1,9 +1,9 @@
 from typing import Dict, Optional, Set, Tuple
-from instamal.instantiator.helpers import SpecVisitor, SpecParser, SpecLexer
-from maltoolbox.language import LanguageGraph
-from antlr4 import *
-from antlr4.tree.Tree import TerminalNodeImpl
 
+from antlr4 import *
+from maltoolbox.language import LanguageGraph
+
+from instamal.instantiator.helpers import SpecVisitor, SpecParser
 
 class AnalyzerError:
     def __init__(self, line: int, column: int, description: str):
@@ -40,9 +40,10 @@ class SpecAnalyzer(SpecVisitor):
             }
         )
         self._variable_types: Dict[str, str] = {}
-        self._spec_ctx = None
+        self._spec_ctx: SpecParser.SpecContext = None
 
     def analyze(self, spec_ctx: SpecParser.SpecContext) -> Optional[AnalyzerError]:
+        """Analyze the specified system domain specification and return the first semantical error found or None in the case of no errors."""
         self._variable_types = {}
         self._spec_ctx = spec_ctx
         self.visit(spec_ctx)
