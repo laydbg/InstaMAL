@@ -24,7 +24,7 @@ class SpecAnalyzer(SpecVisitor):
         self._lang_associations: Set[Tuple[str, str, str]] = {
             (
                 assoc.left_field.asset.name,
-                assoc.left_field.fieldname,
+                assoc.right_field.fieldname,
                 assoc.right_field.asset.name,
             )
             for assoc in lang_graph.associations
@@ -33,7 +33,7 @@ class SpecAnalyzer(SpecVisitor):
             {
                 (
                     assoc.right_field.asset.name,
-                    assoc.right_field.fieldname,
+                    assoc.left_field.fieldname,
                     assoc.left_field.asset.name,
                 )
                 for assoc in lang_graph.associations
@@ -100,13 +100,13 @@ class SpecAnalyzer(SpecVisitor):
 
     def visitConnectionRule(self, ctx: SpecParser.ConnectionRuleContext):
         left_type: str = self.visit(ctx.assetSet(0))
-        left_fieldname: str = ctx.associationFieldname().ID().getText()
+        right_fieldname: str = ctx.associationFieldname().ID().getText()
         right_type: str = self.visit(ctx.assetSet(1))
 
-        if not (left_type, left_fieldname, right_type) in self._lang_associations:
+        if not (left_type, right_fieldname, right_type) in self._lang_associations:
             self._report_error(
                 ctx.associationFieldname().ID().getSymbol(),
-                f"The association with left fieldname '{left_fieldname}' from asset '{left_type}' to '{right_type}' does not exist in {self._lang_info}.",
+                f"The association with fieldname '{right_fieldname}' from asset '{left_type}' to '{right_type}' does not exist in {self._lang_info}.",
             )
             return None
 

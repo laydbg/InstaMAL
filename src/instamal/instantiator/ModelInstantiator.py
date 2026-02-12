@@ -28,12 +28,12 @@ class ConnectionRule:
         self,
         weight: float,
         left_set: Set[str],
-        left_fieldname: str,
+        right_fieldname: str,
         right_set: Set[str],
     ):
         self.weigth: float = weight
         self.left_set: Set[str] = left_set
-        self.left_fieldname: str = left_fieldname
+        self.right_fieldname: str = right_fieldname
         self.right_set: Set[str] = right_set
 
 
@@ -122,7 +122,7 @@ class ModelInstantiator(SpecVisitor):
                     model_asset_l = self._model.get_asset_by_name(asset_l)
                     model_asset_r = self._model.get_asset_by_name(asset_r)
                     model_asset_l.add_associated_assets(
-                        rule.left_fieldname, set([model_asset_r])
+                        rule.right_fieldname, set([model_asset_r])
                     )
 
     def visitExpr(self, ctx: SpecParser.ExprContext) -> float:
@@ -258,9 +258,9 @@ class ModelInstantiator(SpecVisitor):
                 f"Connection rule weight must be in range [0,1], got {weight}."
             )
         left_set: Set[str] = self.visit(ctx.assetSet(0))[0]
-        left_fieldname: str = self.visit(ctx.associationFieldname())
+        right_fieldname: str = self.visit(ctx.associationFieldname())
         right_set: Set[str] = self.visit(ctx.assetSet(1))[0]
-        return ConnectionRule(weight, left_set, left_fieldname, right_set)
+        return ConnectionRule(weight, left_set, right_fieldname, right_set)
 
     def visitAssociationFieldname(self, ctx: SpecParser.AssociationFieldnameContext):
         return ctx.ID().getText()
