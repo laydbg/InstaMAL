@@ -1,4 +1,4 @@
-# Generated from /home/birger/github/master-thesis/instamal/instantiator/helpers/Spec.g4 by ANTLR 4.13.2
+# Generated from /home/birger/github/master-thesis/src/instamal/instantiator/helpers/Spec.g4 by ANTLR 4.13.2
 # encoding: utf-8
 from antlr4 import *
 from io import StringIO
@@ -10,47 +10,57 @@ else:
 
 def serializedATN():
     return [
-        4,1,26,132,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,2,5,7,5,2,6,7,
+        4,1,29,157,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,2,5,7,5,2,6,7,
         6,2,7,7,7,2,8,7,8,2,9,7,9,2,10,7,10,2,11,7,11,2,12,7,12,2,13,7,13,
-        2,14,7,14,2,15,7,15,1,0,1,0,5,0,35,8,0,10,0,12,0,38,9,0,1,0,1,0,
-        1,1,1,1,1,2,3,2,45,8,2,1,2,1,2,1,2,5,2,50,8,2,10,2,12,2,53,9,2,1,
-        3,1,3,1,4,1,4,1,4,5,4,60,8,4,10,4,12,4,63,9,4,1,5,1,5,1,5,3,5,68,
-        8,5,1,6,1,6,1,6,1,6,1,6,1,6,3,6,76,8,6,1,7,1,7,1,7,1,7,1,7,1,8,1,
-        8,1,8,5,8,86,8,8,10,8,12,8,89,9,8,1,9,1,9,1,9,1,9,1,9,1,9,1,10,1,
-        10,1,11,1,11,3,11,101,8,11,1,12,1,12,1,12,3,12,106,8,12,1,12,1,12,
-        1,13,1,13,1,13,5,13,113,8,13,10,13,12,13,116,9,13,1,13,1,13,1,14,
-        1,14,1,14,1,14,1,14,1,14,1,14,1,14,1,15,1,15,1,15,1,15,1,15,0,0,
-        16,0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,0,3,1,0,4,5,1,0,19,
-        20,1,0,21,22,127,0,36,1,0,0,0,2,41,1,0,0,0,4,44,1,0,0,0,6,54,1,0,
-        0,0,8,56,1,0,0,0,10,64,1,0,0,0,12,75,1,0,0,0,14,77,1,0,0,0,16,82,
-        1,0,0,0,18,90,1,0,0,0,20,96,1,0,0,0,22,100,1,0,0,0,24,102,1,0,0,
-        0,26,109,1,0,0,0,28,119,1,0,0,0,30,127,1,0,0,0,32,35,3,18,9,0,33,
-        35,3,26,13,0,34,32,1,0,0,0,34,33,1,0,0,0,35,38,1,0,0,0,36,34,1,0,
-        0,0,36,37,1,0,0,0,37,39,1,0,0,0,38,36,1,0,0,0,39,40,5,0,0,1,40,1,
-        1,0,0,0,41,42,7,0,0,0,42,3,1,0,0,0,43,45,3,6,3,0,44,43,1,0,0,0,44,
-        45,1,0,0,0,45,46,1,0,0,0,46,51,3,8,4,0,47,48,7,1,0,0,48,50,3,8,4,
-        0,49,47,1,0,0,0,50,53,1,0,0,0,51,49,1,0,0,0,51,52,1,0,0,0,52,5,1,
-        0,0,0,53,51,1,0,0,0,54,55,7,1,0,0,55,7,1,0,0,0,56,61,3,10,5,0,57,
-        58,7,2,0,0,58,60,3,10,5,0,59,57,1,0,0,0,60,63,1,0,0,0,61,59,1,0,
-        0,0,61,62,1,0,0,0,62,9,1,0,0,0,63,61,1,0,0,0,64,67,3,12,6,0,65,66,
-        5,23,0,0,66,68,3,12,6,0,67,65,1,0,0,0,67,68,1,0,0,0,68,11,1,0,0,
-        0,69,76,3,2,1,0,70,71,5,7,0,0,71,72,3,4,2,0,72,73,5,8,0,0,73,76,
-        1,0,0,0,74,76,3,14,7,0,75,69,1,0,0,0,75,70,1,0,0,0,75,74,1,0,0,0,
-        76,13,1,0,0,0,77,78,5,6,0,0,78,79,5,7,0,0,79,80,3,16,8,0,80,81,5,
-        8,0,0,81,15,1,0,0,0,82,87,3,4,2,0,83,84,5,18,0,0,84,86,3,4,2,0,85,
-        83,1,0,0,0,86,89,1,0,0,0,87,85,1,0,0,0,87,88,1,0,0,0,88,17,1,0,0,
-        0,89,87,1,0,0,0,90,91,5,1,0,0,91,92,3,20,10,0,92,93,5,16,0,0,93,
-        94,3,22,11,0,94,95,5,14,0,0,95,19,1,0,0,0,96,97,5,6,0,0,97,21,1,
-        0,0,0,98,101,3,20,10,0,99,101,3,24,12,0,100,98,1,0,0,0,100,99,1,
-        0,0,0,101,23,1,0,0,0,102,103,5,6,0,0,103,105,5,7,0,0,104,106,3,4,
-        2,0,105,104,1,0,0,0,105,106,1,0,0,0,106,107,1,0,0,0,107,108,5,8,
-        0,0,108,25,1,0,0,0,109,110,5,2,0,0,110,114,5,9,0,0,111,113,3,28,
-        14,0,112,111,1,0,0,0,113,116,1,0,0,0,114,112,1,0,0,0,114,115,1,0,
-        0,0,115,117,1,0,0,0,116,114,1,0,0,0,117,118,5,10,0,0,118,27,1,0,
-        0,0,119,120,3,2,1,0,120,121,5,13,0,0,121,122,3,22,11,0,122,123,5,
-        15,0,0,123,124,3,30,15,0,124,125,3,22,11,0,125,126,5,14,0,0,126,
-        29,1,0,0,0,127,128,5,11,0,0,128,129,5,6,0,0,129,130,5,12,0,0,130,
-        31,1,0,0,0,11,34,36,44,51,61,67,75,87,100,105,114
+        2,14,7,14,2,15,7,15,2,16,7,16,2,17,7,17,1,0,1,0,1,0,5,0,40,8,0,10,
+        0,12,0,43,9,0,1,0,1,0,1,1,1,1,1,2,3,2,50,8,2,1,2,1,2,1,2,5,2,55,
+        8,2,10,2,12,2,58,9,2,1,3,1,3,1,4,1,4,1,4,5,4,65,8,4,10,4,12,4,68,
+        9,4,1,5,1,5,1,5,3,5,73,8,5,1,6,1,6,1,6,1,6,1,6,1,6,3,6,81,8,6,1,
+        7,1,7,1,7,1,7,1,7,1,8,1,8,1,8,5,8,91,8,8,10,8,12,8,94,9,8,1,9,1,
+        9,1,9,1,9,1,9,5,9,101,8,9,10,9,12,9,104,9,9,1,9,1,9,1,10,1,10,1,
+        10,4,10,111,8,10,11,10,12,10,112,1,11,1,11,1,11,1,11,1,11,1,11,1,
+        12,1,12,1,13,1,13,1,13,3,13,126,8,13,1,14,1,14,1,14,3,14,131,8,14,
+        1,14,1,14,1,15,1,15,1,15,5,15,138,8,15,10,15,12,15,141,9,15,1,15,
+        1,15,1,16,1,16,1,16,1,16,1,16,1,16,1,16,1,16,1,17,1,17,1,17,1,17,
+        1,17,0,0,18,0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,0,3,
+        1,0,6,7,1,0,22,23,1,0,24,25,155,0,41,1,0,0,0,2,46,1,0,0,0,4,49,1,
+        0,0,0,6,59,1,0,0,0,8,61,1,0,0,0,10,69,1,0,0,0,12,80,1,0,0,0,14,82,
+        1,0,0,0,16,87,1,0,0,0,18,95,1,0,0,0,20,107,1,0,0,0,22,114,1,0,0,
+        0,24,120,1,0,0,0,26,125,1,0,0,0,28,127,1,0,0,0,30,134,1,0,0,0,32,
+        144,1,0,0,0,34,152,1,0,0,0,36,40,3,18,9,0,37,40,3,22,11,0,38,40,
+        3,30,15,0,39,36,1,0,0,0,39,37,1,0,0,0,39,38,1,0,0,0,40,43,1,0,0,
+        0,41,39,1,0,0,0,41,42,1,0,0,0,42,44,1,0,0,0,43,41,1,0,0,0,44,45,
+        5,0,0,1,45,1,1,0,0,0,46,47,7,0,0,0,47,3,1,0,0,0,48,50,3,6,3,0,49,
+        48,1,0,0,0,49,50,1,0,0,0,50,51,1,0,0,0,51,56,3,8,4,0,52,53,7,1,0,
+        0,53,55,3,8,4,0,54,52,1,0,0,0,55,58,1,0,0,0,56,54,1,0,0,0,56,57,
+        1,0,0,0,57,5,1,0,0,0,58,56,1,0,0,0,59,60,7,1,0,0,60,7,1,0,0,0,61,
+        66,3,10,5,0,62,63,7,2,0,0,63,65,3,10,5,0,64,62,1,0,0,0,65,68,1,0,
+        0,0,66,64,1,0,0,0,66,67,1,0,0,0,67,9,1,0,0,0,68,66,1,0,0,0,69,72,
+        3,12,6,0,70,71,5,26,0,0,71,73,3,12,6,0,72,70,1,0,0,0,72,73,1,0,0,
+        0,73,11,1,0,0,0,74,81,3,2,1,0,75,76,5,9,0,0,76,77,3,4,2,0,77,78,
+        5,10,0,0,78,81,1,0,0,0,79,81,3,14,7,0,80,74,1,0,0,0,80,75,1,0,0,
+        0,80,79,1,0,0,0,81,13,1,0,0,0,82,83,5,8,0,0,83,84,5,9,0,0,84,85,
+        3,16,8,0,85,86,5,10,0,0,86,15,1,0,0,0,87,92,3,4,2,0,88,89,5,21,0,
+        0,89,91,3,4,2,0,90,88,1,0,0,0,91,94,1,0,0,0,92,90,1,0,0,0,92,93,
+        1,0,0,0,93,17,1,0,0,0,94,92,1,0,0,0,95,96,5,3,0,0,96,97,5,8,0,0,
+        97,102,5,11,0,0,98,101,3,22,11,0,99,101,3,30,15,0,100,98,1,0,0,0,
+        100,99,1,0,0,0,101,104,1,0,0,0,102,100,1,0,0,0,102,103,1,0,0,0,103,
+        105,1,0,0,0,104,102,1,0,0,0,105,106,5,12,0,0,106,19,1,0,0,0,107,
+        110,5,8,0,0,108,109,5,20,0,0,109,111,5,8,0,0,110,108,1,0,0,0,111,
+        112,1,0,0,0,112,110,1,0,0,0,112,113,1,0,0,0,113,21,1,0,0,0,114,115,
+        5,2,0,0,115,116,3,24,12,0,116,117,5,19,0,0,117,118,3,26,13,0,118,
+        119,5,17,0,0,119,23,1,0,0,0,120,121,5,8,0,0,121,25,1,0,0,0,122,126,
+        3,24,12,0,123,126,3,28,14,0,124,126,3,20,10,0,125,122,1,0,0,0,125,
+        123,1,0,0,0,125,124,1,0,0,0,126,27,1,0,0,0,127,128,5,8,0,0,128,130,
+        5,9,0,0,129,131,3,4,2,0,130,129,1,0,0,0,130,131,1,0,0,0,131,132,
+        1,0,0,0,132,133,5,10,0,0,133,29,1,0,0,0,134,135,5,4,0,0,135,139,
+        5,11,0,0,136,138,3,32,16,0,137,136,1,0,0,0,138,141,1,0,0,0,139,137,
+        1,0,0,0,139,140,1,0,0,0,140,142,1,0,0,0,141,139,1,0,0,0,142,143,
+        5,12,0,0,143,31,1,0,0,0,144,145,3,2,1,0,145,146,5,16,0,0,146,147,
+        3,26,13,0,147,148,5,18,0,0,148,149,3,34,17,0,149,150,3,26,13,0,150,
+        151,5,17,0,0,151,33,1,0,0,0,152,153,5,13,0,0,153,154,5,8,0,0,154,
+        155,5,14,0,0,155,35,1,0,0,0,14,39,41,49,56,66,72,80,92,100,102,112,
+        125,130,139
     ]
 
 class SpecParser ( Parser ):
@@ -63,16 +73,18 @@ class SpecParser ( Parser ):
 
     sharedContextCache = PredictionContextCache()
 
-    literalNames = [ "<INVALID>", "'let'", "'connect'", "<INVALID>", "<INVALID>", 
-                     "<INVALID>", "<INVALID>", "'('", "')'", "'{'", "'}'", 
-                     "'['", "']'", "':'", "';'", "'-->'", "'='", "'.'", 
-                     "','", "'+'", "'-'", "'*'", "'/'", "'^'" ]
+    literalNames = [ "<INVALID>", "'include'", "'let'", "'subsystem'", "'connect'", 
+                     "<INVALID>", "<INVALID>", "<INVALID>", "<INVALID>", 
+                     "'('", "')'", "'{'", "'}'", "'['", "']'", "'#'", "':'", 
+                     "';'", "'-->'", "'='", "'.'", "','", "'+'", "'-'", 
+                     "'*'", "'/'", "'^'" ]
 
-    symbolicNames = [ "<INVALID>", "LET", "CONNECT", "STRING", "INT", "FLOAT", 
-                      "ID", "LPAREN", "RPAREN", "LCURLY", "RCURLY", "LSQUARE", 
-                      "RSQUARE", "COLON", "SEMICOLON", "RARROW", "ASSIGN", 
-                      "DOT", "COMMA", "PLUS", "MINUS", "TIMES", "DIVIDE", 
-                      "POWER", "COMMENT", "ML_COMMENT", "WS" ]
+    symbolicNames = [ "<INVALID>", "INCLUDE", "LET", "SUBSYSTEM", "CONNECT", 
+                      "STRING", "INT", "FLOAT", "ID", "LPAREN", "RPAREN", 
+                      "LCURLY", "RCURLY", "LSQUARE", "RSQUARE", "HASH", 
+                      "COLON", "SEMICOLON", "RARROW", "ASSIGN", "DOT", "COMMA", 
+                      "PLUS", "MINUS", "TIMES", "DIVIDE", "POWER", "COMMENT", 
+                      "ML_COMMENT", "WS" ]
 
     RULE_spec = 0
     RULE_number = 1
@@ -83,46 +95,51 @@ class SpecParser ( Parser ):
     RULE_prim = 6
     RULE_distributionSample = 7
     RULE_parameters = 8
-    RULE_let = 9
-    RULE_variable = 10
-    RULE_assetSet = 11
-    RULE_assetInstantiation = 12
-    RULE_connect = 13
-    RULE_connectionRule = 14
-    RULE_associationFieldname = 15
+    RULE_subsystem = 9
+    RULE_subsystemSetAccess = 10
+    RULE_let = 11
+    RULE_variable = 12
+    RULE_assetSet = 13
+    RULE_assetInstantiation = 14
+    RULE_connect = 15
+    RULE_connectionRule = 16
+    RULE_associationFieldname = 17
 
     ruleNames =  [ "spec", "number", "expr", "sign", "term", "fact", "prim", 
-                   "distributionSample", "parameters", "let", "variable", 
-                   "assetSet", "assetInstantiation", "connect", "connectionRule", 
-                   "associationFieldname" ]
+                   "distributionSample", "parameters", "subsystem", "subsystemSetAccess", 
+                   "let", "variable", "assetSet", "assetInstantiation", 
+                   "connect", "connectionRule", "associationFieldname" ]
 
     EOF = Token.EOF
-    LET=1
-    CONNECT=2
-    STRING=3
-    INT=4
-    FLOAT=5
-    ID=6
-    LPAREN=7
-    RPAREN=8
-    LCURLY=9
-    RCURLY=10
-    LSQUARE=11
-    RSQUARE=12
-    COLON=13
-    SEMICOLON=14
-    RARROW=15
-    ASSIGN=16
-    DOT=17
-    COMMA=18
-    PLUS=19
-    MINUS=20
-    TIMES=21
-    DIVIDE=22
-    POWER=23
-    COMMENT=24
-    ML_COMMENT=25
-    WS=26
+    INCLUDE=1
+    LET=2
+    SUBSYSTEM=3
+    CONNECT=4
+    STRING=5
+    INT=6
+    FLOAT=7
+    ID=8
+    LPAREN=9
+    RPAREN=10
+    LCURLY=11
+    RCURLY=12
+    LSQUARE=13
+    RSQUARE=14
+    HASH=15
+    COLON=16
+    SEMICOLON=17
+    RARROW=18
+    ASSIGN=19
+    DOT=20
+    COMMA=21
+    PLUS=22
+    MINUS=23
+    TIMES=24
+    DIVIDE=25
+    POWER=26
+    COMMENT=27
+    ML_COMMENT=28
+    WS=29
 
     def __init__(self, input:TokenStream, output:TextIO = sys.stdout):
         super().__init__(input, output)
@@ -142,6 +159,13 @@ class SpecParser ( Parser ):
 
         def EOF(self):
             return self.getToken(SpecParser.EOF, 0)
+
+        def subsystem(self, i:int=None):
+            if i is None:
+                return self.getTypedRuleContexts(SpecParser.SubsystemContext)
+            else:
+                return self.getTypedRuleContext(SpecParser.SubsystemContext,i)
+
 
         def let(self, i:int=None):
             if i is None:
@@ -176,29 +200,33 @@ class SpecParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 36
+            self.state = 41
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==1 or _la==2:
-                self.state = 34
+            while (((_la) & ~0x3f) == 0 and ((1 << _la) & 28) != 0):
+                self.state = 39
                 self._errHandler.sync(self)
                 token = self._input.LA(1)
-                if token in [1]:
-                    self.state = 32
-                    self.let()
+                if token in [3]:
+                    self.state = 36
+                    self.subsystem()
                     pass
                 elif token in [2]:
-                    self.state = 33
+                    self.state = 37
+                    self.let()
+                    pass
+                elif token in [4]:
+                    self.state = 38
                     self.connect()
                     pass
                 else:
                     raise NoViableAltException(self)
 
-                self.state = 38
+                self.state = 43
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
 
-            self.state = 39
+            self.state = 44
             self.match(SpecParser.EOF)
         except RecognitionException as re:
             localctx.exception = re
@@ -241,9 +269,9 @@ class SpecParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 41
+            self.state = 46
             _la = self._input.LA(1)
-            if not(_la==4 or _la==5):
+            if not(_la==6 or _la==7):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -306,30 +334,30 @@ class SpecParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 44
+            self.state = 49
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==19 or _la==20:
-                self.state = 43
+            if _la==22 or _la==23:
+                self.state = 48
                 self.sign()
 
 
-            self.state = 46
-            self.term()
             self.state = 51
+            self.term()
+            self.state = 56
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==19 or _la==20:
-                self.state = 47
+            while _la==22 or _la==23:
+                self.state = 52
                 _la = self._input.LA(1)
-                if not(_la==19 or _la==20):
+                if not(_la==22 or _la==23):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
                     self.consume()
-                self.state = 48
-                self.term()
                 self.state = 53
+                self.term()
+                self.state = 58
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
 
@@ -374,9 +402,9 @@ class SpecParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 54
+            self.state = 59
             _la = self._input.LA(1)
-            if not(_la==19 or _la==20):
+            if not(_la==22 or _la==23):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -435,22 +463,22 @@ class SpecParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 56
-            self.fact()
             self.state = 61
+            self.fact()
+            self.state = 66
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==21 or _la==22:
-                self.state = 57
+            while _la==24 or _la==25:
+                self.state = 62
                 _la = self._input.LA(1)
-                if not(_la==21 or _la==22):
+                if not(_la==24 or _la==25):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
                     self.consume()
-                self.state = 58
-                self.fact()
                 self.state = 63
+                self.fact()
+                self.state = 68
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
 
@@ -499,15 +527,15 @@ class SpecParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 64
+            self.state = 69
             self.prim()
-            self.state = 67
+            self.state = 72
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==23:
-                self.state = 65
+            if _la==26:
+                self.state = 70
                 self.match(SpecParser.POWER)
-                self.state = 66
+                self.state = 71
                 self.prim()
 
 
@@ -562,26 +590,26 @@ class SpecParser ( Parser ):
         localctx = SpecParser.PrimContext(self, self._ctx, self.state)
         self.enterRule(localctx, 12, self.RULE_prim)
         try:
-            self.state = 75
+            self.state = 80
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [4, 5]:
+            if token in [6, 7]:
                 self.enterOuterAlt(localctx, 1)
-                self.state = 69
+                self.state = 74
                 self.number()
                 pass
-            elif token in [7]:
+            elif token in [9]:
                 self.enterOuterAlt(localctx, 2)
-                self.state = 70
+                self.state = 75
                 self.match(SpecParser.LPAREN)
-                self.state = 71
+                self.state = 76
                 self.expr()
-                self.state = 72
+                self.state = 77
                 self.match(SpecParser.RPAREN)
                 pass
-            elif token in [6]:
+            elif token in [8]:
                 self.enterOuterAlt(localctx, 3)
-                self.state = 74
+                self.state = 79
                 self.distributionSample()
                 pass
             else:
@@ -634,13 +662,13 @@ class SpecParser ( Parser ):
         self.enterRule(localctx, 14, self.RULE_distributionSample)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 77
+            self.state = 82
             self.match(SpecParser.ID)
-            self.state = 78
+            self.state = 83
             self.match(SpecParser.LPAREN)
-            self.state = 79
+            self.state = 84
             self.parameters()
-            self.state = 80
+            self.state = 85
             self.match(SpecParser.RPAREN)
         except RecognitionException as re:
             localctx.exception = re
@@ -690,19 +718,173 @@ class SpecParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 82
-            self.expr()
             self.state = 87
+            self.expr()
+            self.state = 92
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==18:
-                self.state = 83
+            while _la==21:
+                self.state = 88
                 self.match(SpecParser.COMMA)
-                self.state = 84
-                self.expr()
                 self.state = 89
+                self.expr()
+                self.state = 94
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
+
+        except RecognitionException as re:
+            localctx.exception = re
+            self._errHandler.reportError(self, re)
+            self._errHandler.recover(self, re)
+        finally:
+            self.exitRule()
+        return localctx
+
+
+    class SubsystemContext(ParserRuleContext):
+        __slots__ = 'parser'
+
+        def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
+            super().__init__(parent, invokingState)
+            self.parser = parser
+
+        def SUBSYSTEM(self):
+            return self.getToken(SpecParser.SUBSYSTEM, 0)
+
+        def ID(self):
+            return self.getToken(SpecParser.ID, 0)
+
+        def LCURLY(self):
+            return self.getToken(SpecParser.LCURLY, 0)
+
+        def RCURLY(self):
+            return self.getToken(SpecParser.RCURLY, 0)
+
+        def let(self, i:int=None):
+            if i is None:
+                return self.getTypedRuleContexts(SpecParser.LetContext)
+            else:
+                return self.getTypedRuleContext(SpecParser.LetContext,i)
+
+
+        def connect(self, i:int=None):
+            if i is None:
+                return self.getTypedRuleContexts(SpecParser.ConnectContext)
+            else:
+                return self.getTypedRuleContext(SpecParser.ConnectContext,i)
+
+
+        def getRuleIndex(self):
+            return SpecParser.RULE_subsystem
+
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitSubsystem" ):
+                return visitor.visitSubsystem(self)
+            else:
+                return visitor.visitChildren(self)
+
+
+
+
+    def subsystem(self):
+
+        localctx = SpecParser.SubsystemContext(self, self._ctx, self.state)
+        self.enterRule(localctx, 18, self.RULE_subsystem)
+        self._la = 0 # Token type
+        try:
+            self.enterOuterAlt(localctx, 1)
+            self.state = 95
+            self.match(SpecParser.SUBSYSTEM)
+            self.state = 96
+            self.match(SpecParser.ID)
+            self.state = 97
+            self.match(SpecParser.LCURLY)
+            self.state = 102
+            self._errHandler.sync(self)
+            _la = self._input.LA(1)
+            while _la==2 or _la==4:
+                self.state = 100
+                self._errHandler.sync(self)
+                token = self._input.LA(1)
+                if token in [2]:
+                    self.state = 98
+                    self.let()
+                    pass
+                elif token in [4]:
+                    self.state = 99
+                    self.connect()
+                    pass
+                else:
+                    raise NoViableAltException(self)
+
+                self.state = 104
+                self._errHandler.sync(self)
+                _la = self._input.LA(1)
+
+            self.state = 105
+            self.match(SpecParser.RCURLY)
+        except RecognitionException as re:
+            localctx.exception = re
+            self._errHandler.reportError(self, re)
+            self._errHandler.recover(self, re)
+        finally:
+            self.exitRule()
+        return localctx
+
+
+    class SubsystemSetAccessContext(ParserRuleContext):
+        __slots__ = 'parser'
+
+        def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
+            super().__init__(parent, invokingState)
+            self.parser = parser
+
+        def ID(self, i:int=None):
+            if i is None:
+                return self.getTokens(SpecParser.ID)
+            else:
+                return self.getToken(SpecParser.ID, i)
+
+        def DOT(self, i:int=None):
+            if i is None:
+                return self.getTokens(SpecParser.DOT)
+            else:
+                return self.getToken(SpecParser.DOT, i)
+
+        def getRuleIndex(self):
+            return SpecParser.RULE_subsystemSetAccess
+
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitSubsystemSetAccess" ):
+                return visitor.visitSubsystemSetAccess(self)
+            else:
+                return visitor.visitChildren(self)
+
+
+
+
+    def subsystemSetAccess(self):
+
+        localctx = SpecParser.SubsystemSetAccessContext(self, self._ctx, self.state)
+        self.enterRule(localctx, 20, self.RULE_subsystemSetAccess)
+        self._la = 0 # Token type
+        try:
+            self.enterOuterAlt(localctx, 1)
+            self.state = 107
+            self.match(SpecParser.ID)
+            self.state = 110 
+            self._errHandler.sync(self)
+            _la = self._input.LA(1)
+            while True:
+                self.state = 108
+                self.match(SpecParser.DOT)
+                self.state = 109
+                self.match(SpecParser.ID)
+                self.state = 112 
+                self._errHandler.sync(self)
+                _la = self._input.LA(1)
+                if not (_la==20):
+                    break
 
         except RecognitionException as re:
             localctx.exception = re
@@ -752,18 +934,18 @@ class SpecParser ( Parser ):
     def let(self):
 
         localctx = SpecParser.LetContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 18, self.RULE_let)
+        self.enterRule(localctx, 22, self.RULE_let)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 90
+            self.state = 114
             self.match(SpecParser.LET)
-            self.state = 91
+            self.state = 115
             self.variable()
-            self.state = 92
+            self.state = 116
             self.match(SpecParser.ASSIGN)
-            self.state = 93
+            self.state = 117
             self.assetSet()
-            self.state = 94
+            self.state = 118
             self.match(SpecParser.SEMICOLON)
         except RecognitionException as re:
             localctx.exception = re
@@ -799,10 +981,10 @@ class SpecParser ( Parser ):
     def variable(self):
 
         localctx = SpecParser.VariableContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 20, self.RULE_variable)
+        self.enterRule(localctx, 24, self.RULE_variable)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 96
+            self.state = 120
             self.match(SpecParser.ID)
         except RecognitionException as re:
             localctx.exception = re
@@ -828,6 +1010,10 @@ class SpecParser ( Parser ):
             return self.getTypedRuleContext(SpecParser.AssetInstantiationContext,0)
 
 
+        def subsystemSetAccess(self):
+            return self.getTypedRuleContext(SpecParser.SubsystemSetAccessContext,0)
+
+
         def getRuleIndex(self):
             return SpecParser.RULE_assetSet
 
@@ -843,21 +1029,27 @@ class SpecParser ( Parser ):
     def assetSet(self):
 
         localctx = SpecParser.AssetSetContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 22, self.RULE_assetSet)
+        self.enterRule(localctx, 26, self.RULE_assetSet)
         try:
-            self.state = 100
+            self.state = 125
             self._errHandler.sync(self)
-            la_ = self._interp.adaptivePredict(self._input,8,self._ctx)
+            la_ = self._interp.adaptivePredict(self._input,11,self._ctx)
             if la_ == 1:
                 self.enterOuterAlt(localctx, 1)
-                self.state = 98
+                self.state = 122
                 self.variable()
                 pass
 
             elif la_ == 2:
                 self.enterOuterAlt(localctx, 2)
-                self.state = 99
+                self.state = 123
                 self.assetInstantiation()
+                pass
+
+            elif la_ == 3:
+                self.enterOuterAlt(localctx, 3)
+                self.state = 124
+                self.subsystemSetAccess()
                 pass
 
 
@@ -905,23 +1097,23 @@ class SpecParser ( Parser ):
     def assetInstantiation(self):
 
         localctx = SpecParser.AssetInstantiationContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 24, self.RULE_assetInstantiation)
+        self.enterRule(localctx, 28, self.RULE_assetInstantiation)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 102
+            self.state = 127
             self.match(SpecParser.ID)
-            self.state = 103
+            self.state = 128
             self.match(SpecParser.LPAREN)
-            self.state = 105
+            self.state = 130
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if (((_la) & ~0x3f) == 0 and ((1 << _la) & 1573104) != 0):
-                self.state = 104
+            if (((_la) & ~0x3f) == 0 and ((1 << _la) & 12583872) != 0):
+                self.state = 129
                 self.expr()
 
 
-            self.state = 107
+            self.state = 132
             self.match(SpecParser.RPAREN)
         except RecognitionException as re:
             localctx.exception = re
@@ -970,25 +1162,25 @@ class SpecParser ( Parser ):
     def connect(self):
 
         localctx = SpecParser.ConnectContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 26, self.RULE_connect)
+        self.enterRule(localctx, 30, self.RULE_connect)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 109
+            self.state = 134
             self.match(SpecParser.CONNECT)
-            self.state = 110
+            self.state = 135
             self.match(SpecParser.LCURLY)
-            self.state = 114
+            self.state = 139
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==4 or _la==5:
-                self.state = 111
+            while _la==6 or _la==7:
+                self.state = 136
                 self.connectionRule()
-                self.state = 116
+                self.state = 141
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
 
-            self.state = 117
+            self.state = 142
             self.match(SpecParser.RCURLY)
         except RecognitionException as re:
             localctx.exception = re
@@ -1045,22 +1237,22 @@ class SpecParser ( Parser ):
     def connectionRule(self):
 
         localctx = SpecParser.ConnectionRuleContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 28, self.RULE_connectionRule)
+        self.enterRule(localctx, 32, self.RULE_connectionRule)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 119
+            self.state = 144
             self.number()
-            self.state = 120
+            self.state = 145
             self.match(SpecParser.COLON)
-            self.state = 121
+            self.state = 146
             self.assetSet()
-            self.state = 122
+            self.state = 147
             self.match(SpecParser.RARROW)
-            self.state = 123
+            self.state = 148
             self.associationFieldname()
-            self.state = 124
+            self.state = 149
             self.assetSet()
-            self.state = 125
+            self.state = 150
             self.match(SpecParser.SEMICOLON)
         except RecognitionException as re:
             localctx.exception = re
@@ -1102,14 +1294,14 @@ class SpecParser ( Parser ):
     def associationFieldname(self):
 
         localctx = SpecParser.AssociationFieldnameContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 30, self.RULE_associationFieldname)
+        self.enterRule(localctx, 34, self.RULE_associationFieldname)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 127
+            self.state = 152
             self.match(SpecParser.LSQUARE)
-            self.state = 128
+            self.state = 153
             self.match(SpecParser.ID)
-            self.state = 129
+            self.state = 154
             self.match(SpecParser.RSQUARE)
         except RecognitionException as re:
             localctx.exception = re

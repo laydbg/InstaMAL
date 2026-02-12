@@ -1,4 +1,4 @@
-# Generated from /home/birger/github/master-thesis/instamal/instantiator/helpers/Spec.g4 by ANTLR 4.13.2
+# Generated from /home/birger/github/master-thesis/src/instamal/instantiator/helpers/Spec.g4 by ANTLR 4.13.2
 from antlr4 import *
 if "." in __name__:
     from .SpecParser import SpecParser
@@ -51,6 +51,16 @@ class SpecVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by SpecParser#parameters.
     def visitParameters(self, ctx:SpecParser.ParametersContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by SpecParser#subsystem.
+    def visitSubsystem(self, ctx:SpecParser.SubsystemContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by SpecParser#subsystemSetAccess.
+    def visitSubsystemSetAccess(self, ctx:SpecParser.SubsystemSetAccessContext):
         return self.visitChildren(ctx)
 
 

@@ -1,7 +1,7 @@
 grammar Spec;
 
 // Parser Rules
-spec: (let | connect)* EOF;
+spec: (subsystem | let | connect)* EOF;
 number: INT | FLOAT;
 
 expr: sign? term ((PLUS | MINUS) term)*;
@@ -12,9 +12,13 @@ prim: number | LPAREN expr RPAREN | distributionSample;
 distributionSample: ID LPAREN parameters RPAREN;
 parameters: expr (COMMA expr)*;
 
+subsystem:
+	SUBSYSTEM ID LCURLY (let | connect)* RCURLY;
+subsystemSetAccess: ID (DOT ID)+;
+
 let: LET variable ASSIGN assetSet SEMICOLON;
 variable: ID;
-assetSet: variable | assetInstantiation;
+assetSet: variable | assetInstantiation | subsystemSetAccess;
 assetInstantiation: ID LPAREN expr? RPAREN;
 
 connect: CONNECT LCURLY connectionRule* RCURLY;
