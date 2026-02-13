@@ -1,18 +1,16 @@
-subsystem HostWithData {
-    let host = Host(1);
-    let data = Data(Uniform(0, 4));
+subsystem NetworkWithHosts {
+    let network = Network();
+    let hosts = Host(Uniform(4, 12));
 
     connect {
-        1: host --> [data] data;
+        1: network --> [hosts] hosts;
     }
 }
 
-let networks = Network(2);
-let hosts = HostWithData(10);
-let users = User(TruncatedNormal(15, 4));
+let networks = NetworkWithHosts(Uniform(2, 4));
+let users = User(TruncatedNormal(20, 8));
 
 connect {
-    1.0: networks --> [toNetworks] networks;
-    0.5: hosts.host --> [networks] networks;
-    0.5: users --> [hosts] hosts.host;
+    1.0: networks.network --> [toNetworks] networks.network;
+    0.2: users --> [hosts] networks.hosts;
 }
