@@ -117,7 +117,7 @@ class ModelInstantiator(SpecVisitor):
         for asset_l, asset_r in it.permutations(assets, 2):
             for rule in rules:
                 assert 0 <= rule.weigth and rule.weigth <= 1
-                r = rule.weigth / sqrt_2
+                r = rule.weigth * sqrt_2
                 if ruleMatch(asset_l, asset_r, rule) and dist(asset_l, asset_r) < r:
                     model_asset_l = self._model.get_asset_by_name(asset_l)
                     model_asset_r = self._model.get_asset_by_name(asset_r)
