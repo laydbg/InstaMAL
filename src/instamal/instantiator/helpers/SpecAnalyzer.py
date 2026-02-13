@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional, Set, Tuple
+from typing import Dict, Optional, Set, Tuple
 
 from antlr4 import *
 from maltoolbox.language import LanguageGraph
@@ -153,7 +153,6 @@ class SpecAnalyzer(SpecVisitor):
             if assetType in self._defined_subsystems:
                 variableName: str = self._current_variable
                 for set, type in self._defined_subsystems[assetType].items():
-                    print(variableName, set, type)
                     self._variable_types[f"{variableName}.{set}"] = type
             else:
                 self._report_error(
