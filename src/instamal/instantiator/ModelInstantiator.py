@@ -8,7 +8,7 @@ from antlr4 import *
 from maltoolbox.language import LanguageGraph
 from maltoolbox.model import Model
 
-from .helpers import *
+from instamal.instantiator.helpers import *
 
 
 distribution_functions = {
@@ -31,7 +31,7 @@ class ConnectionRule:
         right_fieldname: str,
         right_set: Set[str],
     ):
-        self.weigth: float = weight
+        self.weight: float = weight
         self.left_set: Set[str] = left_set
         self.right_fieldname: str = right_fieldname
         self.right_set: Set[str] = right_set
@@ -56,10 +56,13 @@ class ModelInstantiator(SpecVisitor):
         self._model: Model = None
         self._lang_graph: LanguageGraph = lang_graph
         self._spec_ctx: SpecParser.SpecContext = spec_ctx
-        self._variables: Dict[str, Set[str]] = {}
-        self._types: Dict[str, str] = {}
         self._asset_sets: Dict[str, Set[str]] = {}
+        self._types: Dict[str, str] = {}
         self._type_count: Dict[str, int] = {}
+        self._subsystems: Dict[str, SpecParser.SubsystemContext] = {}
+        self._is_instantiating_subsystem: bool = False
+        self._subsystem_asset_sets: Dict[str, Set[str]] = {}
+        self._current_subsystem_variable: str = ""
 
     def instantiate(
         self, outDirPath: str, n: int = 1, modelPrefix: str = "model_"
@@ -78,10 +81,13 @@ class ModelInstantiator(SpecVisitor):
     def _instantiate_single_model(self, name: str) -> Model:
         """Instanciate a new model internally and return it."""
         self._model = Model(name, self._lang_graph)
-        self._variables = {}
-        self._types = {}
         self._asset_sets = {}
+        self._types = {}
         self._type_count = {}
+        self._subsystems = {}
+        self._is_instantiating_subsystem = False
+        self._subsystem_asset_sets = {}
+        self._current_subsystem_variable = ""
 
         self.visit(self._spec_ctx)
         return self._model
@@ -116,8 +122,8 @@ class ModelInstantiator(SpecVisitor):
         sqrt_2 = math.sqrt(2)
         for asset_l, asset_r in it.permutations(assets, 2):
             for rule in rules:
-                assert 0 <= rule.weigth and rule.weigth <= 1
-                r = rule.weigth / sqrt_2
+                assert 0 <= rule.weight and rule.weight <= 1
+                r = rule.weight / sqrt_2
                 if ruleMatch(asset_l, asset_r, rule) and dist(asset_l, asset_r) < r:
                     model_asset_l = self._model.get_asset_by_name(asset_l)
                     model_asset_r = self._model.get_asset_by_name(asset_r)
@@ -198,26 +204,64 @@ class ModelInstantiator(SpecVisitor):
         else:
             return float(ctx.FLOAT().getText())
 
+    def visitSubsystem(self, ctx: SpecParser.SubsystemContext):
+        self._subsystems[ctx.ID().getText()] = ctx
+        return None
+
     def visitLet(self, ctx: SpecParser.LetContext):
         variable_id: str = ctx.variable().getText()
+
+        if self._is_instantiating_subsystem:
+            variable_id = f"{self._current_subsystem_variable}.{variable_id}"
+
+        asset_instantiation: SpecParser.AssetInstantiationContext = ctx.assetSet().assetInstantiation()
+        if asset_instantiation:
+            type: str = asset_instantiation.ID().getText()
+            if type in self._subsystems:
+                # Subsystem instantiation
+                self._is_instantiating_subsystem = True
+                self._current_subsystem_variable = variable_id
+                self._subsystem_asset_sets = {}
+
+                num_subsystems: int = 1
+                if asset_instantiation.expr():
+                    num_subsystems = math.floor(self.visitExpr(asset_instantiation.expr()))
+                
+                for _ in range(num_subsystems):
+                    self.visitChildren(self._subsystems[type])
+                    for asset_set in self._subsystem_asset_sets:
+                        if asset_set not in self._asset_sets:
+                            self._asset_sets[asset_set] = set()
+                        self._asset_sets[asset_set].update(self._subsystem_asset_sets[asset_set])
+
+                self._is_instantiating_subsystem = False
+                self._current_subsystem_variable = None
+
+                return None
+
         asset_info: Tuple[Set[str], str] = self.visit(ctx.assetSet())
         asset_set: Set[str] = asset_info[0]
         asset_type: str = asset_info[1]
 
-        self._asset_sets[variable_id] = asset_set
+        if self._is_instantiating_subsystem:
+            self._subsystem_asset_sets[variable_id] = asset_set
+        else:
+            self._asset_sets[variable_id] = asset_set
         self._types[variable_id] = asset_type
+
         return None
+            
 
     def visitAssetSet(self, ctx: SpecParser.AssetSetContext) -> Tuple[Set[str], str]:
-        if ctx.variable():
-            variable_id: str = ctx.variable().getText()
-            if variable_id not in self._asset_sets:
-                raise RuntimeError(
-                    f"Tried to access variable {variable_id} before it was instantiated."
-                )
-            return self._asset_sets[variable_id], self._types[variable_id]
-        elif ctx.assetInstantiation():
+        if ctx.assetInstantiation():
             return self.visit(ctx.assetInstantiation())
+        elif ctx.variable() or ctx.subsystemSetAccess():
+            variable_id: str = ctx.getText()
+            if self._is_instantiating_subsystem:
+                variable_id = f"{self._current_subsystem_variable}.{variable_id}"
+                return self._subsystem_asset_sets[variable_id], self._types[variable_id]
+            else:
+                return self._asset_sets[variable_id], self._types[variable_id]
         else:
             raise RuntimeError(
                 "Something bad happened in ModelInstantiator.visitAssetSet"
@@ -227,10 +271,9 @@ class ModelInstantiator(SpecVisitor):
         self, ctx: SpecParser.AssetInstantiationContext
     ) -> Tuple[Set[str], str]:
         asset_type: str = ctx.ID().getText()
-        num_assets: int
-        if not ctx.expr():
-            num_assets = 1
-        else:
+
+        num_assets: int = 1
+        if ctx.expr():
             num_assets = math.floor(self.visit(ctx.expr()))
 
         assets: Set[str] = set()
@@ -260,6 +303,7 @@ class ModelInstantiator(SpecVisitor):
         left_set: Set[str] = self.visit(ctx.assetSet(0))[0]
         right_fieldname: str = self.visit(ctx.associationFieldname())
         right_set: Set[str] = self.visit(ctx.assetSet(1))[0]
+
         return ConnectionRule(weight, left_set, right_fieldname, right_set)
 
     def visitAssociationFieldname(self, ctx: SpecParser.AssociationFieldnameContext):
