@@ -23,6 +23,12 @@ distribution_functions = {
 }
 
 
+class SubsystemContext:
+    def __init__(self, prefix: str, asset_sets: Dict[str, str]):
+        self.prefix: str = prefix
+        self.asset_sets: Dict[str, str] = asset_sets
+
+
 class ConnectionRule:
     def __init__(
         self,
@@ -60,9 +66,7 @@ class ModelInstantiator(SpecVisitor):
         self._types: Dict[str, str] = {}
         self._type_count: Dict[str, int] = {}
         self._subsystems: Dict[str, SpecParser.SubsystemContext] = {}
-        self._is_instantiating_subsystem: bool = False
-        self._subsystem_asset_sets: Dict[str, Set[str]] = {}
-        self._current_subsystem_variable: str = ""
+        self._subsystem_stack: List[SubsystemContext] = []
 
     def instantiate(
         self, outDirPath: str, n: int = 1, modelPrefix: str = "model_"
@@ -85,9 +89,7 @@ class ModelInstantiator(SpecVisitor):
         self._types = {}
         self._type_count = {}
         self._subsystems = {}
-        self._is_instantiating_subsystem = False
-        self._subsystem_asset_sets = {}
-        self._current_subsystem_variable = ""
+        self._subsystem_stack = []
 
         self.visit(self._spec_ctx)
         return self._model
@@ -123,13 +125,18 @@ class ModelInstantiator(SpecVisitor):
         for asset_l, asset_r in it.permutations(assets, 2):
             for rule in rules:
                 assert 0 <= rule.weight and rule.weight <= 1
-                r = rule.weight / sqrt_2
+                r = rule.weight * sqrt_2
                 if ruleMatch(asset_l, asset_r, rule) and dist(asset_l, asset_r) < r:
                     model_asset_l = self._model.get_asset_by_name(asset_l)
                     model_asset_r = self._model.get_asset_by_name(asset_r)
                     model_asset_l.add_associated_assets(
                         rule.right_fieldname, set([model_asset_r])
                     )
+    
+    def _current_prefix(self) -> str:
+        if not self._subsystem_stack:
+            return ""
+        return self._subsystem_stack[-1].prefix
 
     def visitExpr(self, ctx: SpecParser.ExprContext) -> float:
         result: float = 0
@@ -209,42 +216,50 @@ class ModelInstantiator(SpecVisitor):
         return None
 
     def visitLet(self, ctx: SpecParser.LetContext):
-        variable_id: str = ctx.variable().getText()
+        raw_variable_id: str = ctx.variable().getText()
 
-        if self._is_instantiating_subsystem:
-            variable_id = f"{self._current_subsystem_variable}.{variable_id}"
+        prefix = self._current_prefix()
+        variable_id = f"{prefix}.{raw_variable_id}" if prefix else raw_variable_id
 
         asset_instantiation: SpecParser.AssetInstantiationContext = ctx.assetSet().assetInstantiation()
         if asset_instantiation:
             type: str = asset_instantiation.ID().getText()
             if type in self._subsystems:
-                # Subsystem instantiation
-                self._is_instantiating_subsystem = True
-                self._current_subsystem_variable = variable_id
-                self._subsystem_asset_sets = {}
+                full_prefix = variable_id
 
-                num_subsystems: int = 1
+                num_subsystems = 1
                 if asset_instantiation.expr():
                     num_subsystems = math.floor(self.visitExpr(asset_instantiation.expr()))
-                
+
                 for _ in range(num_subsystems):
+                    self._subsystem_stack.append(SubsystemContext(full_prefix, {}))
+
                     self.visitChildren(self._subsystems[type])
-                    for asset_set in self._subsystem_asset_sets:
-                        if asset_set not in self._asset_sets:
-                            self._asset_sets[asset_set] = set()
-                        self._asset_sets[asset_set].update(self._subsystem_asset_sets[asset_set])
 
-                self._is_instantiating_subsystem = False
-                self._current_subsystem_variable = None
+                    frame = self._subsystem_stack.pop()
 
+                    # Merge asset sets upward
+                    if self._subsystem_stack:
+                        # Nested case
+                        for k, v in frame.asset_sets.items():
+                            if k not in self._subsystem_stack[-1].asset_sets:
+                                self._subsystem_stack[-1].asset_sets[k] = set()
+                            self._subsystem_stack[-1].asset_sets[k].update(v)
+                    else:
+                        # Top-level subsystem instantiation
+                        for k, v in frame.asset_sets.items():
+                            if k not in self._asset_sets:
+                                self._asset_sets[k] = set()
+                            self._asset_sets[k].update(v)
                 return None
+
 
         asset_info: Tuple[Set[str], str] = self.visit(ctx.assetSet())
         asset_set: Set[str] = asset_info[0]
         asset_type: str = asset_info[1]
 
-        if self._is_instantiating_subsystem:
-            self._subsystem_asset_sets[variable_id] = asset_set
+        if self._subsystem_stack:
+            self._subsystem_stack[-1].asset_sets[variable_id] = asset_set
         else:
             self._asset_sets[variable_id] = asset_set
         self._types[variable_id] = asset_type
@@ -257,9 +272,10 @@ class ModelInstantiator(SpecVisitor):
             return self.visit(ctx.assetInstantiation())
         elif ctx.variable() or ctx.subsystemSetAccess():
             variable_id: str = ctx.getText()
-            if self._is_instantiating_subsystem:
-                variable_id = f"{self._current_subsystem_variable}.{variable_id}"
-                return self._subsystem_asset_sets[variable_id], self._types[variable_id]
+            if self._subsystem_stack:
+                prefix = self._current_prefix()
+                full_id = f"{prefix}.{variable_id}"
+                return self._subsystem_stack[-1].asset_sets[full_id], self._types[full_id]
             else:
                 return self._asset_sets[variable_id], self._types[variable_id]
         else:

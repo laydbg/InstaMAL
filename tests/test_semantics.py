@@ -33,22 +33,27 @@ def test_no_exception_on_valid_spec(instantiate):
     spec: str = \
 """
 subsystem HostWithData {
-    let host = Host(1);
-    let data = Data(Uniform(0, 4));
-
+    let host = Host();
+    let users = User(Uniform(1, 3));
+    let data = Data();
     connect {
         1: host --> [data] data;
+        1: host --> [users] users;
     }
 }
 
-let networks = Network(2);
-let hosts = HostWithData(10);
-let users = User(TruncatedNormal(15, 4));
+subsystem NetworkWithHosts {
+    let network = Network();
+    let hosts = HostWithData(TruncatedNormal(8, 3));
+    connect {
+        1: network --> [hosts] hosts.host;
+    }
+}
+
+let networks = NetworkWithHosts(1+Binomial(7, 0.03));
 
 connect {
-    1.0: networks --> [toNetworks] networks;
-    0.5: hosts.host --> [networks] networks;
-    0.5: users --> [hosts] hosts.host;
+    1: networks.network --> [toNetworks] networks.network;
 }
 """
     lang_src = TRAININGLANG_PATH
@@ -204,3 +209,168 @@ subsystem HostWithData {
         instantiate(spec, lang_src, n=5)
 
     assert "line 3" in str(exc_info.value).lower()
+
+
+def test_no_exception_on_nested_subsystem_access(instantiate):
+    spec: str = \
+"""
+subsystem HostWithData {
+    let host = Host(1);
+    let data = Data(2);
+
+    connect {
+        1: host --> [data] data;
+    }
+}
+
+subsystem NetworkWithHosts {
+    let network = Network(1);
+    let hosts = HostWithData(3);
+
+    connect {
+        1: network --> [hosts] hosts.host;
+    }
+}
+
+let networks = NetworkWithHosts(2);
+
+connect {
+    1: networks.network --> [toNetworks] networks.network;
+    1: networks.hosts.host --> [networks] networks.network;
+}
+"""
+    lang_src = TRAININGLANG_PATH
+
+    instantiate(spec, lang_src, n=3)
+
+
+def test_exception_on_invalid_nested_member_inside_subsystem(instantiate):
+    spec: str = \
+"""
+subsystem HostWithData {
+    let host = Host(1);
+}
+
+subsystem NetworkWithHosts {
+    let network = Network(1);
+    let hosts = HostWithData(3);
+
+    connect {
+        1: network --> [hosts] hosts.invalid; // <- line 11
+    }
+}
+"""
+    lang_src = TRAININGLANG_PATH
+
+    with pytest.raises(Exception) as exc_info:
+        instantiate(spec, lang_src)
+
+    assert "line 11" in str(exc_info.value).lower()
+
+
+def test_exception_on_invalid_nested_member_outside_subsystem(instantiate):
+    spec: str = \
+"""
+subsystem HostWithData {
+    let host = Host(1);
+}
+
+let hosts = HostWithData(2);
+
+connect {
+    1: hosts.invalid --> [networks] hosts.host; // <- line 9
+}
+"""
+    lang_src = TRAININGLANG_PATH
+
+    with pytest.raises(Exception) as exc_info:
+        instantiate(spec, lang_src)
+
+    assert "line 9" in str(exc_info.value).lower()
+
+
+def test_exception_on_member_access_of_non_subsystem(instantiate):
+    spec: str = \
+"""
+let users = User(2);
+
+connect {
+    1: users.host --> [networks] users; // <- line 5
+}
+"""
+    lang_src = TRAININGLANG_PATH
+
+    with pytest.raises(Exception) as exc_info:
+        instantiate(spec, lang_src)
+
+    assert "line 5" in str(exc_info.value).lower()
+
+
+def test_exception_on_deep_invalid_nested_access(instantiate):
+    spec: str = \
+"""
+subsystem HostWithData {
+    let host = Host(1);
+}
+
+subsystem NetworkWithHosts {
+    let hosts = HostWithData(2);
+}
+
+let networks = NetworkWithHosts(1);
+
+connect {
+    1: networks.hosts.host.invalid --> [toNetworks] networks.hosts.host; // <- line 13
+}
+"""
+    lang_src = TRAININGLANG_PATH
+
+    with pytest.raises(Exception) as exc_info:
+        instantiate(spec, lang_src)
+
+    assert "line 13" in str(exc_info.value).lower()
+
+
+def test_exception_on_undeclared_root_in_nested_access(instantiate):
+    spec: str = \
+"""
+subsystem HostWithData {
+    let host = Host(1);
+}
+
+connect {
+    1: unknown.host --> [data] unknown.host; // <- line 7
+}
+"""
+    lang_src = TRAININGLANG_PATH
+
+    with pytest.raises(Exception) as exc_info:
+        instantiate(spec, lang_src)
+
+    assert "line 7" in str(exc_info.value).lower()
+
+
+def test_no_exception_on_three_level_nested_access(instantiate):
+    spec: str = \
+"""
+subsystem Inner {
+    let host = Host(1);
+}
+
+subsystem Middle {
+    let inner = Inner(2);
+}
+
+subsystem Outer {
+    let middle = Middle(3);
+}
+
+let outer = Outer(1);
+
+connect {
+    1: outer.middle.inner.host --> [data] Data();
+}
+"""
+    lang_src = TRAININGLANG_PATH
+
+    instantiate(spec, lang_src)

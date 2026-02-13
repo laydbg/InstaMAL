@@ -5,6 +5,7 @@ from maltoolbox.language import LanguageGraph
 
 from instamal.instantiator.helpers import SpecVisitor, SpecParser
 
+
 class AnalyzerError:
     def __init__(self, line: int, column: int, description: str):
         self.line: int = line
@@ -60,6 +61,38 @@ class SpecAnalyzer(SpecVisitor):
     def _report_error(self, symbol: Token, description: str) -> None:
         if self._error is None:
             self._error = AnalyzerError(symbol.line, symbol.column, description)
+
+    def _resolve_subsystem_access(self, ctx: SpecParser.SubsystemSetAccessContext) -> Optional[str]:
+        ids = [id_token.getText() for id_token in ctx.ID()]
+        types = self._variable_types if not self._in_subsystem_context else self._subsystem_variable_types
+
+        first = ids[0]
+        if first not in types:
+            self._report_error(
+                ctx.ID(0).getSymbol(),
+                f"Variable name '{first}' has not been declared.",
+            )
+            return None
+
+        current_type = types[first]
+        for i, field in enumerate(ids[1:], start=1):
+            if current_type not in self._defined_subsystems:
+                self._report_error(
+                    ctx.ID(i).getSymbol(),
+                    f"Asset '{current_type}' has no members (not a subsystem).",
+                )
+                return None
+
+            subsystem_fields = self._defined_subsystems[current_type]
+            if field not in subsystem_fields:
+                self._report_error(
+                    ctx.ID(i).getSymbol(),
+                    f"Subsystem '{current_type}' has no member '{field}'.",
+                )
+                return None
+
+            current_type = subsystem_fields[field]
+        return current_type
 
     def visit(self, tree):
         if self._error is not None:
@@ -135,15 +168,7 @@ class SpecAnalyzer(SpecVisitor):
             self.visit(ctx.assetInstantiation())
             return ctx.assetInstantiation().ID().getText()
         elif ctx.subsystemSetAccess():
-            accessName: str = ctx.subsystemSetAccess().getText()
-            types: Dict[str, str] = self._variable_types if not self._in_subsystem_context else self._subsystem_variable_types
-            if accessName not in types:
-                self._report_error(
-                    ctx.subsystemSetAccess().ID(0).getSymbol(),
-                    f"Invalid access of subsystem: '{accessName}'.",
-                )
-                return None
-            return types[accessName]
+            return self._resolve_subsystem_access(ctx.subsystemSetAccess())
         else:
             raise RuntimeError("Unexpexted error in SpecAnalyzer.visitAssetSet.")
 
@@ -167,8 +192,6 @@ class SpecAnalyzer(SpecVisitor):
         left_type: str = self.visit(ctx.assetSet(0))
         right_fieldname: str = ctx.associationFieldname().ID().getText()
         right_type: str = self.visit(ctx.assetSet(1))
-
-        # raise Exception(f"{left_type} --> [{right_fieldname}] {right_type}")
 
         if not (left_type, right_fieldname, right_type) in self._lang_associations:
             self._report_error(
