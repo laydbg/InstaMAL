@@ -374,3 +374,41 @@ connect {
     lang_src = TRAININGLANG_PATH
 
     instantiate(spec, lang_src)
+
+
+def test_zero_asset_instantiation_allowed(instantiate):
+    spec: str = \
+"""
+let hosts = Host(0);
+let users = User(0);
+
+connect {
+    1: hosts --> [users] users;
+}
+"""
+    lang_src = TRAININGLANG_PATH
+
+    instantiate(spec, lang_src, n=5)
+
+
+def test_zero_subsystem_instantiation_allowed(instantiate):
+    spec: str = \
+"""
+subsystem HostWithData {
+    let host = Host(1);
+    let data = Data(1);
+
+    connect {
+        1: host --> [data] data;
+    }
+}
+
+let hosts = HostWithData(0);
+
+connect {
+    1: hosts.host --> [data] hosts.data;
+}
+"""
+    lang_src = TRAININGLANG_PATH
+
+    instantiate(spec, lang_src, n=5)

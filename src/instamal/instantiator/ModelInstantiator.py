@@ -266,8 +266,7 @@ class ModelInstantiator(SpecVisitor):
 
         return None
             
-
-    def visitAssetSet(self, ctx: SpecParser.AssetSetContext) -> Tuple[Set[str], str]:
+    def visitAssetSet(self, ctx: SpecParser.AssetSetContext) -> Tuple[Set[str], Optional[str]]:
         if ctx.assetInstantiation():
             return self.visit(ctx.assetInstantiation())
         elif ctx.variable() or ctx.subsystemSetAccess():
@@ -275,9 +274,13 @@ class ModelInstantiator(SpecVisitor):
             if self._subsystem_stack:
                 prefix = self._current_prefix()
                 full_id = f"{prefix}.{variable_id}"
-                return self._subsystem_stack[-1].asset_sets[full_id], self._types[full_id]
+
+                asset_set = self._subsystem_stack[-1].asset_sets.get(full_id, set())
+                asset_type = self._types.get(full_id)
             else:
-                return self._asset_sets[variable_id], self._types[variable_id]
+                asset_set = self._asset_sets.get(variable_id, set())
+                asset_type = self._types.get(variable_id)
+            return asset_set, asset_type
         else:
             raise RuntimeError(
                 "Something bad happened in ModelInstantiator.visitAssetSet"
