@@ -11,8 +11,8 @@ python -m pip install .
 ## Usage
 
 ```
-$ instamal --help
-usage: instamal [-h] -s SPEC_PATH -l LANG_PATH [-n NUM_INSTANCES] [-o OUT_PATH]
+$ instamal -h
+usage: instamal [-h] -s SPEC_PATH -l LANG_PATH [-n NUM_INSTANCES] [-o OUT_PATH] [-v VISUALIZE]
 
 Generate model instances based on specified domain specifications.
 
@@ -26,6 +26,9 @@ options:
                         number of model instances to generate (default: 1)
   -o OUT_PATH, --out_path OUT_PATH
                         output path for the generated model instances (default: "models")
+  -v VISUALIZE, --visualize VISUALIZE
+                        Generate visualizations for the first n model instances. Creates a "vis" directory with .png files
+                        and a `visualization_summary.md` in the output path. Use -v 0 to disable (default: 0).
 ```
 
 ## Specification Language Overview

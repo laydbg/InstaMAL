@@ -1,5 +1,6 @@
 import argparse
 from .instantiator import ModelInstantiator
+from .visualizer import ModelVisualizer
 
 
 def main():
@@ -35,11 +36,20 @@ def main():
         default="models",
         help='output path for the generated model instances (default: "models")',
     )
+    parser.add_argument(
+        "-v",
+        "--visualize",
+        type=int,
+        default=0,
+        help='Generate visualizations for the first n model instances. Creates a "vis" directory with .png files and a `visualization_summary.md` in the output path. Use -v 0 to disable (default: 0).',
+    )
 
     args = parser.parse_args()
 
     instantiator = ModelInstantiator(args.spec_path, args.lang_path)
     instantiator.instantiate(args.out_path, args.num_instances)
+    if args.visualize > 0:
+        ModelVisualizer(args.out_path, args.visualize, args.lang_path)
 
 
 if __name__ == "__main__":
