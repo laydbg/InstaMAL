@@ -128,6 +128,7 @@ class StaticMultiplicityAnalyzer(SpecVisitor):
 
         self._cardinality_bounds: Dict[str, CardinalityBound] = {}
         self._types: Dict[str, str] = {}
+        self._param_bounds: Dict[str, CardinalityBound] = {}
         self._subsystems: Dict[str, SpecParser.SubsystemContext] = {}
 
         # Stack of (prefix, local_bounds, local_types) for nested subsystems
@@ -146,6 +147,7 @@ class StaticMultiplicityAnalyzer(SpecVisitor):
         """Run the static multiplicity analysis and return all violations."""
         self._cardinality_bounds = {}
         self._types = {}
+        self._param_bounds = {}
         self._subsystems = {}
         self._subsystem_stack = []
         self._field_accumulators = {}
@@ -256,6 +258,11 @@ class StaticMultiplicityAnalyzer(SpecVisitor):
             return self._expr_bounds(ctx.expr())
         elif ctx.distributionSample():
             return self._distribution_bounds(ctx.distributionSample())
+        elif ctx.ID():
+            name = ctx.ID().getText()
+            cb = self._param_bounds.get(name)
+            if cb is not None:
+                return float(cb.min), float(cb.max)
         return 0.0, INF
 
     def _distribution_bounds(
@@ -281,6 +288,14 @@ class StaticMultiplicityAnalyzer(SpecVisitor):
     def visitSubsystem(self, ctx: SpecParser.SubsystemContext):
         self._subsystems[ctx.ID().getText()] = ctx
         return None
+
+    def visitParam(self, ctx: SpecParser.ParamContext) -> None:
+        param_name: str = ctx.ID().getText()
+        lo, hi = self._expr_bounds(ctx.expr())
+        self._param_bounds[param_name] = CardinalityBound(
+            math.floor(max(0, lo)),
+            math.floor(hi) if hi != INF else INF,
+        )
 
     def visitLet(self, ctx: SpecParser.LetContext):
         raw_id: str = ctx.variable().getText()
@@ -511,6 +526,7 @@ class ProbabilisticMultiplicityAnalyzer(SpecVisitor):
 
         self._expected_counts: Dict[str, float] = {}
         self._types: Dict[str, str] = {}
+        self._param_expected: Dict[str, float] = {}
         self._subsystems: Dict[str, SpecParser.SubsystemContext] = {}
         self._subsystem_stack: List[Tuple[str, Dict[str, float], Dict[str, str]]] = []
         self._field_estimates: Dict[Tuple[str, str], FieldEstimate] = {}
@@ -520,6 +536,7 @@ class ProbabilisticMultiplicityAnalyzer(SpecVisitor):
     def analyze(self, spec_ctx: SpecParser.SpecContext) -> List[MultiplicityWarning]:
         self._expected_counts = {}
         self._types = {}
+        self._param_expected = {}
         self._subsystems = {}
         self._subsystem_stack = []
         self._field_estimates = {}
@@ -653,6 +670,9 @@ class ProbabilisticMultiplicityAnalyzer(SpecVisitor):
             return self._expr_expected(ctx.expr())
         elif ctx.distributionSample():
             return self._distribution_expected(ctx.distributionSample())
+        elif ctx.ID():
+            name = ctx.ID().getText()
+            return self._param_expected.get(name, 1.0)
         return 1.0
 
     def _distribution_expected(
@@ -707,6 +727,10 @@ class ProbabilisticMultiplicityAnalyzer(SpecVisitor):
     def visitSubsystem(self, ctx: SpecParser.SubsystemContext):
         self._subsystems[ctx.ID().getText()] = ctx
         return None
+
+    def visitParam(self, ctx: SpecParser.ParamContext) -> None:
+        param_name: str = ctx.ID().getText()
+        self._param_expected[param_name] = self._expr_expected(ctx.expr())
 
     def visitLet(self, ctx: SpecParser.LetContext):
         raw_id = ctx.variable().getText()

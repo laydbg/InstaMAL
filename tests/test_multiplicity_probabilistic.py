@@ -1,5 +1,4 @@
 import os
-import math
 import pytest
 import tempfile
 from typing import List
@@ -7,7 +6,6 @@ from typing import List
 from maltoolbox.language import LanguageGraph
 from antlr4 import FileStream, CommonTokenStream
 
-from instamal.instantiator.helpers import SpecLexer, SpecParser
 from instamal.instantiator.helpers.MultiplicityAnalyzer import (
     ProbabilisticMultiplicityAnalyzer,
     MultiplicityWarning,
@@ -104,7 +102,7 @@ def warnings_for(
     ]
 
 
-# ── Group 1: No warnings on clearly satisfiable specs ────────────────────────
+# ── No warnings on clearly satisfiable specs ──────────────────────────────────
 
 
 def test_no_warning_weight_one_count_within_bounds(testlang_path):
@@ -182,7 +180,7 @@ let units = Unit(3);
     assert warnings_for(warnings, "Server", "installedSoftware") == []
 
 
-# ── Group 2: Warnings on clearly unsatisfiable specs ─────────────────────────
+# ── Warnings on clearly unsatisfiable specs ───────────────────────────────────
 
 
 def test_warning_weight_zero_with_positive_lower_bound(testlang_path):
@@ -258,7 +256,7 @@ let units = Unit(2);
     assert ws[0].global_probability < 0.9
 
 
-# ── Group 3: Threshold sensitivity ───────────────────────────────────────────
+# ── Threshold sensitivity ─────────────────────────────────────────────────────
 
 
 def test_same_spec_warns_at_high_threshold_not_low(testlang_path):
@@ -309,7 +307,7 @@ connect {
     assert len(ws) == 1
 
 
-# ── Group 4: Monotonicity ─────────────────────────────────────────────────────
+# ── Monotonicity ──────────────────────────────────────────────────────────────
 
 
 def test_higher_weight_gives_higher_global_probability(testlang_path):
@@ -384,7 +382,7 @@ connect {{
     assert p_few >= p_some >= p_many
 
 
-# ── Group 5: Multi-rule accumulation ─────────────────────────────────────────
+# ── Multi-rule accumulation ───────────────────────────────────────────────────
 
 
 def test_two_rules_accumulate_higher_probability_than_one(testlang_path):
@@ -453,7 +451,7 @@ connect {
     assert p_two == pytest.approx(p_one, abs=0.05)
 
 
-# ── Group 6: Subsystem handling ───────────────────────────────────────────────
+# ── Subsystem handling ────────────────────────────────────────────────────────
 
 
 def test_subsystem_asset_counts_are_multiplied_correctly(testlang_path):
@@ -534,3 +532,210 @@ connect {
     assert len(ws) == 1
     assert ws[0].mult_min == 1
     assert ws[0].mult_max == 3
+
+
+# ── Param handling ────────────────────────────────────────────────────────────
+
+
+def test_no_warning_param_constant_within_bounds(testlang_path):
+    """A param = constant used as asset count that keeps expected connections
+    within bounds should not warn."""
+    spec = """
+param n = 2;
+
+let servers = Server(1);
+let software = Software(n);
+
+connect {
+    1: servers --> [installedSoftware] software;
+}
+"""
+    warnings = analyze(spec, testlang_path)
+    assert warnings_for(warnings, "Server", "installedSoftware") == []
+
+
+def test_no_warning_param_distribution_expected_within_bounds(testlang_path):
+    """A param ~ distribution whose expected value keeps connections within
+    bounds should not warn."""
+    spec = """
+param n ~ Uniform(1, 3);
+
+let servers = Server(1);
+let software = Software(n);
+
+connect {
+    1: servers --> [installedSoftware] software;
+}
+"""
+    warnings = analyze(spec, testlang_path)
+    assert warnings_for(warnings, "Server", "installedSoftware") == []
+
+
+def test_warning_param_zero_constant_with_positive_lower_bound(testlang_path):
+    """A param = 0 used as asset count gives expected degree 0, which cannot
+    satisfy a positive lower bound — should warn."""
+    spec = """
+param n = 0;
+
+let servers = Server(1);
+let software = Software(n);
+
+connect {
+    1: servers --> [installedSoftware] software;
+}
+"""
+    warnings = analyze(spec, testlang_path, threshold=0.01)
+    ws = warnings_for(warnings, "Server", "installedSoftware")
+    assert len(ws) == 1
+    assert ws[0].per_asset_probability == pytest.approx(0.0, abs=1e-6)
+
+
+def test_warning_param_distribution_low_expected_count(testlang_path):
+    """A param ~ distribution with a low expected value used as right-set
+    count should warn when the lower bound is high."""
+    spec = """
+param n ~ Uniform(0, 1);
+
+let servers_a = Server(1);
+let servers_b = Server(n);
+
+connect {
+    0.1: servers_a --> [monitoredBy] servers_b;
+}
+"""
+    warnings = analyze(spec, testlang_path, threshold=0.9)
+    ws = warnings_for(warnings, "Server", "monitoredBy")
+    assert len(ws) == 1
+    assert ws[0].global_probability < 0.9
+
+
+def test_param_constant_affects_global_probability_via_asset_count(testlang_path):
+    """A param = n used as the left asset count should scale global_probability
+    as per_asset_p ^ n — more assets means lower global probability."""
+
+    def get_global_p(n: int) -> float:
+        spec = f"""
+param n = {n};
+
+let servers = Server(n);
+let software = Software(2);
+
+connect {{
+    0.5: servers --> [installedSoftware] software;
+}}
+"""
+        warnings = analyze(spec, testlang_path, threshold=0.0)
+        ws = warnings_for(warnings, "Server", "installedSoftware")
+        return ws[0].global_probability if ws else 1.0
+
+    p_few = get_global_p(1)
+    p_some = get_global_p(5)
+    p_many = get_global_p(10)
+
+    assert p_few >= p_some >= p_many
+
+
+def test_param_arithmetic_expected_value_is_correct(testlang_path):
+    """A param defined via arithmetic on another param should have its
+    expected value evaluated correctly, affecting the degree distribution."""
+    spec_param = """
+param base = 1;
+param n = base * 2;
+
+let servers = Server(1);
+let software = Software(n);
+
+connect {
+    0.5: servers --> [installedSoftware] software;
+}
+"""
+    spec_literal = """
+let servers = Server(1);
+let software = Software(2);
+
+connect {
+    0.5: servers --> [installedSoftware] software;
+}
+"""
+    warnings_param = analyze(spec_param, testlang_path, threshold=0.0)
+    warnings_literal = analyze(spec_literal, testlang_path, threshold=0.0)
+
+    ws_param = warnings_for(warnings_param, "Server", "installedSoftware")
+    ws_literal = warnings_for(warnings_literal, "Server", "installedSoftware")
+
+    p_param = ws_param[0].per_asset_probability if ws_param else 1.0
+    p_literal = ws_literal[0].per_asset_probability if ws_literal else 1.0
+
+    assert p_param == pytest.approx(p_literal, abs=1e-6)
+
+
+def test_param_distribution_expected_value_matches_literal(testlang_path):
+    """A param ~ Uniform(a, b) should contribute E[(a+b)/2] to the degree
+    distribution, giving the same result as using the literal expected value."""
+    spec_param = """
+param n ~ Uniform(1, 3);
+
+let servers = Server(1);
+let software = Software(n);
+
+connect {
+    0.5: servers --> [installedSoftware] software;
+}
+"""
+    # E[Uniform(1,3)] = 2
+    spec_literal = """
+let servers = Server(1);
+let software = Software(2);
+
+connect {
+    0.5: servers --> [installedSoftware] software;
+}
+"""
+    warnings_param = analyze(spec_param, testlang_path, threshold=0.0)
+    warnings_literal = analyze(spec_literal, testlang_path, threshold=0.0)
+
+    ws_param = warnings_for(warnings_param, "Server", "installedSoftware")
+    ws_literal = warnings_for(warnings_literal, "Server", "installedSoftware")
+
+    p_param = ws_param[0].per_asset_probability if ws_param else 1.0
+    p_literal = ws_literal[0].per_asset_probability if ws_literal else 1.0
+
+    assert p_param == pytest.approx(p_literal, abs=0.05)
+
+
+def test_param_used_in_subsystem_scales_global_probability(testlang_path):
+    """A global param used inside a subsystem as asset count should scale
+    global_probability correctly through subsystem multiplication."""
+    spec_param = """
+param n = 2;
+
+subsystem Unit {
+    let server = Server(1);
+    let software = Software(n);
+
+    connect {
+        0.5: server --> [installedSoftware] software;
+    }
+}
+
+let units = Unit(1);
+"""
+    # Software(2) directly gives the same expected right-set size
+    spec_literal = """
+let servers = Server(1);
+let software = Software(2);
+
+connect {
+    0.5: servers --> [installedSoftware] software;
+}
+"""
+    warnings_param = analyze(spec_param, testlang_path, threshold=0.0)
+    warnings_literal = analyze(spec_literal, testlang_path, threshold=0.0)
+
+    ws_param = warnings_for(warnings_param, "Server", "installedSoftware")
+    ws_literal = warnings_for(warnings_literal, "Server", "installedSoftware")
+
+    p_param = ws_param[0].per_asset_probability if ws_param else 1.0
+    p_literal = ws_literal[0].per_asset_probability if ws_literal else 1.0
+
+    assert p_param == pytest.approx(p_literal, abs=0.05)

@@ -47,6 +47,16 @@ let users = User(TruncatedNormal(15, 4));
 let data = Data(8+Uniform(7-9, 2*2));
 ```
 
+Use `param` to declare named values that can be referenced in expressions. A `param =` evaluates its expression once per model instance and reuses that value everywhere the name appears. A `param ~` re-evaluates its expression each time the name is used, drawing a fresh sample on every reference.
+
+```
+param numNetworks = 3;
+param hostsPerNetwork ~ TruncatedNormal(8, 2);
+
+let networks = Network(numNetworks);
+let hosts = Host(hostsPerNetwork);
+```
+
 Add associations between specified assets using `connect` clauses, each containing a list of connection rules.
 
 ```

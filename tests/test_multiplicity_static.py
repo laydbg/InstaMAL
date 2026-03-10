@@ -46,6 +46,9 @@ associations {
 """
 
 
+# ── Fixtures ──────────────────────────────────────────────────────────────────
+
+
 @pytest.fixture(scope="module")
 def testlang_path():
     """Write TESTLANG_MAL to a temp .mal file and yield its path."""
@@ -80,14 +83,7 @@ def instantiate():
     return _instantiate
 
 
-def test_mal_loads_and_unconnected_spec_passes(instantiate, testlang_path):
-    """Smoke test: inline MAL loads correctly and a spec with no connect
-    blocks raises no exception."""
-    spec = """
-let servers = Server(2);
-let software = Software(2);
-"""
-    instantiate(spec, testlang_path)
+# ── Boundary and within-bounds cases ──────────────────────────────────────────
 
 
 def test_no_violation_at_exact_upper_bound(instantiate, testlang_path):
@@ -155,6 +151,69 @@ connect {
     instantiate(spec, testlang_path)
 
 
+def test_violation_guaranteed_over_upper_bound(instantiate, testlang_path):
+    """A set whose minimum count exceeds the field's upper bound with weight=1
+    is a guaranteed violation."""
+    spec = """
+let servers = Server(1);
+let software = Software(4);
+
+connect {
+    1: servers --> [installedSoftware] software;
+}
+"""
+    with pytest.raises(Exception, match="(?i)multiplicity"):
+        instantiate(spec, testlang_path)
+
+
+def test_violation_guaranteed_over_multiplicity_one(instantiate, testlang_path):
+    """Connecting more than one asset to a field with multiplicity 1 with
+    weight=1 is a guaranteed violation."""
+    spec = """
+let servers = Server(2);
+let databases = Database(1);
+
+connect {
+    1: databases --> [hostedOn] servers;
+}
+"""
+    with pytest.raises(Exception, match="(?i)multiplicity"):
+        instantiate(spec, testlang_path)
+
+
+def test_violation_guaranteed_under_lower_bound(instantiate, testlang_path):
+    """A set whose maximum count falls below the field's lower bound with
+    weight=1 is a guaranteed violation."""
+    spec = """
+let servers_a = Server(1);
+let servers_b = Server(3);
+
+connect {
+    1: servers_a --> [monitors] servers_b;
+}
+"""
+    with pytest.raises(Exception, match="(?i)multiplicity"):
+        instantiate(spec, testlang_path)
+
+
+def test_violation_guaranteed_under_lower_bound_zero_assets(instantiate, testlang_path):
+    """Connecting zero assets to a field with a lower bound greater than zero
+    with weight=1 is a guaranteed violation."""
+    spec = """
+let servers = Server(1);
+let software = Software(0);
+
+connect {
+    1: servers --> [installedSoftware] software;
+}
+"""
+    with pytest.raises(Exception, match="(?i)multiplicity"):
+        instantiate(spec, testlang_path)
+
+
+# ── Connection weight semantics ───────────────────────────────────────────────
+
+
 def test_no_violation_weight_below_one_does_not_trigger_underconnection(
     instantiate, testlang_path
 ):
@@ -203,6 +262,28 @@ connect {
     instantiate(spec, testlang_path)
 
 
+def test_violation_guaranteed_over_upper_bound_multiple_rules_accumulated(
+    instantiate, testlang_path
+):
+    """Multiple rules whose accumulated guaranteed minimum exceeds the upper
+    bound is a violation."""
+    spec = """
+let servers = Server(1);
+let sw_a = Software(2);
+let sw_b = Software(2);
+
+connect {
+    1: servers --> [installedSoftware] sw_a;
+    1: servers --> [installedSoftware] sw_b;
+}
+"""
+    with pytest.raises(Exception, match="(?i)multiplicity"):
+        instantiate(spec, testlang_path)
+
+
+# ── Subsystem instantiation ───────────────────────────────────────────────────
+
+
 def test_no_violation_within_bounds_inside_subsystem(instantiate, testlang_path):
     """A connection inside a subsystem that satisfies the multiplicity passes."""
     spec = """
@@ -240,6 +321,49 @@ subsystem Outer {
 let outer = Outer(3);
 """
     instantiate(spec, testlang_path)
+
+
+def test_violation_guaranteed_over_upper_bound_inside_subsystem(
+    instantiate, testlang_path
+):
+    """A guaranteed over-connection inside a subsystem is caught."""
+    spec = """
+subsystem Unit {
+    let a = Server(1);
+    let b = Software(4);
+
+    connect {
+        1: a --> [installedSoftware] b;
+    }
+}
+
+let units = Unit(2);
+"""
+    with pytest.raises(Exception, match="(?i)multiplicity"):
+        instantiate(spec, testlang_path)
+
+
+def test_violation_guaranteed_under_lower_bound_inside_subsystem(
+    instantiate, testlang_path
+):
+    """A guaranteed under-connection inside a subsystem is caught."""
+    spec = """
+subsystem Unit {
+    let a = Server(1);
+    let b = Server(3);
+
+    connect {
+        1: a --> [monitors] b;
+    }
+}
+
+let units = Unit(2);
+"""
+    with pytest.raises(Exception, match="(?i)multiplicity"):
+        instantiate(spec, testlang_path)
+
+
+# ── Distribution expressions ──────────────────────────────────────────────────
 
 
 def test_no_violation_exact_upper_bound_with_distribution(instantiate, testlang_path):
@@ -289,75 +413,6 @@ connect {
     instantiate(spec, testlang_path)
 
 
-def test_violation_guaranteed_over_upper_bound(instantiate, testlang_path):
-    """A set whose minimum count exceeds the field's upper bound with weight=1
-    is a guaranteed violation."""
-    spec = """
-let servers = Server(1);
-let software = Software(4);
-
-connect {
-    1: servers --> [installedSoftware] software;
-}
-"""
-    with pytest.raises(Exception, match="(?i)multiplicity"):
-        instantiate(spec, testlang_path)
-
-
-def test_violation_guaranteed_over_upper_bound_multiple_rules_accumulated(
-    instantiate, testlang_path
-):
-    """Multiple rules whose accumulated guaranteed minimum exceeds the upper
-    bound is a violation."""
-    spec = """
-let servers = Server(1);
-let sw_a = Software(2);
-let sw_b = Software(2);
-
-connect {
-    1: servers --> [installedSoftware] sw_a;
-    1: servers --> [installedSoftware] sw_b;
-}
-"""
-    with pytest.raises(Exception, match="(?i)multiplicity"):
-        instantiate(spec, testlang_path)
-
-
-def test_violation_guaranteed_over_multiplicity_one(instantiate, testlang_path):
-    """Connecting more than one asset to a field with multiplicity 1 with
-    weight=1 is a guaranteed violation."""
-    spec = """
-let servers = Server(2);
-let databases = Database(1);
-
-connect {
-    1: databases --> [hostedOn] servers;
-}
-"""
-    with pytest.raises(Exception, match="(?i)multiplicity"):
-        instantiate(spec, testlang_path)
-
-
-def test_violation_guaranteed_over_upper_bound_inside_subsystem(
-    instantiate, testlang_path
-):
-    """A guaranteed over-connection inside a subsystem is caught."""
-    spec = """
-subsystem Unit {
-    let a = Server(1);
-    let b = Software(4);
-
-    connect {
-        1: a --> [installedSoftware] b;
-    }
-}
-
-let units = Unit(2);
-"""
-    with pytest.raises(Exception, match="(?i)multiplicity"):
-        instantiate(spec, testlang_path)
-
-
 def test_violation_guaranteed_over_distribution_certain_above_upper_bound(
     instantiate, testlang_path
 ):
@@ -390,27 +445,33 @@ connect {
         instantiate(spec, testlang_path)
 
 
-def test_violation_guaranteed_under_lower_bound(instantiate, testlang_path):
-    """A set whose maximum count falls below the field's lower bound with
-    weight=1 is a guaranteed violation."""
+# ── Param expressions ─────────────────────────────────────────────────────────
+
+
+def test_no_violation_param_constant_within_bounds(instantiate, testlang_path):
+    """A param = constant used as asset count that stays within the
+    multiplicity range passes the static check."""
     spec = """
-let servers_a = Server(1);
-let servers_b = Server(3);
+param n = 2;
+
+let servers = Server(1);
+let software = Software(n);
 
 connect {
-    1: servers_a --> [monitors] servers_b;
+    1: servers --> [installedSoftware] software;
 }
 """
-    with pytest.raises(Exception, match="(?i)multiplicity"):
-        instantiate(spec, testlang_path)
+    instantiate(spec, testlang_path)
 
 
-def test_violation_guaranteed_under_lower_bound_zero_assets(instantiate, testlang_path):
-    """Connecting zero assets to a field with a lower bound greater than zero
-    with weight=1 is a guaranteed violation."""
+def test_violation_param_constant_over_upper_bound(instantiate, testlang_path):
+    """A param = constant that puts the asset count above the multiplicity
+    upper bound is a guaranteed violation."""
     spec = """
+param n = 5;
+
 let servers = Server(1);
-let software = Software(0);
+let software = Software(n);
 
 connect {
     1: servers --> [installedSoftware] software;
@@ -420,21 +481,149 @@ connect {
         instantiate(spec, testlang_path)
 
 
-def test_violation_guaranteed_under_lower_bound_inside_subsystem(
+def test_violation_param_constant_under_lower_bound(instantiate, testlang_path):
+    """A param = constant that puts the asset count below the multiplicity
+    lower bound is a guaranteed violation."""
+    spec = """
+param n = 3;
+
+let servers_a = Server(1);
+let servers_b = Server(n);
+
+connect {
+    1: servers_a --> [monitors] servers_b;
+}
+"""
+    with pytest.raises(Exception, match="(?i)multiplicity"):
+        instantiate(spec, testlang_path)
+
+
+def test_no_violation_param_distribution_within_bounds(instantiate, testlang_path):
+    """A param ~ distribution whose entire support stays within the
+    multiplicity range passes the static check."""
+    spec = """
+param n ~ Uniform(1, 3);
+
+let servers = Server(1);
+let software = Software(n);
+
+connect {
+    1: servers --> [installedSoftware] software;
+}
+"""
+    instantiate(spec, testlang_path)
+
+
+def test_violation_param_distribution_always_over_upper_bound(
     instantiate, testlang_path
 ):
-    """A guaranteed under-connection inside a subsystem is caught."""
+    """A param ~ distribution whose entire support exceeds the multiplicity
+    upper bound is a guaranteed violation."""
     spec = """
+param n ~ Uniform(4, 6);
+
+let servers = Server(1);
+let software = Software(n);
+
+connect {
+    1: servers --> [installedSoftware] software;
+}
+"""
+    with pytest.raises(Exception, match="(?i)multiplicity"):
+        instantiate(spec, testlang_path)
+
+
+def test_no_violation_param_arithmetic_within_bounds(instantiate, testlang_path):
+    """A param defined via arithmetic on another param evaluates correctly
+    and passes when the result is within bounds."""
+    spec = """
+param base = 1;
+param n = base + 1;
+
+let servers = Server(1);
+let software = Software(n);
+
+connect {
+    1: servers --> [installedSoftware] software;
+}
+"""
+    instantiate(spec, testlang_path)
+
+
+def test_violation_param_arithmetic_over_upper_bound(instantiate, testlang_path):
+    """A param defined via arithmetic that evaluates above the multiplicity
+    upper bound is a guaranteed violation."""
+    spec = """
+param base = 3;
+param n = base + 2;
+
+let servers = Server(1);
+let software = Software(n);
+
+connect {
+    1: servers --> [installedSoftware] software;
+}
+"""
+    with pytest.raises(Exception, match="(?i)multiplicity"):
+        instantiate(spec, testlang_path)
+
+
+def test_no_violation_param_chained_arithmetic_within_bounds(
+    instantiate, testlang_path
+):
+    """A chain of params each referencing the previous evaluates correctly
+    and does not produce a false violation."""
+    spec = """
+param a = 3;
+param b = a / 3;
+param c = b * 2;
+
+let servers = Server(1);
+let software = Software(c);
+
+connect {
+    1: servers --> [installedSoftware] software;
+}
+"""
+    instantiate(spec, testlang_path)
+
+
+def test_no_violation_param_used_in_subsystem_within_bounds(instantiate, testlang_path):
+    """A global param used inside a subsystem for asset count propagates
+    through subsystem multiplication without causing a violation."""
+    spec = """
+param n = 2;
+
 subsystem Unit {
-    let a = Server(1);
-    let b = Server(3);
+    let server = Server(1);
+    let software = Software(n);
 
     connect {
-        1: a --> [monitors] b;
+        1: server --> [installedSoftware] software;
     }
 }
 
-let units = Unit(2);
+let units = Unit(1);
+"""
+    instantiate(spec, testlang_path)
+
+
+def test_violation_param_used_in_subsystem_over_upper_bound(instantiate, testlang_path):
+    """A global param used inside a subsystem that causes an over-connection
+    is detected after subsystem bounds are propagated upward."""
+    spec = """
+param n = 5;
+
+subsystem Unit {
+    let server = Server(1);
+    let software = Software(n);
+
+    connect {
+        1: server --> [installedSoftware] software;
+    }
+}
+
+let units = Unit(1);
 """
     with pytest.raises(Exception, match="(?i)multiplicity"):
         instantiate(spec, testlang_path)

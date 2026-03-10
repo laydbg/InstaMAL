@@ -35,6 +35,8 @@ class SpecAnalyzer(SpecVisitor):
         self._in_subsystem_context: bool = False
         self._subsystem_variable_types: Dict[str, str] = {}
         self._current_variable: str = ""
+        self._declared_params: Set[str] = set()
+        self._current_param: Optional[str] = None
         self._spec_ctx: SpecParser.SpecContext = None
 
     def analyze(self, spec_ctx: SpecParser.SpecContext) -> Optional[AnalyzerError]:
@@ -44,6 +46,8 @@ class SpecAnalyzer(SpecVisitor):
         self._in_subsystem_context = False
         self._subsystem_variable_types = {}
         self._current_variable = ""
+        self._declared_params = set()
+        self._current_param = None
         self._spec_ctx = spec_ctx
         self.visit(spec_ctx)
         return self._error
@@ -51,6 +55,15 @@ class SpecAnalyzer(SpecVisitor):
     def _report_error(self, symbol: Token, description: str) -> None:
         if self._error is None:
             self._error = AnalyzerError(symbol.line, symbol.column, description)
+
+    def _all_declared_names(self) -> Set[str]:
+        """Return all names currently in use across params, variables, and
+        subsystems, for conflict checking."""
+        return (
+            self._declared_params
+            | set(self._variable_types.keys())
+            | set(self._defined_subsystems.keys())
+        )
 
     def _resolve_subsystem_access(
         self, ctx: SpecParser.SubsystemSetAccessContext
@@ -93,6 +106,57 @@ class SpecAnalyzer(SpecVisitor):
             current_type = subsystem_fields[field]
         return current_type
 
+    def visitParam(self, ctx: SpecParser.ParamContext):
+        if self._error is not None:
+            return None
+
+        paramName: str = ctx.ID().getText()
+
+        if paramName in self._lang_assets:
+            self._report_error(
+                ctx.ID().getSymbol(),
+                f"Cannot use asset name '{paramName}' as param name.",
+            )
+            return None
+
+        if paramName in self._all_declared_names():
+            self._report_error(
+                ctx.ID().getSymbol(),
+                f"Name '{paramName}' has already been declared.",
+            )
+            return None
+
+        # Visit the expression with _current_param set so that visitPrim can
+        # detect self-references and forward references.
+        self._current_param = paramName
+        self.visitChildren(ctx)
+        self._current_param = None
+
+        self._declared_params.add(paramName)
+        return None
+
+    def visitPrim(self, ctx: SpecParser.PrimContext):
+        if self._error is not None:
+            return None
+
+        if ctx.ID():
+            name: str = ctx.ID().getText()
+
+            if name not in self._declared_params:
+                if name == self._current_param:
+                    self._report_error(
+                        ctx.ID().getSymbol(),
+                        f"Param '{name}' cannot reference itself.",
+                    )
+                else:
+                    self._report_error(
+                        ctx.ID().getSymbol(),
+                        f"'{name}' has not been declared as a param.",
+                    )
+                return None
+
+        return self.visitChildren(ctx)
+
     def visitSubsystem(self, ctx: SpecParser.SubsystemContext):
         if self._error is not None:
             return None
@@ -104,16 +168,10 @@ class SpecAnalyzer(SpecVisitor):
                 f"Cannot use asset name '{subsystemName}' as subset name.",
             )
             return None
-        if subsystemName in self._variable_types:
+        if subsystemName in self._all_declared_names():
             self._report_error(
                 ctx.ID().getSymbol(),
-                f"Subset name '{subsystemName}' has already been used as a variable.",
-            )
-            return None
-        if subsystemName in self._defined_subsystems:
-            self._report_error(
-                ctx.ID().getSymbol(),
-                f"Subsystem '{subsystemName}' has already been defined.",
+                f"Name '{subsystemName}' has already been declared.",
             )
             return None
 
@@ -136,10 +194,10 @@ class SpecAnalyzer(SpecVisitor):
                 f"Cannot use asset name '{variableName}' as variable name.",
             )
             return None
-        elif variableName in self._defined_subsystems:
+        if variableName in self._all_declared_names():
             self._report_error(
                 ctx.variable().ID().getSymbol(),
-                f"Cannot use subset name '{variableName}' as variable name.",
+                f"Name '{variableName}' has already been declared.",
             )
             return None
 
