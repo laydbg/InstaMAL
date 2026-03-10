@@ -69,7 +69,9 @@ def instantiate():
                 tmp_spec_file.write(spec)
                 tmp_spec_file_name = tmp_spec_file.name
             with tempfile.TemporaryDirectory() as tmp_dir:
-                instantiator = ModelInstantiator(tmp_spec_file_name, lang_src)
+                instantiator = ModelInstantiator(
+                    tmp_spec_file_name, lang_src, interactive=False
+                )
                 instantiator.instantiate(tmp_dir, n)
         finally:
             if tmp_spec_file_name is not None:

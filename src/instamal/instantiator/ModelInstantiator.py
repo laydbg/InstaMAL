@@ -33,7 +33,9 @@ class ConnectionRule:
 
 
 class ModelInstantiator(SpecVisitor):
-    def __init__(self, spec_path: str, lang_path: str) -> None:
+    def __init__(
+        self, spec_path: str, lang_path: str, interactive: bool = True
+    ) -> None:
         input_stream = FileStream(spec_path)
         lang_graph = LanguageGraph().load_from_file(lang_path)
 
@@ -44,21 +46,37 @@ class ModelInstantiator(SpecVisitor):
         spec_ctx = parser.spec()
 
         # Semantic analysis
-        analyzer: SpecAnalyzer = SpecAnalyzer(lang_graph)
-        error: Optional[AnalyzerError] = analyzer.analyze(spec_ctx)
+        spec_analyzer: SpecAnalyzer = SpecAnalyzer(lang_graph)
+        error: Optional[AnalyzerError] = spec_analyzer.analyze(spec_ctx)
         if error is not None:
             raise Exception(
                 f"Semantic error on line {error.line}, col {error.column}: {error.description}"
             )
 
         # Static multiplicity check
-        mult_analyzer = MultiplicityAnalyzer(lang_graph)
-        violations: list[MultiplicityViolation] = mult_analyzer.analyze(spec_ctx)
+        stat_mult_analyzer = StaticMultiplicityAnalyzer(lang_graph)
+        violations: list[MultiplicityViolation] = stat_mult_analyzer.analyze(spec_ctx)
         if violations:
             messages = "\n".join(
                 f"  line {v.line}, col {v.column}: {v.description}" for v in violations
             )
             raise Exception(f"Multiplicity violation(s) detected:\n{messages}")
+
+        # Probabilistic multiplicity check
+        prob_mult_analyzer = ProbabilisticMultiplicityAnalyzer(
+            lang_graph, threshold=0.9
+        )
+        warnings = prob_mult_analyzer.analyze(spec_ctx)
+        if warnings:
+            print("Probabilistic multiplicity warnings:")
+            for w in warnings:
+                print(str(w))
+            if interactive:
+                answer = input("Proceed with instantiation? [y/N]: ").strip().lower()
+                if answer != "y":
+                    raise Exception(
+                        "Instantiation aborted by user due to multiplicity warnings."
+                    )
 
         self._model: Model = None
         self._lang_graph: LanguageGraph = lang_graph
