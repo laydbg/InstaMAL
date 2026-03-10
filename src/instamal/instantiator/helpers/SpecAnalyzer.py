@@ -14,7 +14,8 @@ class AnalyzerError:
 
 
 class SpecAnalyzer(SpecVisitor):
-    """Perform semantic analysis of a Spec language file."""
+    """Perform semantic analysis of a Spec language file. Stops after first
+    error encountered."""
 
     def __init__(self, lang_graph: LanguageGraph):
         self._error: Optional[AnalyzerError] = None
@@ -22,24 +23,13 @@ class SpecAnalyzer(SpecVisitor):
             f"{lang_graph.metadata['id']}, {lang_graph.metadata['version']}"
         )
         self._lang_assets: Set[str] = {asset for asset in lang_graph.assets.keys()}
-        self._lang_associations: Set[Tuple[str, str, str]] = {
-            (
-                assoc.left_field.asset.name,
-                assoc.right_field.fieldname,
-                assoc.right_field.asset.name,
-            )
-            for assoc in lang_graph.associations
-        }
-        self._lang_associations.update(
-            {
-                (
-                    assoc.right_field.asset.name,
-                    assoc.left_field.fieldname,
-                    assoc.left_field.asset.name,
-                )
-                for assoc in lang_graph.associations
-            }
-        )
+        self._lang_associations: Set[Tuple[str, str, str]] = set()
+        for asset in lang_graph.assets.values():
+            for fieldname, assoc in asset.associations.items():
+                target_asset = assoc.get_field(fieldname).asset
+                for sub_asset in target_asset.sub_assets:
+                    self._lang_associations.add((asset.name, fieldname, sub_asset.name))
+
         self._variable_types: Dict[str, str] = {}
         self._defined_subsystems: Dict[str, Dict[str, str]] = {}
         self._in_subsystem_context: bool = False
@@ -48,10 +38,10 @@ class SpecAnalyzer(SpecVisitor):
         self._spec_ctx: SpecParser.SpecContext = None
 
     def analyze(self, spec_ctx: SpecParser.SpecContext) -> Optional[AnalyzerError]:
-        """Analyze the specified system domain specification and return the first semantical error found or None in the case of no errors."""
+        """Analyze the spec and return the first semantic error found, or None."""
         self._variable_types = {}
         self._defined_subsystems = {}
-        self._in_subsystem_context: bool = False
+        self._in_subsystem_context = False
         self._subsystem_variable_types = {}
         self._current_variable = ""
         self._spec_ctx = spec_ctx
@@ -62,9 +52,18 @@ class SpecAnalyzer(SpecVisitor):
         if self._error is None:
             self._error = AnalyzerError(symbol.line, symbol.column, description)
 
-    def _resolve_subsystem_access(self, ctx: SpecParser.SubsystemSetAccessContext) -> Optional[str]:
+    def _resolve_subsystem_access(
+        self, ctx: SpecParser.SubsystemSetAccessContext
+    ) -> Optional[str]:
+        if self._error is not None:
+            return None
+
         ids = [id_token.getText() for id_token in ctx.ID()]
-        types = self._variable_types if not self._in_subsystem_context else self._subsystem_variable_types
+        types = (
+            self._variable_types
+            if not self._in_subsystem_context
+            else self._subsystem_variable_types
+        )
 
         first = ids[0]
         if first not in types:
@@ -94,12 +93,10 @@ class SpecAnalyzer(SpecVisitor):
             current_type = subsystem_fields[field]
         return current_type
 
-    def visit(self, tree):
+    def visitSubsystem(self, ctx: SpecParser.SubsystemContext):
         if self._error is not None:
             return None
-        return super().visit(tree)
 
-    def visitSubsystem(self, ctx: SpecParser.SubsystemContext):
         subsystemName: str = ctx.ID().getText()
         if subsystemName in self._lang_assets:
             self._report_error(
@@ -119,17 +116,19 @@ class SpecAnalyzer(SpecVisitor):
                 f"Subsystem '{subsystemName}' has already been defined.",
             )
             return None
-        
+
         self._in_subsystem_context = True
         self.visitChildren(ctx)
         self._in_subsystem_context = False
-        
+
         self._defined_subsystems[subsystemName] = self._subsystem_variable_types
         self._subsystem_variable_types = {}
-
         return None
 
     def visitLet(self, ctx: SpecParser.LetContext):
+        if self._error is not None:
+            return None
+
         variableName: str = ctx.variable().ID().getText()
         if variableName in self._lang_assets:
             self._report_error(
@@ -143,8 +142,8 @@ class SpecAnalyzer(SpecVisitor):
                 f"Cannot use subset name '{variableName}' as variable name.",
             )
             return None
-        
-        setType: str = self.visit(ctx.assetSet())
+
+        setType: str = self.visitAssetSet(ctx.assetSet())
         if not self._in_subsystem_context:
             self._variable_types[variableName] = setType
         else:
@@ -154,9 +153,16 @@ class SpecAnalyzer(SpecVisitor):
         return self.visitChildren(ctx)
 
     def visitAssetSet(self, ctx: SpecParser.AssetSetContext) -> str:
+        if self._error is not None:
+            return None
+
         if ctx.variable():
             variableName: str = ctx.variable().ID().getText()
-            types: Dict[str, str] = self._variable_types if not self._in_subsystem_context else self._subsystem_variable_types
+            types: Dict[str, str] = (
+                self._variable_types
+                if not self._in_subsystem_context
+                else self._subsystem_variable_types
+            )
             if variableName not in types:
                 self._report_error(
                     ctx.variable().ID().getSymbol(),
@@ -165,14 +171,17 @@ class SpecAnalyzer(SpecVisitor):
                 return None
             return types[variableName]
         elif ctx.assetInstantiation():
-            self.visit(ctx.assetInstantiation())
+            self.visitAssetInstantiation(ctx.assetInstantiation())
             return ctx.assetInstantiation().ID().getText()
         elif ctx.subsystemSetAccess():
             return self._resolve_subsystem_access(ctx.subsystemSetAccess())
         else:
-            raise RuntimeError("Unexpexted error in SpecAnalyzer.visitAssetSet.")
+            raise RuntimeError("Unexpected error in SpecAnalyzer.visitAssetSet.")
 
     def visitAssetInstantiation(self, ctx: SpecParser.AssetInstantiationContext):
+        if self._error is not None:
+            return None
+
         assetType: str = ctx.ID().getText()
         if assetType not in self._lang_assets:
             if assetType in self._defined_subsystems:
@@ -185,19 +194,21 @@ class SpecAnalyzer(SpecVisitor):
                     f"Asset '{assetType}' does not exist in {self._lang_info}",
                 )
                 return None
-
         return self.visitChildren(ctx)
-        
-    def visitConnectionRule(self, ctx: SpecParser.ConnectionRuleContext):
-        left_type: str = self.visit(ctx.assetSet(0))
-        right_fieldname: str = ctx.associationFieldname().ID().getText()
-        right_type: str = self.visit(ctx.assetSet(1))
 
-        if not (left_type, right_fieldname, right_type) in self._lang_associations:
-            self._report_error(
-                ctx.associationFieldname().ID().getSymbol(),
-                f"The association with fieldname '{right_fieldname}' from asset '{left_type}' to '{right_type}' does not exist in {self._lang_info}.",
-            )
+    def visitConnectionRule(self, ctx: SpecParser.ConnectionRuleContext):
+        if self._error is not None:
             return None
 
+        left_type: str = self.visitAssetSet(ctx.assetSet(0))
+        right_fieldname: str = ctx.associationFieldname().ID().getText()
+        right_type: str = self.visitAssetSet(ctx.assetSet(1))
+
+        if (left_type, right_fieldname, right_type) not in self._lang_associations:
+            self._report_error(
+                ctx.associationFieldname().ID().getSymbol(),
+                f"The association with fieldname '{right_fieldname}' from asset "
+                f"'{left_type}' to '{right_type}' does not exist in {self._lang_info}.",
+            )
+            return None
         return self.visitChildren(ctx)
