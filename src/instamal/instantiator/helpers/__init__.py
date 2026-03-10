@@ -1,12 +1,6 @@
 from .distributions import (
-    bernoulli,
-    binomial,
-    exponential,
-    gamma,
-    lognormal,
-    pareto,
-    truncated_normal,
-    uniform,
+    distribution_functions,
+    distribution_bounds_functions,
 )
 from .SpecLexer import SpecLexer
 from .SpecParser import SpecParser
@@ -14,14 +8,8 @@ from .SpecVisitor import SpecVisitor
 from .SpecAnalyzer import AnalyzerError, SpecAnalyzer
 
 __all__ = [
-    "bernoulli",
-    "binomial",
-    "exponential",
-    "gamma",
-    "lognormal",
-    "pareto",
-    "truncated_normal",
-    "uniform",
+    "distribution_functions",
+    "distribution_bounds_functions",
     "SpecLexer",
     "SpecParser",
     "SpecVisitor",

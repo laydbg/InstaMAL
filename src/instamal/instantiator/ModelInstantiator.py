@@ -9,18 +9,7 @@ from maltoolbox.language import LanguageGraph
 from maltoolbox.model import Model
 
 from instamal.instantiator.helpers import *
-
-
-distribution_functions = {
-    "Bernoulli": bernoulli,
-    "Binomial": binomial,
-    "Exponential": exponential,
-    "Gamma": gamma,
-    "LogNormal": lognormal,
-    "Pareto": pareto,
-    "TruncatedNormal": truncated_normal,
-    "Uniform": uniform,
-}
+from instamal.instantiator.helpers.MultiplicityAnalyzer import *
 
 
 class SubsystemContext:
@@ -54,10 +43,22 @@ class ModelInstantiator(SpecVisitor):
 
         spec_ctx = parser.spec()
 
+        # Semantic analysis
         analyzer: SpecAnalyzer = SpecAnalyzer(lang_graph)
         error: Optional[AnalyzerError] = analyzer.analyze(spec_ctx)
         if error is not None:
-            raise Exception(f"Semantic error on line {error.line}, col {error.column}: {error.description}")
+            raise Exception(
+                f"Semantic error on line {error.line}, col {error.column}: {error.description}"
+            )
+
+        # Static multiplicity check
+        mult_analyzer = MultiplicityAnalyzer(lang_graph)
+        violations: list[MultiplicityViolation] = mult_analyzer.analyze(spec_ctx)
+        if violations:
+            messages = "\n".join(
+                f"  line {v.line}, col {v.column}: {v.description}" for v in violations
+            )
+            raise Exception(f"Multiplicity violation(s) detected:\n{messages}")
 
         self._model: Model = None
         self._lang_graph: LanguageGraph = lang_graph
@@ -71,16 +72,22 @@ class ModelInstantiator(SpecVisitor):
     def instantiate(
         self, outDirPath: str, n: int = 1, modelPrefix: str = "model_"
     ) -> None:
-        """Instaniate and save n models to the specified directory."""
+        """Instantiate and save up to n models to the specified directory."""
         assert n > 0
 
         os.makedirs(outDirPath, exist_ok=True)
 
-        model: Model
+        successful = 0
         for i in range(n):
             modelName = f"{modelPrefix}{i}"
-            model = self._instantiate_single_model(modelName)
-            model.save_to_file(f"{outDirPath}/{modelName}.yml")
+            try:
+                model = self._instantiate_single_model(modelName)
+                model.save_to_file(f"{outDirPath}/{modelName}.yml")
+                successful += 1
+            except Exception as e:
+                print(f"Warning: failed to instantiate model '{modelName}': {e}")
+
+        print(f"Successfully instantiated {successful}/{n} models.")
 
     def _instantiate_single_model(self, name: str) -> Model:
         """Instanciate a new model internally and return it."""
@@ -132,7 +139,7 @@ class ModelInstantiator(SpecVisitor):
                     model_asset_l.add_associated_assets(
                         rule.right_fieldname, set([model_asset_r])
                     )
-    
+
     def _current_prefix(self) -> str:
         if not self._subsystem_stack:
             return ""
@@ -221,7 +228,9 @@ class ModelInstantiator(SpecVisitor):
         prefix = self._current_prefix()
         variable_id = f"{prefix}.{raw_variable_id}" if prefix else raw_variable_id
 
-        asset_instantiation: SpecParser.AssetInstantiationContext = ctx.assetSet().assetInstantiation()
+        asset_instantiation: SpecParser.AssetInstantiationContext = (
+            ctx.assetSet().assetInstantiation()
+        )
         if asset_instantiation:
             type: str = asset_instantiation.ID().getText()
             if type in self._subsystems:
@@ -229,7 +238,9 @@ class ModelInstantiator(SpecVisitor):
 
                 num_subsystems = 1
                 if asset_instantiation.expr():
-                    num_subsystems = math.floor(self.visitExpr(asset_instantiation.expr()))
+                    num_subsystems = math.floor(
+                        self.visitExpr(asset_instantiation.expr())
+                    )
 
                 for _ in range(num_subsystems):
                     self._subsystem_stack.append(SubsystemContext(full_prefix, {}))
@@ -253,7 +264,6 @@ class ModelInstantiator(SpecVisitor):
                             self._asset_sets[k].update(v)
                 return None
 
-
         asset_info: Tuple[Set[str], str] = self.visit(ctx.assetSet())
         asset_set: Set[str] = asset_info[0]
         asset_type: str = asset_info[1]
@@ -265,8 +275,10 @@ class ModelInstantiator(SpecVisitor):
         self._types[variable_id] = asset_type
 
         return None
-            
-    def visitAssetSet(self, ctx: SpecParser.AssetSetContext) -> Tuple[Set[str], Optional[str]]:
+
+    def visitAssetSet(
+        self, ctx: SpecParser.AssetSetContext
+    ) -> Tuple[Set[str], Optional[str]]:
         if ctx.assetInstantiation():
             return self.visit(ctx.assetInstantiation())
         elif ctx.variable() or ctx.subsystemSetAccess():
