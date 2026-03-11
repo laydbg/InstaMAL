@@ -27,8 +27,9 @@ options:
   -o OUT_PATH, --out_path OUT_PATH
                         output path for the generated model instances (default: "models")
   -v VISUALIZE, --visualize VISUALIZE
-                        Generate visualizations for the first n model instances. Creates a "vis" directory with .png files
-                        and a `visualization_summary.md` in the output path. Use -v 0 to disable (default: 0).
+                        Generate visualizations for the first n model instances (-v n). Creates a
+                        "vis" directory with .png files and a `visualization_summary.pdf` in the
+                        output path. Use -v 0 to disable (default: 0).
 ```
 
 ## Specification Language Overview
