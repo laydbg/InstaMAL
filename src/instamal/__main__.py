@@ -41,7 +41,7 @@ def main():
         "--visualize",
         type=int,
         default=0,
-        help='Generate visualizations for the first n model instances. Creates a "vis" directory with .png files and a `visualization_summary.md` in the output path. Use -v 0 to disable (default: 0).',
+        help='Generate visualizations for the first n model instances (-v n). Creates a "vis" directory with .png files and a `visualization_summary.pdf` in the output path. Use -v 0 to disable (default: 0).',
     )
 
     args = parser.parse_args()
