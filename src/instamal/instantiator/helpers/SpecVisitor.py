@@ -14,6 +14,11 @@ class SpecVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by SpecParser#param.
+    def visitParam(self, ctx:SpecParser.ParamContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by SpecParser#number.
     def visitNumber(self, ctx:SpecParser.NumberContext):
         return self.visitChildren(ctx)
