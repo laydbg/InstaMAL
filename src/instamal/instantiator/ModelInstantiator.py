@@ -128,13 +128,13 @@ class ModelInstantiator(SpecVisitor):
         self.visit(self._spec_ctx)
         return self._model
 
-    def _generate_asset_id(self, asset_type: str) -> str:
-        """Generate a unique asset ID given an asset type."""
-        if asset_type not in self._type_count:
-            self._type_count[asset_type] = 1
+    def _generate_asset_id(self, name_prefix: str) -> str:
+        """Generate a unique asset ID given a name prefix."""
+        if name_prefix not in self._type_count:
+            self._type_count[name_prefix] = 1
         else:
-            self._type_count[asset_type] += 1
-        return f"{asset_type}:{self._type_count[asset_type]}"
+            self._type_count[name_prefix] += 1
+        return f"{name_prefix}:{self._type_count[name_prefix]}"
 
     def _random_connect(self, rules: List[ConnectionRule]) -> None:
         """Connect assets using the heterogeneous random geometric graph algorithm."""
@@ -234,10 +234,10 @@ class ModelInstantiator(SpecVisitor):
         return float(ctx.FLOAT().getText())
 
     def _eval_asset_set(
-        self, ctx: SpecParser.AssetSetContext
+        self, ctx: SpecParser.AssetSetContext, name_prefix: Optional[str] = None
     ) -> Tuple[Set[str], Optional[str]]:
         if ctx.assetInstantiation():
-            return self._eval_asset_instantiation(ctx.assetInstantiation())
+            return self._eval_asset_instantiation(ctx.assetInstantiation(), name_prefix)
         elif ctx.variable() or ctx.subsystemSetAccess():
             variable_id = ctx.getText()
             if self._subsystem_stack:
@@ -253,16 +253,21 @@ class ModelInstantiator(SpecVisitor):
         raise RuntimeError("Unexpected node in _eval_asset_set.")
 
     def _eval_asset_instantiation(
-        self, ctx: SpecParser.AssetInstantiationContext
+        self,
+        ctx: SpecParser.AssetInstantiationContext,
+        name_prefix: Optional[str] = None,
     ) -> Tuple[Set[str], str]:
         asset_type = ctx.ID().getText()
         num_assets = 1
         if ctx.expr():
             num_assets = math.floor(self._eval_expr(ctx.expr()))
 
+        # If no name prefix was provided this is an inline instantiation
+        prefix = name_prefix if name_prefix is not None else f"_{asset_type}"
+
         assets: Set[str] = set()
         for _ in range(num_assets):
-            asset_id = self._generate_asset_id(asset_type)
+            asset_id = self._generate_asset_id(prefix)
             assets.add(asset_id)
             self._model.add_asset(asset_type=asset_type, name=asset_id)
 
@@ -314,7 +319,9 @@ class ModelInstantiator(SpecVisitor):
                         target[k].update(v)
                 return
 
-        asset_set, asset_type = self._eval_asset_set(ctx.assetSet())
+        asset_set, asset_type = self._eval_asset_set(
+            ctx.assetSet(), name_prefix=variable_id
+        )
 
         if self._subsystem_stack:
             self._subsystem_stack[-1].asset_sets[variable_id] = asset_set
