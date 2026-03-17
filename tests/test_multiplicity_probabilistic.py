@@ -180,6 +180,23 @@ let units = Unit(3);
     assert warnings_for(warnings, "Server", "installedSoftware") == []
 
 
+def test_no_warning_many_left_assets_one_right_asset_bounded_forward(testlang_path):
+    """Many Databases connected to a single Server at weight 1.0: each
+    Database receives exactly one reverse hostedOn edge, satisfying the
+    multiplicity constraint of exactly 1. The single Server receiving many
+    reverse databases edges is fine since databases is unbounded."""
+    spec = """
+let databases = Database(10);
+let servers = Server(1);
+
+connect {
+    1: databases --> [hostedOn] servers;
+}
+"""
+    warnings = analyze(spec, testlang_path)
+    assert warnings_for(warnings, "Database", "hostedOn") == []
+
+
 # ── Warnings on clearly unsatisfiable specs ───────────────────────────────────
 
 
@@ -254,6 +271,25 @@ let units = Unit(2);
     ws = warnings_for(warnings, "Server", "installedSoftware")
     assert len(ws) == 1
     assert ws[0].global_probability < 0.9
+
+
+def test_warning_many_left_assets_high_weight_bounded_reverse(testlang_path):
+    """Many Credentials connected to a single Client at high weight risks
+    violating the reverse multiplicity constraint on 'credential' (mult=1
+    on Client), since the Client may receive multiple reverse edges from the
+    many Credentials pointing at it."""
+    spec = """
+let creds = Credential(10);
+let clients = Client(1);
+
+connect {
+    0.9: creds --> [owner] clients;
+}
+"""
+    warnings = analyze(spec, testlang_path, threshold=0.5)
+    ws = warnings_for(warnings, "Client", "credential")
+    assert len(ws) == 1
+    assert ws[0].global_probability < 0.5
 
 
 # ── Threshold sensitivity ─────────────────────────────────────────────────────

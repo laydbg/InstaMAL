@@ -796,8 +796,9 @@ class ProbabilisticMultiplicityAnalyzer(SpecVisitor):
                 reverse_fieldname = assoc.right_field.fieldname
                 reverse_asset_type = left_type
 
+            n_per_right_asset = left_count / max(right_count, 1)
             self._accumulate(
-                reverse_asset_type, reverse_fieldname, left_count, p, token
+                reverse_asset_type, reverse_fieldname, n_per_right_asset, p, token
             )
 
     # ── Warning computation ───────────────────────────────────────────────────
