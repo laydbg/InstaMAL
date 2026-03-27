@@ -1,0 +1,228 @@
+assets:
+  0:
+    associated_assets:
+      appConnections:
+        5: Local
+      containedData:
+        16: DB Backup
+      highPrivAppIAMs:
+        13: tous
+    extras:
+      position:
+        x: -1075.5
+        y: -579.0
+    name: SQL Server
+    type: Application
+  1:
+    associated_assets:
+      appConnections:
+        5: Local
+    extras:
+      position:
+        x: -1048.5
+        y: -330.0
+    name: Domain Controller
+    type: Application
+  2:
+    associated_assets:
+      appConnections:
+        5: Local
+        6: External
+      containedData:
+        14: LSASS
+      highPrivAppIAMs:
+        13: tous
+        17: gosta
+    extras:
+      position:
+        x: -463.5
+        y: -592.5
+    name: Exchange Server
+    type: Application
+  3:
+    associated_assets:
+      appConnections:
+        5: Local
+      containedData:
+        10: Windows Credential Vault
+      lowPrivAppIAMs:
+        9: Local gosta
+        17: gosta
+      outgoingAppConnections:
+        6: External
+    extras:
+      position:
+        x: -162.0
+        y: -492.0
+    name: Exchange Admin Workstation
+    type: Application
+  4:
+    associated_assets:
+      netConnections:
+        5: Local
+    extras:
+      position:
+        x: -555.0
+        y: -181.5
+    name: LAN
+    type: Network
+  5:
+    associated_assets:
+      applications:
+        0: SQL Server
+        1: Domain Controller
+        2: Exchange Server
+        3: Exchange Admin Workstation
+      networks:
+        4: LAN
+    extras:
+      position:
+        x: -580.5
+        y: -340.5
+    name: Local
+    type: ConnectionRule
+  6:
+    associated_assets:
+      applications:
+        2: Exchange Server
+      networks:
+        7: WAN
+      outApplications:
+        3: Exchange Admin Workstation
+    extras:
+      position:
+        x: -447.0
+        y: -1036.5
+    name: External
+    type: ConnectionRule
+  7:
+    associated_assets:
+      netConnections:
+        6: External
+    extras:
+      position:
+        x: -390.0
+        y: -1224.0
+    name: WAN
+    type: Network
+  8:
+    associated_assets:
+      userIds:
+        9: Local gosta
+    extras:
+      position:
+        x: 283.5
+        y: -822.0
+    name: Legitimate User
+    type: User
+  9:
+    associated_assets:
+      credentials:
+        11: gosta Credentials
+      lowPrivApps:
+        3: Exchange Admin Workstation
+      readPrivData:
+        10: Windows Credential Vault
+      users:
+        8: Legitimate User
+    extras:
+      position:
+        x: 324.0
+        y: -601.5
+    name: Local gosta
+    type: Identity
+  10:
+    associated_assets:
+      containingApp:
+        3: Exchange Admin Workstation
+      information:
+        11: gosta Credentials
+      readingIAMs:
+        9: Local gosta
+    extras:
+      position:
+        x: -149.0
+        y: -292.0
+    name: Windows Credential Vault
+    type: Data
+  11:
+    associated_assets:
+      containerData:
+        10: Windows Credential Vault
+      identities:
+        9: Local gosta
+        17: gosta
+    extras:
+      position:
+        x: 345.0
+        y: -266.0
+    name: gosta Credentials
+    type: Credentials
+  13:
+    associated_assets:
+      credentials:
+        15: tous Credentials
+      highPrivApps:
+        0: SQL Server
+        2: Exchange Server
+    extras:
+      position:
+        x: -1062.0
+        y: -790.0
+    name: tous
+    type: Identity
+  14:
+    associated_assets:
+      containingApp:
+        2: Exchange Server
+      information:
+        15: tous Credentials
+    extras:
+      position:
+        x: -673.5
+        y: -798.0
+    name: LSASS
+    type: Data
+  15:
+    associated_assets:
+      containerData:
+        14: LSASS
+      identities:
+        13: tous
+    extras:
+      position:
+        x: -874.5
+        y: -996.0
+    name: tous Credentials
+    type: Credentials
+  16:
+    associated_assets:
+      containingApp:
+        0: SQL Server
+    extras:
+      position:
+        x: -1483.5
+        y: -583.5
+    name: DB Backup
+    type: Data
+  17:
+    associated_assets:
+      credentials:
+        11: gosta Credentials
+      highPrivApps:
+        2: Exchange Server
+      lowPrivApps:
+        3: Exchange Admin Workstation
+    extras:
+      position:
+        x: -34.5
+        y: -712.5
+    name: gosta
+    type: Identity
+metadata:
+  MAL-Toolbox Version: 2.0.0
+  info: Created by the mal-toolbox model python module.
+  langID: org.mal-lang.coreLang
+  langVersion: 1.0.0
+  malVersion: 0.1.0-SNAPSHOT
+  name: oilrig

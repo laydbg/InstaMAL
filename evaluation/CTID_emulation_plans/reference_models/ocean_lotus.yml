@@ -1,0 +1,162 @@
+assets:
+  1:
+    associated_assets:
+      appConnections:
+        5: Local
+      containedData:
+        12: .ssh
+      lowPrivAppIAMs:
+        7: hpotter Mac
+      outgoingAppConnections:
+        6: Outbound
+    extras:
+      position:
+        x: -579.0
+        y: 12.0
+    name: MacOS Workstation
+    type: Application
+  2:
+    associated_assets:
+      appConnections:
+        5: Local
+      containedData:
+        13: PDF Files
+      lowPrivAppIAMs:
+        10: hpotter Linux
+      outgoingAppConnections:
+        6: Outbound
+    extras:
+      position:
+        x: -1326.0
+        y: 3.0
+    name: Linux Server
+    type: Application
+  3:
+    associated_assets:
+      netConnections:
+        6: Outbound
+    extras:
+      position:
+        x: -970.0
+        y: -327.0
+    name: WAN
+    type: Network
+  4:
+    associated_assets:
+      netConnections:
+        5: Local
+    extras:
+      position:
+        x: -1060.5
+        y: 259.5
+    name: LAN
+    type: Network
+  5:
+    associated_assets:
+      applications:
+        1: MacOS Workstation
+        2: Linux Server
+      networks:
+        4: LAN
+    extras:
+      position:
+        x: -1063.5
+        y: 121.5
+    name: Local
+    type: ConnectionRule
+  6:
+    associated_assets:
+      networks:
+        3: WAN
+      outApplications:
+        1: MacOS Workstation
+        2: Linux Server
+    extras:
+      position:
+        x: -1031.0
+        y: -124.0
+    name: Outbound
+    type: ConnectionRule
+  7:
+    associated_assets:
+      lowPrivApps:
+        1: MacOS Workstation
+      readPrivData:
+        12: .ssh
+      users:
+        9: Hope Potter
+    extras:
+      position:
+        x: -51.0
+        y: -88.5
+    name: hpotter Mac
+    type: Identity
+  9:
+    associated_assets:
+      userIds:
+        7: hpotter Mac
+    extras:
+      position:
+        x: -103.5
+        y: -388.5
+    name: Hope Potter
+    type: User
+  10:
+    associated_assets:
+      credentials:
+        11: id_rsa
+      lowPrivApps:
+        2: Linux Server
+      readPrivData:
+        13: PDF Files
+    extras:
+      position:
+        x: -1602.0
+        y: 423.0
+    name: hpotter Linux
+    type: Identity
+  11:
+    associated_assets:
+      containerData:
+        12: .ssh
+      identities:
+        10: hpotter Linux
+    extras:
+      position:
+        x: -415.5
+        y: 409.5
+    name: id_rsa
+    type: Credentials
+  12:
+    associated_assets:
+      containingApp:
+        1: MacOS Workstation
+      information:
+        11: id_rsa
+      readingIAMs:
+        7: hpotter Mac
+    extras:
+      position:
+        x: -451.5
+        y: 228.0
+    name: .ssh
+    type: Data
+  13:
+    associated_assets:
+      containingApp:
+        2: Linux Server
+      readingIAMs:
+        10: hpotter Linux
+    extras:
+      position:
+        x: -1615.5
+        y: -190.5
+    name: PDF Files
+    type: Data
+metadata:
+  MAL-Toolbox Version: 2.0.0
+  info: Created by the mal-toolbox model python module.
+  langID: org.mal-lang.coreLang
+  langVersion: 1.0.0
+  malVersion: 0.1.0-SNAPSHOT
+  name: ocean_lotus

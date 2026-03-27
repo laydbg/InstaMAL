@@ -1,0 +1,303 @@
+assets:
+  1:
+    associated_assets:
+      sysExecutedApps:
+        6: Windows Server
+    extras:
+      position:
+        x: -585.0
+        y: -1104.0
+    name: Server
+    type: Hardware
+  2:
+    associated_assets:
+      sysExecutedApps:
+        5: Win10 1903 Workstation 1
+    extras:
+      position:
+        x: -195.0
+        y: -763.5
+    name: Workstation 1
+    type: Hardware
+  3:
+    associated_assets:
+      sysExecutedApps:
+        4: Win10 1903 Workstation 2
+      users:
+        33: Legitimate User
+    extras:
+      position:
+        x: -1098.0
+        y: 192.0
+    name: Workstation 2
+    type: Hardware
+  4:
+    associated_assets:
+      appConnections:
+        35: Local
+      appExecutedApps:
+        13: Google Chrome
+      containedData:
+        26: Registry
+      highPrivAppIAMs:
+        10: Local Admin 2
+        34: DC Admin
+      hostHardware:
+        3: Workstation 2
+      lowPrivAppIAMs:
+        31: Local User 2
+      outgoingAppConnections:
+        9: CR
+      vulnerabilities:
+        19: UAC Bypass
+    extras:
+      position:
+        x: -778.5
+        y: -45.0
+    name: Win10 1903 Workstation 2
+    type: Application
+  5:
+    associated_assets:
+      appConnections:
+        35: Local
+      containedData:
+        30: Office Documents
+      highPrivAppIAMs:
+        29: Local Admin 1
+        34: DC Admin
+      hostHardware:
+        2: Workstation 1
+      outgoingAppConnections:
+        9: CR
+    extras:
+      position:
+        x: -199.5
+        y: -609.0
+    name: Win10 1903 Workstation 1
+    type: Application
+  6:
+    associated_assets:
+      appConnections:
+        35: Local
+      highPrivAppIAMs:
+        34: DC Admin
+      hostHardware:
+        1: Server
+      outgoingAppConnections:
+        9: CR
+    extras:
+      position:
+        x: -586.5
+        y: -955.5
+    name: Windows Server
+    type: Application
+  7:
+    associated_assets:
+      netConnections:
+        9: CR
+    extras:
+      position:
+        x: -976.5
+        y: -924.0
+    name: LAN
+    type: Network
+  9:
+    associated_assets:
+      networks:
+        7: LAN
+      outApplications:
+        4: Win10 1903 Workstation 2
+        5: Win10 1903 Workstation 1
+        6: Windows Server
+    extras:
+      position:
+        x: -730.0
+        y: -620.0
+    name: CR
+    type: ConnectionRule
+  10:
+    associated_assets:
+      credentials:
+        15: Local Admin Creds
+      highPrivApps:
+        4: Win10 1903 Workstation 2
+    extras:
+      position:
+        x: -162.0
+        y: 19.5
+    name: Local Admin 2
+    type: Identity
+  13:
+    associated_assets:
+      containedData:
+        22: Chrome password manager
+      hostApp:
+        4: Win10 1903 Workstation 2
+    extras:
+      position:
+        x: -1327.5
+        y: -51.0
+    name: Google Chrome
+    type: Application
+  15:
+    associated_assets:
+      hashes:
+        25: NTLM Hash
+      identities:
+        10: Local Admin 2
+        29: Local Admin 1
+    defenses:
+      notGuessable: 0.0
+    extras:
+      position:
+        x: 322.5
+        y: 37.5
+    name: Local Admin Creds
+    type: Credentials
+  19:
+    associated_assets:
+      application:
+        4: Win10 1903 Workstation 2
+    defenses:
+      lowPrivilegesRequired: 1.0
+      networkAccessRequired: 1.0
+    extras:
+      position:
+        x: -936.0
+        y: -238.5
+    name: UAC Bypass
+    type: SoftwareVulnerability
+  22:
+    associated_assets:
+      containingApp:
+        13: Google Chrome
+      information:
+        27: Web Passwords
+        28: PFX Certificate
+    extras:
+      position:
+        x: -1326.0
+        y: -225.0
+    name: Chrome password manager
+    type: Data
+  25:
+    associated_assets:
+      containerData:
+        26: Registry
+      origCreds:
+        15: Local Admin Creds
+    extras:
+      position:
+        x: 129.0
+        y: -132.0
+    name: NTLM Hash
+    type: Credentials
+  26:
+    associated_assets:
+      containingApp:
+        4: Win10 1903 Workstation 2
+      information:
+        25: NTLM Hash
+    extras:
+      position:
+        x: -311.0
+        y: -132.0
+    name: Registry
+    type: Data
+  27:
+    associated_assets:
+      containerData:
+        22: Chrome password manager
+    extras:
+      position:
+        x: -1182.0
+        y: -409.5
+    name: Web Passwords
+    type: Credentials
+  28:
+    associated_assets:
+      containerData:
+        22: Chrome password manager
+    extras:
+      position:
+        x: -1468.5
+        y: -406.5
+    name: PFX Certificate
+    type: Credentials
+  29:
+    associated_assets:
+      credentials:
+        15: Local Admin Creds
+      highPrivApps:
+        5: Win10 1903 Workstation 1
+    extras:
+      position:
+        x: 463.5
+        y: -130.5
+    name: Local Admin 1
+    type: Identity
+  30:
+    associated_assets:
+      containingApp:
+        5: Win10 1903 Workstation 1
+    extras:
+      position:
+        x: 232.5
+        y: -610.5
+    name: Office Documents
+    type: Data
+  31:
+    associated_assets:
+      lowPrivApps:
+        4: Win10 1903 Workstation 2
+      users:
+        33: Legitimate User
+    extras:
+      position:
+        x: -670.5
+        y: 151.5
+    name: Local User 2
+    type: Identity
+  33:
+    associated_assets:
+      hardwareSystems:
+        3: Workstation 2
+      userIds:
+        31: Local User 2
+    extras:
+      position:
+        x: -732.0
+        y: 339.0
+    name: Legitimate User
+    type: User
+  34:
+    associated_assets:
+      highPrivApps:
+        4: Win10 1903 Workstation 2
+        5: Win10 1903 Workstation 1
+        6: Windows Server
+    extras:
+      position:
+        x: -52.5
+        y: -273.0
+    name: DC Admin
+    type: Identity
+  35:
+    associated_assets:
+      applications:
+        4: Win10 1903 Workstation 2
+        5: Win10 1903 Workstation 1
+        6: Windows Server
+    extras:
+      position:
+        x: -453.0
+        y: -289.0
+    name: Local
+    type: ConnectionRule
+metadata:
+  MAL-Toolbox Version: 2.0.0
+  info: Created by the mal-toolbox model python module.
+  langID: org.mal-lang.coreLang
+  langVersion: 1.0.0
+  malVersion: 0.1.0-SNAPSHOT
+  name: apt29_scenario1

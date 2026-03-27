@@ -1,0 +1,295 @@
+assets:
+  0:
+    associated_assets:
+      appConnections:
+        5: Internal
+      appExecutedApps:
+        8: Outlook
+      highPrivAppIAMs:
+        14: vfleming
+      lowPrivAppIAMs:
+        7: judy
+      outgoingAppConnections:
+        4: Outbound
+    extras:
+      position:
+        x: 170.0
+        y: -596.0
+    name: User Machine 1
+    type: Application
+  1:
+    associated_assets:
+      appConnections:
+        5: Internal
+      highPrivAppIAMs:
+        14: vfleming
+      lowPrivAppIAMs:
+        11: bill
+      outgoingAppConnections:
+        4: Outbound
+      sentData:
+        12: Service Ticket
+    extras:
+      position:
+        x: -1122.0
+        y: -466.0
+    name: User Machine 2
+    type: Application
+  2:
+    associated_assets:
+      appConnections:
+        5: Internal
+      containedData:
+        16: ntds.dit
+      highPrivAppIAMs:
+        14: vfleming
+      receivedData:
+        12: Service Ticket
+    extras:
+      position:
+        x: -1042.0
+        y: -275.0
+    name: Domain Controller
+    type: Application
+  3:
+    associated_assets:
+      netConnections:
+        4: Outbound
+    extras:
+      position:
+        x: -552.0
+        y: -928.0
+    name: WAN
+    type: Network
+  4:
+    associated_assets:
+      networks:
+        3: WAN
+      outApplications:
+        0: User Machine 1
+        1: User Machine 2
+    extras:
+      position:
+        x: -557.0
+        y: -789.0
+    name: Outbound
+    type: ConnectionRule
+  5:
+    associated_assets:
+      applications:
+        0: User Machine 1
+        1: User Machine 2
+        2: Domain Controller
+      networks:
+        6: LAN
+    extras:
+      position:
+        x: -200.0
+        y: 13.0
+    name: Internal
+    type: ConnectionRule
+  6:
+    associated_assets:
+      netConnections:
+        5: Internal
+    extras:
+      position:
+        x: -184.0
+        y: 189.0
+    name: LAN
+    type: Network
+  7:
+    associated_assets:
+      credentials:
+        20: judy Credentials
+      highPrivApps:
+        8: Outlook
+      lowPrivApps:
+        0: User Machine 1
+    extras:
+      position:
+        x: 265.0
+        y: -817.0
+    name: judy
+    type: Identity
+  8:
+    associated_assets:
+      containedData:
+        9: E-Mail Store
+      highPrivAppIAMs:
+        7: judy
+      hostApp:
+        0: User Machine 1
+    extras:
+      position:
+        x: -233.0
+        y: -616.0
+    name: Outlook
+    type: Application
+  9:
+    associated_assets:
+      containingApp:
+        8: Outlook
+      information:
+        10: bill Password E-Mail
+    extras:
+      position:
+        x: -582.0
+        y: -638.0
+    name: E-Mail Store
+    type: Data
+  10:
+    associated_assets:
+      containerData:
+        9: E-Mail Store
+      hashes:
+        18: DC bill Hashed Credentials
+      identities:
+        11: bill
+    extras:
+      position:
+        x: -230.0
+        y: -475.0
+    name: bill Password E-Mail
+    type: Credentials
+  11:
+    associated_assets:
+      credentials:
+        10: bill Password E-Mail
+      lowPrivApps:
+        1: User Machine 2
+      readPrivData:
+        12: Service Ticket
+    extras:
+      position:
+        x: -1403.2445520581114
+        y: -566.6949152542373
+    name: bill
+    type: Identity
+  12:
+    associated_assets:
+      information:
+        15: vfleming Hashed Credentials
+      readingIAMs:
+        11: bill
+      receiverApp:
+        2: Domain Controller
+      senderApp:
+        1: User Machine 2
+    extras:
+      position:
+        x: -1510.0
+        y: -338.0
+    name: Service Ticket
+    type: Data
+  13:
+    associated_assets:
+      hashes:
+        15: vfleming Hashed Credentials
+        17: DC vfleming Hashed Credentials
+      identities:
+        14: vfleming
+    defenses:
+      notDisclosed: 1.0
+      notGuessable: 0.0
+    extras:
+      position:
+        x: -909.4104116222761
+        y: 194.2953995157385
+    name: vfleming Credentials
+    type: Credentials
+  14:
+    associated_assets:
+      credentials:
+        13: vfleming Credentials
+      highPrivApps:
+        0: User Machine 1
+        1: User Machine 2
+        2: Domain Controller
+    extras:
+      position:
+        x: -282.0
+        y: -245.0
+    name: vfleming
+    type: Identity
+  15:
+    associated_assets:
+      containerData:
+        12: Service Ticket
+      origCreds:
+        13: vfleming Credentials
+    extras:
+      position:
+        x: -1724.0
+        y: -165.0
+    name: vfleming Hashed Credentials
+    type: Credentials
+  16:
+    associated_assets:
+      containingApp:
+        2: Domain Controller
+      information:
+        17: DC vfleming Hashed Credentials
+        18: DC bill Hashed Credentials
+        19: DC judy Hashed Credentials
+    extras:
+      position:
+        x: -1045.6870460048428
+        y: -120.08535108958836
+    name: ntds.dit
+    type: Data
+  17:
+    associated_assets:
+      containerData:
+        16: ntds.dit
+      origCreds:
+        13: vfleming Credentials
+    extras:
+      position:
+        x: -1366.8141646489105
+        y: -136.27663438256658
+    name: DC vfleming Hashed Credentials
+    type: Credentials
+  18:
+    associated_assets:
+      containerData:
+        16: ntds.dit
+      origCreds:
+        10: bill Password E-Mail
+    extras:
+      position:
+        x: -669.2397094430993
+        y: -130.87953995157383
+    name: DC bill Hashed Credentials
+    type: Credentials
+  19:
+    associated_assets:
+      containerData:
+        16: ntds.dit
+      origCreds:
+        20: judy Credentials
+    extras:
+      position:
+        x: -906.7118644067796
+        y: 10.794188861985472
+    name: DC judy Hashed Credentials
+    type: Credentials
+  20:
+    associated_assets:
+      hashes:
+        19: DC judy Hashed Credentials
+      identities:
+        7: judy
+    extras:
+      position:
+        x: 228.02723970944305
+        y: -70.16222760290555
+    name: judy Credentials
+    type: Credentials
+metadata:
+  MAL-Toolbox Version: 2.0.0
+  info: Created by the mal-toolbox model python module.
+  langID: org.mal-lang.coreLang
+  langVersion: 1.0.0
+  malVersion: 0.1.0-SNAPSHOT
+  name: Wizard Spider Scenario 1

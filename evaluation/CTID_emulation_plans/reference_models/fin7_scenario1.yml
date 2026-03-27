@@ -1,0 +1,284 @@
+assets:
+  0:
+    associated_assets:
+      appConnections:
+        4: Internal
+      highPrivAppIAMs:
+        15: Domain Admin
+    extras:
+      position:
+        x: 508.5
+        y: 637.5
+    name: Domain Controller
+    type: Application
+  1:
+    associated_assets:
+      netConnections:
+        2: Outbound
+    extras:
+      position:
+        x: -494.0
+        y: -604.0
+    name: WAN
+    type: Network
+  2:
+    associated_assets:
+      networks:
+        1: WAN
+      outApplications:
+        5: Hotel Manager Workstation
+        6: IT Admin Workstation
+        7: Accounting Workstation
+    extras:
+      position:
+        x: -454.0
+        y: -391.0
+    name: Outbound
+    type: ConnectionRule
+  3:
+    associated_assets:
+      netConnections:
+        4: Internal
+    extras:
+      position:
+        x: -63.0
+        y: -559.0
+    name: LAN
+    type: Network
+  4:
+    associated_assets:
+      applications:
+        0: Domain Controller
+        5: Hotel Manager Workstation
+        6: IT Admin Workstation
+        7: Accounting Workstation
+      networks:
+        3: LAN
+    extras:
+      position:
+        x: -76.0
+        y: -325.0
+    name: Internal
+    type: ConnectionRule
+  5:
+    associated_assets:
+      appConnections:
+        4: Internal
+      containedData:
+        12: Registry
+      lowPrivAppIAMs:
+        10: Hotel Manager
+      outgoingAppConnections:
+        2: Outbound
+      vulnerabilities:
+        11: UAC Bypass
+    extras:
+      position:
+        x: -867.0
+        y: -258.0
+    name: Hotel Manager Workstation
+    type: Application
+  6:
+    associated_assets:
+      appConnections:
+        4: Internal
+      containedData:
+        21: User Activity Data
+      highPrivAppIAMs:
+        15: Domain Admin
+      outgoingAppConnections:
+        2: Outbound
+    extras:
+      position:
+        x: 43.5
+        y: 267.0
+    name: IT Admin Workstation
+    type: Application
+  7:
+    associated_assets:
+      appConnections:
+        4: Internal
+      containedData:
+        19: Credit Card Data
+      highPrivAppIAMs:
+        15: Domain Admin
+      lowPrivAppIAMs:
+        16: kmitnick
+      outgoingAppConnections:
+        2: Outbound
+      vulnerabilities:
+        20: Application Shimming
+    extras:
+      position:
+        x: -340.0
+        y: -2.0
+    name: Accounting Workstation
+    type: Application
+  9:
+    associated_assets:
+      userIds:
+        10: Hotel Manager
+    extras:
+      position:
+        x: -1381.0
+        y: -455.0
+    name: Legitimate User
+    type: User
+  10:
+    associated_assets:
+      lowPrivApps:
+        5: Hotel Manager Workstation
+      users:
+        9: Legitimate User
+    extras:
+      position:
+        x: -1422.0
+        y: -267.0
+    name: Hotel Manager
+    type: Identity
+  11:
+    associated_assets:
+      application:
+        5: Hotel Manager Workstation
+    extras:
+      position:
+        x: -988.0
+        y: -405.0
+    name: UAC Bypass
+    type: SoftwareVulnerability
+  12:
+    associated_assets:
+      containingApp:
+        5: Hotel Manager Workstation
+      information:
+        13: Hashed Domain Admin Credentials
+        17: Hashed kmitnick Credentials
+    extras:
+      position:
+        x: -1381.0
+        y: -144.0
+    name: Registry
+    type: Data
+  13:
+    associated_assets:
+      containerData:
+        12: Registry
+      origCreds:
+        14: Domain Admin Credentials
+    defenses:
+      notDisclosed: 1.0
+      notGuessable: 0.0
+    extras:
+      position:
+        x: -1288.5
+        y: 42.0
+    name: Hashed Domain Admin Credentials
+    type: Credentials
+  14:
+    associated_assets:
+      hashes:
+        13: Hashed Domain Admin Credentials
+      identities:
+        15: Domain Admin
+    defenses:
+      notDisclosed: 1.0
+      notGuessable: 0.0
+    extras:
+      position:
+        x: -1033.5
+        y: 214.5
+    name: Domain Admin Credentials
+    type: Credentials
+  15:
+    associated_assets:
+      credentials:
+        14: Domain Admin Credentials
+      highPrivApps:
+        0: Domain Controller
+        6: IT Admin Workstation
+        7: Accounting Workstation
+    extras:
+      position:
+        x: -538.5
+        y: 315.0
+    name: Domain Admin
+    type: Identity
+  16:
+    associated_assets:
+      credentials:
+        18: kmitnick Credentials
+      lowPrivApps:
+        7: Accounting Workstation
+    extras:
+      position:
+        x: -617.0
+        y: -153.0
+    name: kmitnick
+    type: Identity
+  17:
+    associated_assets:
+      containerData:
+        12: Registry
+      origCreds:
+        18: kmitnick Credentials
+    defenses:
+      notDisclosed: 1.0
+      notGuessable: 0.0
+    extras:
+      position:
+        x: -908.0
+        y: -129.0
+    name: Hashed kmitnick Credentials
+    type: Credentials
+  18:
+    associated_assets:
+      hashes:
+        17: Hashed kmitnick Credentials
+      identities:
+        16: kmitnick
+    defenses:
+      notDisclosed: 1.0
+      notGuessable: 0.0
+    extras:
+      position:
+        x: -785.0
+        y: 104.0
+    name: kmitnick Credentials
+    type: Credentials
+  19:
+    associated_assets:
+      containingApp:
+        7: Accounting Workstation
+    extras:
+      position:
+        x: -366.0
+        y: -221.0
+    name: Credit Card Data
+    type: Data
+  20:
+    associated_assets:
+      application:
+        7: Accounting Workstation
+    extras:
+      position:
+        x: -156.0
+        y: 162.0
+    name: Application Shimming
+    type: SoftwareVulnerability
+  21:
+    associated_assets:
+      containingApp:
+        6: IT Admin Workstation
+    extras:
+      position:
+        x: 198.0
+        y: -121.5
+    name: User Activity Data
+    type: Data
+metadata:
+  MAL-Toolbox Version: 2.0.0
+  info: Created by the mal-toolbox model python module.
+  langID: org.mal-lang.coreLang
+  langVersion: 1.0.0
+  malVersion: 0.1.0-SNAPSHOT
+  name: fin7_scenario1

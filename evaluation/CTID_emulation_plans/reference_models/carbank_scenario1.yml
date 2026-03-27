@@ -1,0 +1,265 @@
+assets:
+  0:
+    associated_assets:
+      netConnections:
+        1: Outbound
+    extras:
+      position:
+        x: -664.5
+        y: -1149.0
+    name: LAN
+    type: Network
+  1:
+    associated_assets:
+      networks:
+        0: LAN
+      outApplications:
+        2: Domain Controller
+        3: HR Manager Workstation
+        4: Bank File Server
+        5: CFO Workstation
+    extras:
+      position:
+        x: -645.0
+        y: -1018.5
+    name: Outbound
+    type: ConnectionRule
+  2:
+    associated_assets:
+      appConnections:
+        17: Local
+      highPrivAppIAMs:
+        8: Domain Admin
+      outgoingAppConnections:
+        1: Outbound
+    extras:
+      position:
+        x: -1582.5
+        y: -793.5
+    name: Domain Controller
+    type: Application
+  3:
+    associated_assets:
+      appConnections:
+        17: Local
+      containedData:
+        9: Registry
+      highPrivAppIAMs:
+        8: Domain Admin
+      lowPrivAppIAMs:
+        12: User Account
+      outgoingAppConnections:
+        1: Outbound
+      vulnerabilities:
+        7: UAC Bypass
+    extras:
+      position:
+        x: 222.0
+        y: -552.0
+    name: HR Manager Workstation
+    type: Application
+  4:
+    associated_assets:
+      appConnections:
+        17: Local
+      lowPrivAppIAMs:
+        13: Cent User
+      outgoingAppConnections:
+        1: Outbound
+    extras:
+      position:
+        x: -1800.0
+        y: -1053.0
+    name: Bank File Server
+    type: Application
+  5:
+    associated_assets:
+      appConnections:
+        17: Local
+      appExecutedApps:
+        19: Browser
+      containedData:
+        20: Browser Credential Store
+      executionPrivIAMs:
+        18: CFO User
+      highPrivAppIAMs:
+        8: Domain Admin
+      lowPrivAppIAMs:
+        18: CFO User
+      outgoingAppConnections:
+        1: Outbound
+    extras:
+      position:
+        x: -1071.0
+        y: -568.5
+    name: CFO Workstation
+    type: Application
+  6:
+    associated_assets:
+      userIds:
+        12: User Account
+    extras:
+      position:
+        x: 529.5
+        y: -577.5
+    name: Admin User
+    type: User
+  7:
+    associated_assets:
+      application:
+        3: HR Manager Workstation
+    extras:
+      position:
+        x: 75.0
+        y: -876.0
+    name: UAC Bypass
+    type: SoftwareVulnerability
+  8:
+    associated_assets:
+      credentials:
+        11: Domain Credentials
+      highPrivApps:
+        2: Domain Controller
+        3: HR Manager Workstation
+        5: CFO Workstation
+    extras:
+      position:
+        x: -1548.0
+        y: -24.0
+    name: Domain Admin
+    type: Identity
+  9:
+    associated_assets:
+      containingApp:
+        3: HR Manager Workstation
+      information:
+        10: NTLM Hash
+    extras:
+      position:
+        x: 13.5
+        y: 9.0
+    name: Registry
+    type: Data
+  10:
+    associated_assets:
+      containerData:
+        9: Registry
+      origCreds:
+        11: Domain Credentials
+    extras:
+      position:
+        x: -436.5
+        y: 15.0
+    name: NTLM Hash
+    type: Credentials
+  11:
+    associated_assets:
+      hashes:
+        10: NTLM Hash
+      identities:
+        8: Domain Admin
+        13: Cent User
+    defenses:
+      notDisclosed: 1.0
+      notGuessable: 0.0
+    extras:
+      position:
+        x: -1764.0
+        y: 142.5
+    name: Domain Credentials
+    type: Credentials
+  12:
+    associated_assets:
+      lowPrivApps:
+        3: HR Manager Workstation
+      users:
+        6: Admin User
+    extras:
+      position:
+        x: 391.5
+        y: -313.5
+    name: User Account
+    type: Identity
+  13:
+    associated_assets:
+      credentials:
+        11: Domain Credentials
+      lowPrivApps:
+        4: Bank File Server
+    extras:
+      position:
+        x: -1912.5
+        y: -786.0
+    name: Cent User
+    type: Identity
+  17:
+    associated_assets:
+      applications:
+        2: Domain Controller
+        3: HR Manager Workstation
+        4: Bank File Server
+        5: CFO Workstation
+    extras:
+      position:
+        x: -631.5
+        y: -921.0
+    name: Local
+    type: ConnectionRule
+  18:
+    associated_assets:
+      execPrivApps:
+        5: CFO Workstation
+      lowPrivApps:
+        5: CFO Workstation
+      readPrivData:
+        20: Browser Credential Store
+    extras:
+      position:
+        x: -571.5
+        y: -688.5
+    name: CFO User
+    type: Identity
+  19:
+    associated_assets:
+      containedData:
+        20: Browser Credential Store
+      hostApp:
+        5: CFO Workstation
+    extras:
+      position:
+        x: -966.0
+        y: -379.5
+    name: Browser
+    type: Application
+  20:
+    associated_assets:
+      containingApp:
+        5: CFO Workstation
+        19: Browser
+      information:
+        21: Browser Credentials
+      readingIAMs:
+        18: CFO User
+    extras:
+      position:
+        x: -613.5
+        y: -486.0
+    name: Browser Credential Store
+    type: Data
+  21:
+    associated_assets:
+      containerData:
+        20: Browser Credential Store
+    extras:
+      position:
+        x: -204.0
+        y: -558.0
+    name: Browser Credentials
+    type: Credentials
+metadata:
+  MAL-Toolbox Version: 2.0.0
+  info: Created by the mal-toolbox model python module.
+  langID: org.mal-lang.coreLang
+  langVersion: 1.0.0
+  malVersion: 0.1.0-SNAPSHOT
+  name: carbank_scenario1
