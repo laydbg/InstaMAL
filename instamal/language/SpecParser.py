@@ -1,4 +1,4 @@
-# Generated from /home/birger/github/master-thesis/src/instamal/instantiator/helpers/Spec.g4 by ANTLR 4.13.2
+# Generated from /home/birger/github/master-thesis/instamal/language/Spec.g4 by ANTLR 4.13.2
 # encoding: utf-8
 from antlr4 import *
 from io import StringIO
@@ -14,7 +14,7 @@ def serializedATN():
     return [
         4,
         1,
-        29,
+        28,
         167,
         2,
         0,
@@ -395,20 +395,20 @@ def serializedATN():
         4,
         1,
         0,
+        17,
         18,
-        19,
         1,
         0,
+        5,
         6,
-        7,
         1,
         0,
+        21,
         22,
-        23,
         1,
         0,
+        23,
         24,
-        25,
         166,
         0,
         44,
@@ -623,7 +623,7 @@ def serializedATN():
         50,
         51,
         5,
-        8,
+        7,
         0,
         0,
         51,
@@ -641,7 +641,7 @@ def serializedATN():
         53,
         54,
         5,
-        16,
+        15,
         0,
         0,
         54,
@@ -815,7 +815,7 @@ def serializedATN():
         79,
         80,
         5,
-        26,
+        25,
         0,
         0,
         80,
@@ -851,7 +851,7 @@ def serializedATN():
         84,
         85,
         5,
-        9,
+        8,
         0,
         0,
         85,
@@ -863,7 +863,7 @@ def serializedATN():
         86,
         87,
         5,
-        10,
+        9,
         0,
         0,
         87,
@@ -881,7 +881,7 @@ def serializedATN():
         89,
         91,
         5,
-        8,
+        7,
         0,
         0,
         90,
@@ -917,13 +917,13 @@ def serializedATN():
         92,
         93,
         5,
-        8,
+        7,
         0,
         0,
         93,
         94,
         5,
-        9,
+        8,
         0,
         0,
         94,
@@ -935,7 +935,7 @@ def serializedATN():
         95,
         96,
         5,
-        10,
+        9,
         0,
         0,
         96,
@@ -953,7 +953,7 @@ def serializedATN():
         98,
         99,
         5,
-        21,
+        20,
         0,
         0,
         99,
@@ -1007,13 +1007,13 @@ def serializedATN():
         106,
         107,
         5,
-        8,
+        7,
         0,
         0,
         107,
         112,
         5,
-        11,
+        10,
         0,
         0,
         108,
@@ -1073,7 +1073,7 @@ def serializedATN():
         115,
         116,
         5,
-        12,
+        11,
         0,
         0,
         116,
@@ -1085,19 +1085,19 @@ def serializedATN():
         117,
         120,
         5,
-        8,
+        7,
         0,
         0,
         118,
         119,
         5,
-        20,
+        19,
         0,
         0,
         119,
         121,
         5,
-        8,
+        7,
         0,
         0,
         120,
@@ -1145,7 +1145,7 @@ def serializedATN():
         126,
         127,
         5,
-        18,
+        17,
         0,
         0,
         127,
@@ -1157,7 +1157,7 @@ def serializedATN():
         128,
         129,
         5,
-        16,
+        15,
         0,
         0,
         129,
@@ -1169,7 +1169,7 @@ def serializedATN():
         130,
         131,
         5,
-        8,
+        7,
         0,
         0,
         131,
@@ -1223,13 +1223,13 @@ def serializedATN():
         137,
         138,
         5,
-        8,
+        7,
         0,
         0,
         138,
         140,
         5,
-        9,
+        8,
         0,
         0,
         139,
@@ -1259,7 +1259,7 @@ def serializedATN():
         142,
         143,
         5,
-        10,
+        9,
         0,
         0,
         143,
@@ -1277,7 +1277,7 @@ def serializedATN():
         145,
         149,
         5,
-        11,
+        10,
         0,
         0,
         146,
@@ -1325,7 +1325,7 @@ def serializedATN():
         152,
         153,
         5,
-        12,
+        11,
         0,
         0,
         153,
@@ -1343,7 +1343,7 @@ def serializedATN():
         155,
         156,
         5,
-        15,
+        14,
         0,
         0,
         156,
@@ -1355,7 +1355,7 @@ def serializedATN():
         157,
         158,
         5,
-        17,
+        16,
         0,
         0,
         158,
@@ -1373,7 +1373,7 @@ def serializedATN():
         160,
         161,
         5,
-        16,
+        15,
         0,
         0,
         161,
@@ -1385,19 +1385,19 @@ def serializedATN():
         162,
         163,
         5,
-        13,
+        12,
         0,
         0,
         163,
         164,
         5,
-        8,
+        7,
         0,
         0,
         164,
         165,
         5,
-        14,
+        13,
         0,
         0,
         165,
@@ -1442,7 +1442,6 @@ class SpecParser(Parser):
         '<INVALID>',
         '<INVALID>',
         '<INVALID>',
-        '<INVALID>',
         "'('",
         "')'",
         "'{'",
@@ -1469,7 +1468,6 @@ class SpecParser(Parser):
         'LET',
         'SUBSYSTEM',
         'CONNECT',
-        'STRING',
         'INT',
         'FLOAT',
         'ID',
@@ -1543,31 +1541,30 @@ class SpecParser(Parser):
     LET = 2
     SUBSYSTEM = 3
     CONNECT = 4
-    STRING = 5
-    INT = 6
-    FLOAT = 7
-    ID = 8
-    LPAREN = 9
-    RPAREN = 10
-    LCURLY = 11
-    RCURLY = 12
-    LSQUARE = 13
-    RSQUARE = 14
-    COLON = 15
-    SEMICOLON = 16
-    RARROW = 17
-    ASSIGN = 18
-    TILDE = 19
-    DOT = 20
-    COMMA = 21
-    PLUS = 22
-    MINUS = 23
-    TIMES = 24
-    DIVIDE = 25
-    POWER = 26
-    COMMENT = 27
-    ML_COMMENT = 28
-    WS = 29
+    INT = 5
+    FLOAT = 6
+    ID = 7
+    LPAREN = 8
+    RPAREN = 9
+    LCURLY = 10
+    RCURLY = 11
+    LSQUARE = 12
+    RSQUARE = 13
+    COLON = 14
+    SEMICOLON = 15
+    RARROW = 16
+    ASSIGN = 17
+    TILDE = 18
+    DOT = 19
+    COMMA = 20
+    PLUS = 21
+    MINUS = 22
+    TIMES = 23
+    DIVIDE = 24
+    POWER = 25
+    COMMENT = 26
+    ML_COMMENT = 27
+    WS = 28
 
     def __init__(self, input: TokenStream, output: TextIO = sys.stdout):
         super().__init__(input, output)
@@ -1718,7 +1715,7 @@ class SpecParser(Parser):
             self.match(SpecParser.ID)
             self.state = 51
             _la = self._input.LA(1)
-            if not (_la == 18 or _la == 19):
+            if not (_la == 17 or _la == 18):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -1768,7 +1765,7 @@ class SpecParser(Parser):
             self.enterOuterAlt(localctx, 1)
             self.state = 55
             _la = self._input.LA(1)
-            if not (_la == 6 or _la == 7):
+            if not (_la == 5 or _la == 6):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -1830,7 +1827,7 @@ class SpecParser(Parser):
             self.state = 58
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la == 22 or _la == 23:
+            if _la == 21 or _la == 22:
                 self.state = 57
                 self.sign()
 
@@ -1839,10 +1836,10 @@ class SpecParser(Parser):
             self.state = 65
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la == 22 or _la == 23:
+            while _la == 21 or _la == 22:
                 self.state = 61
                 _la = self._input.LA(1)
-                if not (_la == 22 or _la == 23):
+                if not (_la == 21 or _la == 22):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -1894,7 +1891,7 @@ class SpecParser(Parser):
             self.enterOuterAlt(localctx, 1)
             self.state = 68
             _la = self._input.LA(1)
-            if not (_la == 22 or _la == 23):
+            if not (_la == 21 or _la == 22):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -1955,10 +1952,10 @@ class SpecParser(Parser):
             self.state = 75
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la == 24 or _la == 25:
+            while _la == 23 or _la == 24:
                 self.state = 71
                 _la = self._input.LA(1)
-                if not (_la == 24 or _la == 25):
+                if not (_la == 23 or _la == 24):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -2016,7 +2013,7 @@ class SpecParser(Parser):
             self.state = 81
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la == 26:
+            if _la == 25:
                 self.state = 79
                 self.match(SpecParser.POWER)
                 self.state = 80
@@ -2204,7 +2201,7 @@ class SpecParser(Parser):
             self.state = 102
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la == 21:
+            while _la == 20:
                 self.state = 98
                 self.match(SpecParser.COMMA)
                 self.state = 99
@@ -2358,7 +2355,7 @@ class SpecParser(Parser):
                 self.state = 122
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if not (_la == 20):
+                if not (_la == 19):
                     break
 
         except RecognitionException as re:
@@ -2568,7 +2565,7 @@ class SpecParser(Parser):
             self.state = 140
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if ((_la) & ~0x3F) == 0 and ((1 << _la) & 12583872) != 0:
+            if ((_la) & ~0x3F) == 0 and ((1 << _la) & 6291936) != 0:
                 self.state = 139
                 self.expr()
 
@@ -2629,7 +2626,7 @@ class SpecParser(Parser):
             self.state = 149
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la == 6 or _la == 7:
+            while _la == 5 or _la == 6:
                 self.state = 146
                 self.connectionRule()
                 self.state = 151

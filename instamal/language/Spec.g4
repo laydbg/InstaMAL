@@ -33,7 +33,6 @@ LET: 'let';
 SUBSYSTEM: 'subsystem';
 CONNECT: 'connect';
 
-STRING: '"' .*? '"';
 INT: [0-9]+;
 FLOAT: [0-9]* DOT [0-9]+;
 ID: [a-zA-Z0-9_]+;

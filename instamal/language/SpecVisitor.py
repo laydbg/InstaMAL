@@ -1,4 +1,4 @@
-# Generated from /home/birger/github/master-thesis/src/instamal/instantiator/helpers/Spec.g4 by ANTLR 4.13.2
+# Generated from /home/birger/github/master-thesis/instamal/language/Spec.g4 by ANTLR 4.13.2
 from antlr4 import *
 
 if '.' in __name__:
