@@ -2,7 +2,7 @@ import os
 import pytest
 import tempfile
 
-from instamal.instantiator import ModelInstantiator
+from instamal import ModelInstantiator
 
 
 TESTLANG_MAL = """

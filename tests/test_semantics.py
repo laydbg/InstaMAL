@@ -3,7 +3,7 @@ import pytest
 import tempfile
 from pathlib import Path
 
-from instamal.instantiator import ModelInstantiator
+from instamal import ModelInstantiator
 
 
 TRAININGLANG_PATH = (

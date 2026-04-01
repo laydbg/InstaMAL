@@ -6,7 +6,7 @@ from typing import List
 from maltoolbox.language import LanguageGraph
 from antlr4 import FileStream, CommonTokenStream
 
-from instamal.instantiator.helpers.MultiplicityAnalyzer import (
+from instamal.instantiation.spec_analysis import (
     ProbabilisticMultiplicityAnalyzer,
     MultiplicityWarning,
 )
@@ -80,7 +80,7 @@ def analyze(
 
     try:
         input_stream = FileStream(spec_path)
-        from instamal.instantiator.helpers import SpecLexer, SpecParser
+        from instamal.language import SpecLexer, SpecParser
 
         lexer = SpecLexer(input_stream)
         stream = CommonTokenStream(lexer)
