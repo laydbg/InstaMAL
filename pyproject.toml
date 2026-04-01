@@ -32,6 +32,13 @@ testpaths = ["tests"]
 pythonpath = ["."]
 addopts = "-ra"
 
+[tool.ruff]
+exclude = [
+  "instamal/language/spec_lexer.py",
+  "instamal/language/spec_parser.py",
+  "instamal/language/spec_visitor.py",
+]
+
 [tool.ruff.format]
 quote-style = "single"
 
@@ -46,13 +53,6 @@ fixable = ["ALL"]
   "S101",    # Allow `assert` statements
   "S311",    # Allow use of the `random` module (no need for cryptographic security)
 ]
-"instamal/language/SpecLexer.py" = [
-  "F403", # Allow star imports
-  "F405", # Do not warn on possibly undefined imports
-  "F401", # Allow unused imports
-]
-"instamal/language/SpecParser.py" = ["F403", "F405", "F401"]
-"instamal/language/SpecVisitor.py" = ["F403", "F405", "F401"]
 
 [tool.ruff.lint.flake8-pytest-style]
 fixture-parentheses = false
