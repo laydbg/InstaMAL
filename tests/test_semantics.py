@@ -7,7 +7,7 @@ from instamal import ModelInstantiator
 
 
 TRAININGLANG_PATH = (
-    f"{Path(__file__).resolve().parent}/org.mal-lang.trainingLang-1.0.0.mar"
+    f'{Path(__file__).resolve().parent}/org.mal-lang.trainingLang-1.0.0.mar'
 )
 
 
@@ -37,10 +37,10 @@ associations {
 # ── Fixtures ──────────────────────────────────────────────────────────────────
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope='module')
 def inheritancelang_path():
     with tempfile.NamedTemporaryFile(
-        delete=False, mode="w", suffix=".mal", encoding="utf-8"
+        delete=False, mode='w', suffix='.mal', encoding='utf-8'
     ) as f:
         f.write(INHERITANCELANG_MAL)
         path = f.name
@@ -48,13 +48,13 @@ def inheritancelang_path():
     os.remove(path)
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope='function')
 def instantiate():
     def _instantiate(spec: str, lang_src: str, n: int = 1) -> None:
         tmp_spec_file_name: str = None
         try:
             with tempfile.NamedTemporaryFile(
-                delete=False, mode="w", encoding="utf-8"
+                delete=False, mode='w', encoding='utf-8'
             ) as tmp_spec_file:
                 tmp_spec_file.write(spec)
                 tmp_spec_file_name = tmp_spec_file.name
@@ -118,7 +118,7 @@ connect {
     with pytest.raises(Exception) as exc_info:
         instantiate(spec, TRAININGLANG_PATH, n=5)
 
-    assert "line 5" in str(exc_info.value).lower()
+    assert 'line 5' in str(exc_info.value).lower()
 
 
 def test_exception_on_non_existent_asset(instantiate):
@@ -130,7 +130,7 @@ let users = Useer(); // <- line 2
     with pytest.raises(Exception) as exc_info:
         instantiate(spec, TRAININGLANG_PATH, n=5)
 
-    assert "line 2" in str(exc_info.value).lower()
+    assert 'line 2' in str(exc_info.value).lower()
 
 
 def test_exception_on_non_existent_association(instantiate):
@@ -147,7 +147,7 @@ connect {
     with pytest.raises(Exception) as exc_info:
         instantiate(spec, TRAININGLANG_PATH, n=5)
 
-    assert "line 6" in str(exc_info.value).lower()
+    assert 'line 6' in str(exc_info.value).lower()
 
 
 # ── Name conflict checks ──────────────────────────────────────────────────────
@@ -162,7 +162,7 @@ let Data = Network(2); // <- line 2
     with pytest.raises(Exception) as exc_info:
         instantiate(spec, TRAININGLANG_PATH, n=5)
 
-    assert "line 2" in str(exc_info.value).lower()
+    assert 'line 2' in str(exc_info.value).lower()
 
 
 def test_exception_on_asset_as_subsystem_name(instantiate):
@@ -176,7 +176,7 @@ subsystem Host { // <- line 2
     with pytest.raises(Exception) as exc_info:
         instantiate(spec, TRAININGLANG_PATH, n=5)
 
-    assert "line 2" in str(exc_info.value).lower()
+    assert 'line 2' in str(exc_info.value).lower()
 
 
 def test_exception_on_subsystem_as_variable_name(instantiate):
@@ -197,7 +197,7 @@ let HostWithData = Host(2); // <- line 11
     with pytest.raises(Exception) as exc_info:
         instantiate(spec, TRAININGLANG_PATH, n=5)
 
-    assert "line 11" in str(exc_info.value).lower()
+    assert 'line 11' in str(exc_info.value).lower()
 
 
 def test_exception_on_variable_name_as_subset_name(instantiate):
@@ -214,7 +214,7 @@ subsystem networks { // <- line 4
     with pytest.raises(Exception) as exc_info:
         instantiate(spec, TRAININGLANG_PATH, n=5)
 
-    assert "line 4" in str(exc_info.value).lower()
+    assert 'line 4' in str(exc_info.value).lower()
 
 
 def test_exception_on_subsystem_already_defined(instantiate):
@@ -232,7 +232,7 @@ subsystem HostWithData { // <- line 6
     with pytest.raises(Exception) as exc_info:
         instantiate(spec, TRAININGLANG_PATH, n=5)
 
-    assert "line 6" in str(exc_info.value).lower()
+    assert 'line 6' in str(exc_info.value).lower()
 
 
 # ── Subsystem instantiation ───────────────────────────────────────────────────
@@ -249,7 +249,7 @@ subsystem HostWithData {
     with pytest.raises(Exception) as exc_info:
         instantiate(spec, TRAININGLANG_PATH, n=5)
 
-    assert "line 3" in str(exc_info.value).lower()
+    assert 'line 3' in str(exc_info.value).lower()
 
 
 def test_no_exception_on_nested_subsystem_access(instantiate):
@@ -304,7 +304,7 @@ subsystem NetworkWithHosts {
     with pytest.raises(Exception) as exc_info:
         instantiate(spec, TRAININGLANG_PATH)
 
-    assert "line 11" in str(exc_info.value).lower()
+    assert 'line 11' in str(exc_info.value).lower()
 
 
 def test_exception_on_invalid_nested_member_outside_subsystem(instantiate):
@@ -324,7 +324,7 @@ connect {
     with pytest.raises(Exception) as exc_info:
         instantiate(spec, TRAININGLANG_PATH)
 
-    assert "line 9" in str(exc_info.value).lower()
+    assert 'line 9' in str(exc_info.value).lower()
 
 
 def test_exception_on_member_access_of_non_subsystem(instantiate):
@@ -340,7 +340,7 @@ connect {
     with pytest.raises(Exception) as exc_info:
         instantiate(spec, TRAININGLANG_PATH)
 
-    assert "line 5" in str(exc_info.value).lower()
+    assert 'line 5' in str(exc_info.value).lower()
 
 
 def test_exception_on_deep_invalid_nested_access(instantiate):
@@ -364,7 +364,7 @@ connect {
     with pytest.raises(Exception) as exc_info:
         instantiate(spec, TRAININGLANG_PATH)
 
-    assert "line 13" in str(exc_info.value).lower()
+    assert 'line 13' in str(exc_info.value).lower()
 
 
 def test_exception_on_undeclared_root_in_nested_access(instantiate):
@@ -382,7 +382,7 @@ connect {
     with pytest.raises(Exception) as exc_info:
         instantiate(spec, TRAININGLANG_PATH)
 
-    assert "line 7" in str(exc_info.value).lower()
+    assert 'line 7' in str(exc_info.value).lower()
 
 
 def test_no_exception_on_three_level_nested_access(instantiate):
@@ -494,7 +494,7 @@ connect {
     with pytest.raises(Exception) as exc_info:
         instantiate(spec, inheritancelang_path)
 
-    assert "line 6" in str(exc_info.value).lower()
+    assert 'line 6' in str(exc_info.value).lower()
 
 
 def test_exception_on_wrong_type_for_inherited_association(
@@ -514,7 +514,7 @@ connect {
     with pytest.raises(Exception) as exc_info:
         instantiate(spec, inheritancelang_path)
 
-    assert "line 6" in str(exc_info.value).lower()
+    assert 'line 6' in str(exc_info.value).lower()
 
 
 # ── Params ────────────────────────────────────────────────────────────────────
@@ -587,7 +587,7 @@ param Host = 4; // <- line 2
     with pytest.raises(Exception) as exc_info:
         instantiate(spec, TRAININGLANG_PATH)
 
-    assert "line 2" in str(exc_info.value).lower()
+    assert 'line 2' in str(exc_info.value).lower()
 
 
 def test_exception_on_param_name_conflicts_with_let_variable(instantiate):
@@ -601,7 +601,7 @@ param hosts = 4; // <- line 4
     with pytest.raises(Exception) as exc_info:
         instantiate(spec, TRAININGLANG_PATH)
 
-    assert "line 4" in str(exc_info.value).lower()
+    assert 'line 4' in str(exc_info.value).lower()
 
 
 def test_exception_on_let_variable_conflicts_with_param(instantiate):
@@ -615,7 +615,7 @@ let hosts = Host(2); // <- line 4
     with pytest.raises(Exception) as exc_info:
         instantiate(spec, TRAININGLANG_PATH)
 
-    assert "line 4" in str(exc_info.value).lower()
+    assert 'line 4' in str(exc_info.value).lower()
 
 
 def test_exception_on_param_name_conflicts_with_subsystem_name(instantiate):
@@ -631,7 +631,7 @@ param NetworkUnit = 4; // <- line 6
     with pytest.raises(Exception) as exc_info:
         instantiate(spec, TRAININGLANG_PATH)
 
-    assert "line 6" in str(exc_info.value).lower()
+    assert 'line 6' in str(exc_info.value).lower()
 
 
 def test_exception_on_subsystem_name_conflicts_with_param(instantiate):
@@ -647,7 +647,7 @@ subsystem NetworkUnit { // <- line 4
     with pytest.raises(Exception) as exc_info:
         instantiate(spec, TRAININGLANG_PATH)
 
-    assert "line 4" in str(exc_info.value).lower()
+    assert 'line 4' in str(exc_info.value).lower()
 
 
 def test_exception_on_duplicate_param_name(instantiate):
@@ -661,7 +661,7 @@ param n = 8; // <- line 4
     with pytest.raises(Exception) as exc_info:
         instantiate(spec, TRAININGLANG_PATH)
 
-    assert "line 4" in str(exc_info.value).lower()
+    assert 'line 4' in str(exc_info.value).lower()
 
 
 def test_exception_on_param_self_reference(instantiate):
@@ -673,7 +673,7 @@ param n = n * 2; // <- line 2
     with pytest.raises(Exception) as exc_info:
         instantiate(spec, TRAININGLANG_PATH)
 
-    assert "line 2" in str(exc_info.value).lower()
+    assert 'line 2' in str(exc_info.value).lower()
 
 
 def test_exception_on_param_forward_reference(instantiate):
@@ -687,4 +687,4 @@ param m = 4;
     with pytest.raises(Exception) as exc_info:
         instantiate(spec, TRAININGLANG_PATH)
 
-    assert "line 2" in str(exc_info.value).lower()
+    assert 'line 2' in str(exc_info.value).lower()

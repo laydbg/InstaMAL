@@ -49,11 +49,11 @@ associations {
 # ── Fixtures ──────────────────────────────────────────────────────────────────
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope='module')
 def testlang_path():
     """Write TESTLANG_MAL to a temp .mal file and yield its path."""
     with tempfile.NamedTemporaryFile(
-        delete=False, mode="w", suffix=".mal", encoding="utf-8"
+        delete=False, mode='w', suffix='.mal', encoding='utf-8'
     ) as f:
         f.write(TESTLANG_MAL)
         path = f.name
@@ -61,13 +61,13 @@ def testlang_path():
     os.remove(path)
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope='function')
 def instantiate():
     def _instantiate(spec: str, lang_src: str, n: int = 1) -> None:
         tmp_spec_file_name = None
         try:
             with tempfile.NamedTemporaryFile(
-                delete=False, mode="w", encoding="utf-8"
+                delete=False, mode='w', encoding='utf-8'
             ) as tmp_spec_file:
                 tmp_spec_file.write(spec)
                 tmp_spec_file_name = tmp_spec_file.name
@@ -162,7 +162,7 @@ connect {
     1: servers --> [installedSoftware] software;
 }
 """
-    with pytest.raises(Exception, match="(?i)multiplicity"):
+    with pytest.raises(Exception, match='(?i)multiplicity'):
         instantiate(spec, testlang_path)
 
 
@@ -177,7 +177,7 @@ connect {
     1: databases --> [hostedOn] servers;
 }
 """
-    with pytest.raises(Exception, match="(?i)multiplicity"):
+    with pytest.raises(Exception, match='(?i)multiplicity'):
         instantiate(spec, testlang_path)
 
 
@@ -192,7 +192,7 @@ connect {
     1: servers_a --> [monitors] servers_b;
 }
 """
-    with pytest.raises(Exception, match="(?i)multiplicity"):
+    with pytest.raises(Exception, match='(?i)multiplicity'):
         instantiate(spec, testlang_path)
 
 
@@ -207,7 +207,7 @@ connect {
     1: servers --> [installedSoftware] software;
 }
 """
-    with pytest.raises(Exception, match="(?i)multiplicity"):
+    with pytest.raises(Exception, match='(?i)multiplicity'):
         instantiate(spec, testlang_path)
 
 
@@ -277,7 +277,7 @@ connect {
     1: servers --> [installedSoftware] sw_b;
 }
 """
-    with pytest.raises(Exception, match="(?i)multiplicity"):
+    with pytest.raises(Exception, match='(?i)multiplicity'):
         instantiate(spec, testlang_path)
 
 
@@ -339,7 +339,7 @@ subsystem Unit {
 
 let units = Unit(2);
 """
-    with pytest.raises(Exception, match="(?i)multiplicity"):
+    with pytest.raises(Exception, match='(?i)multiplicity'):
         instantiate(spec, testlang_path)
 
 
@@ -359,7 +359,7 @@ subsystem Unit {
 
 let units = Unit(2);
 """
-    with pytest.raises(Exception, match="(?i)multiplicity"):
+    with pytest.raises(Exception, match='(?i)multiplicity'):
         instantiate(spec, testlang_path)
 
 
@@ -426,7 +426,7 @@ connect {
     1: servers --> [installedSoftware] software;
 }
 """
-    with pytest.raises(Exception, match="(?i)multiplicity"):
+    with pytest.raises(Exception, match='(?i)multiplicity'):
         instantiate(spec, testlang_path)
 
 
@@ -441,7 +441,7 @@ connect {
     1: servers --> [installedSoftware] software;
 }
 """
-    with pytest.raises(Exception, match="(?i)multiplicity"):
+    with pytest.raises(Exception, match='(?i)multiplicity'):
         instantiate(spec, testlang_path)
 
 
@@ -477,7 +477,7 @@ connect {
     1: servers --> [installedSoftware] software;
 }
 """
-    with pytest.raises(Exception, match="(?i)multiplicity"):
+    with pytest.raises(Exception, match='(?i)multiplicity'):
         instantiate(spec, testlang_path)
 
 
@@ -494,7 +494,7 @@ connect {
     1: servers_a --> [monitors] servers_b;
 }
 """
-    with pytest.raises(Exception, match="(?i)multiplicity"):
+    with pytest.raises(Exception, match='(?i)multiplicity'):
         instantiate(spec, testlang_path)
 
 
@@ -529,7 +529,7 @@ connect {
     1: servers --> [installedSoftware] software;
 }
 """
-    with pytest.raises(Exception, match="(?i)multiplicity"):
+    with pytest.raises(Exception, match='(?i)multiplicity'):
         instantiate(spec, testlang_path)
 
 
@@ -564,7 +564,7 @@ connect {
     1: servers --> [installedSoftware] software;
 }
 """
-    with pytest.raises(Exception, match="(?i)multiplicity"):
+    with pytest.raises(Exception, match='(?i)multiplicity'):
         instantiate(spec, testlang_path)
 
 
@@ -625,5 +625,5 @@ subsystem Unit {
 
 let units = Unit(1);
 """
-    with pytest.raises(Exception, match="(?i)multiplicity"):
+    with pytest.raises(Exception, match='(?i)multiplicity'):
         instantiate(spec, testlang_path)

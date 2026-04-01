@@ -8,10 +8,10 @@ from .specification_analyzers import (
 )
 
 __all__ = [
-    "MultiplicityViolation",
-    "MultiplicityWarning",
-    "StaticMultiplicityAnalyzer",
-    "ProbabilisticMultiplicityAnalyzer",
-    "AnalyzerError",
-    "SpecAnalyzer",
+    'MultiplicityViolation',
+    'MultiplicityWarning',
+    'StaticMultiplicityAnalyzer',
+    'ProbabilisticMultiplicityAnalyzer',
+    'AnalyzerError',
+    'SpecAnalyzer',
 ]

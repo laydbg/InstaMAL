@@ -55,10 +55,10 @@ associations {
 # ── Fixtures ──────────────────────────────────────────────────────────────────
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope='module')
 def testlang_path():
     with tempfile.NamedTemporaryFile(
-        delete=False, mode="w", suffix=".mal", encoding="utf-8"
+        delete=False, mode='w', suffix='.mal', encoding='utf-8'
     ) as f:
         f.write(TESTLANG_MAL)
         path = f.name
@@ -73,7 +73,7 @@ def analyze(
     lang_graph = LanguageGraph.load_from_file(lang_path)
 
     with tempfile.NamedTemporaryFile(
-        delete=False, mode="w", encoding="utf-8", suffix=".spec"
+        delete=False, mode='w', encoding='utf-8', suffix='.spec'
     ) as f:
         f.write(spec)
         spec_path = f.name
@@ -116,7 +116,7 @@ connect {
 }
 """
     warnings = analyze(spec, testlang_path)
-    assert warnings_for(warnings, "Server", "installedSoftware") == []
+    assert warnings_for(warnings, 'Server', 'installedSoftware') == []
 
 
 def test_no_warning_unbounded_max_with_high_weight(testlang_path):
@@ -130,7 +130,7 @@ connect {
 }
 """
     warnings = analyze(spec, testlang_path)
-    assert warnings_for(warnings, "Server", "connectedClients") == []
+    assert warnings_for(warnings, 'Server', 'connectedClients') == []
 
 
 def test_no_warning_zero_min_weight_zero(testlang_path):
@@ -144,7 +144,7 @@ connect {
 }
 """
     warnings = analyze(spec, testlang_path)
-    assert warnings_for(warnings, "Server", "databases") == []
+    assert warnings_for(warnings, 'Server', 'databases') == []
 
 
 def test_no_warning_large_right_set_satisfies_high_lower_bound(testlang_path):
@@ -158,7 +158,7 @@ connect {
 }
 """
     warnings = analyze(spec, testlang_path)
-    assert warnings_for(warnings, "Server", "monitors") == []
+    assert warnings_for(warnings, 'Server', 'monitors') == []
 
 
 def test_no_warning_subsystem_within_bounds(testlang_path):
@@ -177,7 +177,7 @@ subsystem Unit {
 let units = Unit(3);
 """
     warnings = analyze(spec, testlang_path)
-    assert warnings_for(warnings, "Server", "installedSoftware") == []
+    assert warnings_for(warnings, 'Server', 'installedSoftware') == []
 
 
 def test_no_warning_many_left_assets_one_right_asset_bounded_forward(testlang_path):
@@ -194,7 +194,7 @@ connect {
 }
 """
     warnings = analyze(spec, testlang_path)
-    assert warnings_for(warnings, "Database", "hostedOn") == []
+    assert warnings_for(warnings, 'Database', 'hostedOn') == []
 
 
 # ── Warnings on clearly unsatisfiable specs ───────────────────────────────────
@@ -212,7 +212,7 @@ connect {
 }
 """
     warnings = analyze(spec, testlang_path)
-    ws = warnings_for(warnings, "Server", "installedSoftware")
+    ws = warnings_for(warnings, 'Server', 'installedSoftware')
     assert len(ws) == 1
     assert ws[0].per_asset_probability == pytest.approx(0.0, abs=1e-6)
     assert ws[0].global_probability == pytest.approx(0.0, abs=1e-6)
@@ -230,7 +230,7 @@ connect {
 }
 """
     warnings = analyze(spec, testlang_path, threshold=0.9)
-    ws = warnings_for(warnings, "Server", "monitoredBy")
+    ws = warnings_for(warnings, 'Server', 'monitoredBy')
     assert len(ws) == 1
     assert ws[0].global_probability < 0.9
 
@@ -247,7 +247,7 @@ connect {
 }
 """
     warnings = analyze(spec, testlang_path, threshold=0.9)
-    ws = warnings_for(warnings, "Server", "monitoredBy")
+    ws = warnings_for(warnings, 'Server', 'monitoredBy')
     assert len(ws) == 1
     assert ws[0].per_asset_probability == pytest.approx(0.0, abs=1e-6)
 
@@ -268,7 +268,7 @@ subsystem Unit {
 let units = Unit(2);
 """
     warnings = analyze(spec, testlang_path, threshold=0.9)
-    ws = warnings_for(warnings, "Server", "installedSoftware")
+    ws = warnings_for(warnings, 'Server', 'installedSoftware')
     assert len(ws) == 1
     assert ws[0].global_probability < 0.9
 
@@ -287,7 +287,7 @@ connect {
 }
 """
     warnings = analyze(spec, testlang_path, threshold=0.5)
-    ws = warnings_for(warnings, "Client", "credential")
+    ws = warnings_for(warnings, 'Client', 'credential')
     assert len(ws) == 1
     assert ws[0].global_probability < 0.5
 
@@ -308,8 +308,8 @@ connect {
     warnings_strict = analyze(spec, testlang_path, threshold=0.99)
     warnings_lenient = analyze(spec, testlang_path, threshold=0.01)
 
-    ws_strict = warnings_for(warnings_strict, "Server", "installedSoftware")
-    ws_lenient = warnings_for(warnings_lenient, "Server", "installedSoftware")
+    ws_strict = warnings_for(warnings_strict, 'Server', 'installedSoftware')
+    ws_lenient = warnings_for(warnings_lenient, 'Server', 'installedSoftware')
 
     assert len(ws_strict) >= len(ws_lenient)
 
@@ -339,7 +339,7 @@ connect {
 }
 """
     warnings = analyze(spec, testlang_path, threshold=1.0)
-    ws = warnings_for(warnings, "Server", "installedSoftware")
+    ws = warnings_for(warnings, 'Server', 'installedSoftware')
     assert len(ws) == 1
 
 
@@ -360,7 +360,7 @@ connect {{
 }}
 """
         warnings = analyze(spec, testlang_path, threshold=0.0)
-        ws = warnings_for(warnings, "Server", "installedSoftware")
+        ws = warnings_for(warnings, 'Server', 'installedSoftware')
         return ws[0].global_probability if ws else 1.0
 
     p_low = get_global_p(0.1)
@@ -384,7 +384,7 @@ connect {{
 }}
 """
         warnings = analyze(spec, testlang_path, threshold=0.0)
-        ws = warnings_for(warnings, "Server", "installedSoftware")
+        ws = warnings_for(warnings, 'Server', 'installedSoftware')
         return ws[0].per_asset_probability if ws else 1.0
 
     p_small = get_per_asset_p(1)
@@ -408,7 +408,7 @@ connect {{
 }}
 """
         warnings = analyze(spec, testlang_path, threshold=0.0)
-        ws = warnings_for(warnings, "Server", "installedSoftware")
+        ws = warnings_for(warnings, 'Server', 'installedSoftware')
         return ws[0].global_probability if ws else 1.0
 
     p_few = get_global_p(1)
@@ -445,8 +445,8 @@ connect {
     warnings_two = analyze(spec_two_rules, testlang_path, threshold=0.0)
     warnings_one = analyze(spec_one_rule, testlang_path, threshold=0.0)
 
-    ws_two = warnings_for(warnings_two, "Server", "installedSoftware")
-    ws_one = warnings_for(warnings_one, "Server", "installedSoftware")
+    ws_two = warnings_for(warnings_two, 'Server', 'installedSoftware')
+    ws_one = warnings_for(warnings_one, 'Server', 'installedSoftware')
 
     p_two = ws_two[0].per_asset_probability if ws_two else 1.0
     p_one = ws_one[0].per_asset_probability if ws_one else 1.0
@@ -478,8 +478,8 @@ connect {
     warnings_two = analyze(spec_two_rules, testlang_path, threshold=0.0)
     warnings_one = analyze(spec_one_rule, testlang_path, threshold=0.0)
 
-    ws_two = warnings_for(warnings_two, "Server", "installedSoftware")
-    ws_one = warnings_for(warnings_one, "Server", "installedSoftware")
+    ws_two = warnings_for(warnings_two, 'Server', 'installedSoftware')
+    ws_one = warnings_for(warnings_one, 'Server', 'installedSoftware')
 
     p_two = ws_two[0].per_asset_probability if ws_two else 1.0
     p_one = ws_one[0].per_asset_probability if ws_one else 1.0
@@ -516,8 +516,8 @@ connect {
     warnings_sub = analyze(spec_subsystem, testlang_path, threshold=0.0)
     warnings_flat = analyze(spec_flat, testlang_path, threshold=0.0)
 
-    ws_sub = warnings_for(warnings_sub, "Server", "installedSoftware")
-    ws_flat = warnings_for(warnings_flat, "Server", "installedSoftware")
+    ws_sub = warnings_for(warnings_sub, 'Server', 'installedSoftware')
+    ws_flat = warnings_for(warnings_flat, 'Server', 'installedSoftware')
 
     p_sub = ws_sub[0].global_probability if ws_sub else 1.0
     p_flat = ws_flat[0].global_probability if ws_flat else 1.0
@@ -545,7 +545,7 @@ subsystem Outer {
 let outer = Outer(3);
 """
     warnings = analyze(spec, testlang_path, threshold=1.0)
-    ws = warnings_for(warnings, "Server", "installedSoftware")
+    ws = warnings_for(warnings, 'Server', 'installedSoftware')
 
     # 3 * 2 = 6 Server assets total, each with 2 Software at weight 0.5
     assert len(ws) == 1
@@ -563,7 +563,7 @@ connect {
 }
 """
     warnings = analyze(spec, testlang_path, threshold=0.001)
-    ws = warnings_for(warnings, "Server", "installedSoftware")
+    ws = warnings_for(warnings, 'Server', 'installedSoftware')
 
     assert len(ws) == 1
     assert ws[0].mult_min == 1
@@ -587,7 +587,7 @@ connect {
 }
 """
     warnings = analyze(spec, testlang_path)
-    assert warnings_for(warnings, "Server", "installedSoftware") == []
+    assert warnings_for(warnings, 'Server', 'installedSoftware') == []
 
 
 def test_no_warning_param_distribution_expected_within_bounds(testlang_path):
@@ -604,7 +604,7 @@ connect {
 }
 """
     warnings = analyze(spec, testlang_path)
-    assert warnings_for(warnings, "Server", "installedSoftware") == []
+    assert warnings_for(warnings, 'Server', 'installedSoftware') == []
 
 
 def test_warning_param_zero_constant_with_positive_lower_bound(testlang_path):
@@ -621,7 +621,7 @@ connect {
 }
 """
     warnings = analyze(spec, testlang_path, threshold=0.01)
-    ws = warnings_for(warnings, "Server", "installedSoftware")
+    ws = warnings_for(warnings, 'Server', 'installedSoftware')
     assert len(ws) == 1
     assert ws[0].per_asset_probability == pytest.approx(0.0, abs=1e-6)
 
@@ -640,7 +640,7 @@ connect {
 }
 """
     warnings = analyze(spec, testlang_path, threshold=0.9)
-    ws = warnings_for(warnings, "Server", "monitoredBy")
+    ws = warnings_for(warnings, 'Server', 'monitoredBy')
     assert len(ws) == 1
     assert ws[0].global_probability < 0.9
 
@@ -661,7 +661,7 @@ connect {{
 }}
 """
         warnings = analyze(spec, testlang_path, threshold=0.0)
-        ws = warnings_for(warnings, "Server", "installedSoftware")
+        ws = warnings_for(warnings, 'Server', 'installedSoftware')
         return ws[0].global_probability if ws else 1.0
 
     p_few = get_global_p(1)
@@ -696,8 +696,8 @@ connect {
     warnings_param = analyze(spec_param, testlang_path, threshold=0.0)
     warnings_literal = analyze(spec_literal, testlang_path, threshold=0.0)
 
-    ws_param = warnings_for(warnings_param, "Server", "installedSoftware")
-    ws_literal = warnings_for(warnings_literal, "Server", "installedSoftware")
+    ws_param = warnings_for(warnings_param, 'Server', 'installedSoftware')
+    ws_literal = warnings_for(warnings_literal, 'Server', 'installedSoftware')
 
     p_param = ws_param[0].per_asset_probability if ws_param else 1.0
     p_literal = ws_literal[0].per_asset_probability if ws_literal else 1.0
@@ -730,8 +730,8 @@ connect {
     warnings_param = analyze(spec_param, testlang_path, threshold=0.0)
     warnings_literal = analyze(spec_literal, testlang_path, threshold=0.0)
 
-    ws_param = warnings_for(warnings_param, "Server", "installedSoftware")
-    ws_literal = warnings_for(warnings_literal, "Server", "installedSoftware")
+    ws_param = warnings_for(warnings_param, 'Server', 'installedSoftware')
+    ws_literal = warnings_for(warnings_literal, 'Server', 'installedSoftware')
 
     p_param = ws_param[0].per_asset_probability if ws_param else 1.0
     p_literal = ws_literal[0].per_asset_probability if ws_literal else 1.0
@@ -768,8 +768,8 @@ connect {
     warnings_param = analyze(spec_param, testlang_path, threshold=0.0)
     warnings_literal = analyze(spec_literal, testlang_path, threshold=0.0)
 
-    ws_param = warnings_for(warnings_param, "Server", "installedSoftware")
-    ws_literal = warnings_for(warnings_literal, "Server", "installedSoftware")
+    ws_param = warnings_for(warnings_param, 'Server', 'installedSoftware')
+    ws_literal = warnings_for(warnings_literal, 'Server', 'installedSoftware')
 
     p_param = ws_param[0].per_asset_probability if ws_param else 1.0
     p_literal = ws_literal[0].per_asset_probability if ws_literal else 1.0

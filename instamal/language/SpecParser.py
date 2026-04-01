@@ -3,92 +3,1498 @@
 from antlr4 import *
 from io import StringIO
 import sys
+
 if sys.version_info[1] > 5:
-	from typing import TextIO
+    from typing import TextIO
 else:
-	from typing.io import TextIO
+    from typing.io import TextIO
+
 
 def serializedATN():
     return [
-        4,1,29,167,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,2,5,7,5,2,6,7,
-        6,2,7,7,7,2,8,7,8,2,9,7,9,2,10,7,10,2,11,7,11,2,12,7,12,2,13,7,13,
-        2,14,7,14,2,15,7,15,2,16,7,16,2,17,7,17,2,18,7,18,1,0,1,0,1,0,1,
-        0,5,0,43,8,0,10,0,12,0,46,9,0,1,0,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,
-        2,1,2,1,3,3,3,59,8,3,1,3,1,3,1,3,5,3,64,8,3,10,3,12,3,67,9,3,1,4,
-        1,4,1,5,1,5,1,5,5,5,74,8,5,10,5,12,5,77,9,5,1,6,1,6,1,6,3,6,82,8,
-        6,1,7,1,7,1,7,1,7,1,7,1,7,1,7,3,7,91,8,7,1,8,1,8,1,8,1,8,1,8,1,9,
-        1,9,1,9,5,9,101,8,9,10,9,12,9,104,9,9,1,10,1,10,1,10,1,10,1,10,5,
-        10,111,8,10,10,10,12,10,114,9,10,1,10,1,10,1,11,1,11,1,11,4,11,121,
-        8,11,11,11,12,11,122,1,12,1,12,1,12,1,12,1,12,1,12,1,13,1,13,1,14,
-        1,14,1,14,3,14,136,8,14,1,15,1,15,1,15,3,15,141,8,15,1,15,1,15,1,
-        16,1,16,1,16,5,16,148,8,16,10,16,12,16,151,9,16,1,16,1,16,1,17,1,
-        17,1,17,1,17,1,17,1,17,1,17,1,17,1,18,1,18,1,18,1,18,1,18,0,0,19,
-        0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,36,0,4,1,0,18,19,
-        1,0,6,7,1,0,22,23,1,0,24,25,166,0,44,1,0,0,0,2,49,1,0,0,0,4,55,1,
-        0,0,0,6,58,1,0,0,0,8,68,1,0,0,0,10,70,1,0,0,0,12,78,1,0,0,0,14,90,
-        1,0,0,0,16,92,1,0,0,0,18,97,1,0,0,0,20,105,1,0,0,0,22,117,1,0,0,
-        0,24,124,1,0,0,0,26,130,1,0,0,0,28,135,1,0,0,0,30,137,1,0,0,0,32,
-        144,1,0,0,0,34,154,1,0,0,0,36,162,1,0,0,0,38,43,3,2,1,0,39,43,3,
-        20,10,0,40,43,3,24,12,0,41,43,3,32,16,0,42,38,1,0,0,0,42,39,1,0,
-        0,0,42,40,1,0,0,0,42,41,1,0,0,0,43,46,1,0,0,0,44,42,1,0,0,0,44,45,
-        1,0,0,0,45,47,1,0,0,0,46,44,1,0,0,0,47,48,5,0,0,1,48,1,1,0,0,0,49,
-        50,5,1,0,0,50,51,5,8,0,0,51,52,7,0,0,0,52,53,3,6,3,0,53,54,5,16,
-        0,0,54,3,1,0,0,0,55,56,7,1,0,0,56,5,1,0,0,0,57,59,3,8,4,0,58,57,
-        1,0,0,0,58,59,1,0,0,0,59,60,1,0,0,0,60,65,3,10,5,0,61,62,7,2,0,0,
-        62,64,3,10,5,0,63,61,1,0,0,0,64,67,1,0,0,0,65,63,1,0,0,0,65,66,1,
-        0,0,0,66,7,1,0,0,0,67,65,1,0,0,0,68,69,7,2,0,0,69,9,1,0,0,0,70,75,
-        3,12,6,0,71,72,7,3,0,0,72,74,3,12,6,0,73,71,1,0,0,0,74,77,1,0,0,
-        0,75,73,1,0,0,0,75,76,1,0,0,0,76,11,1,0,0,0,77,75,1,0,0,0,78,81,
-        3,14,7,0,79,80,5,26,0,0,80,82,3,14,7,0,81,79,1,0,0,0,81,82,1,0,0,
-        0,82,13,1,0,0,0,83,91,3,4,2,0,84,85,5,9,0,0,85,86,3,6,3,0,86,87,
-        5,10,0,0,87,91,1,0,0,0,88,91,3,16,8,0,89,91,5,8,0,0,90,83,1,0,0,
-        0,90,84,1,0,0,0,90,88,1,0,0,0,90,89,1,0,0,0,91,15,1,0,0,0,92,93,
-        5,8,0,0,93,94,5,9,0,0,94,95,3,18,9,0,95,96,5,10,0,0,96,17,1,0,0,
-        0,97,102,3,6,3,0,98,99,5,21,0,0,99,101,3,6,3,0,100,98,1,0,0,0,101,
-        104,1,0,0,0,102,100,1,0,0,0,102,103,1,0,0,0,103,19,1,0,0,0,104,102,
-        1,0,0,0,105,106,5,3,0,0,106,107,5,8,0,0,107,112,5,11,0,0,108,111,
-        3,24,12,0,109,111,3,32,16,0,110,108,1,0,0,0,110,109,1,0,0,0,111,
-        114,1,0,0,0,112,110,1,0,0,0,112,113,1,0,0,0,113,115,1,0,0,0,114,
-        112,1,0,0,0,115,116,5,12,0,0,116,21,1,0,0,0,117,120,5,8,0,0,118,
-        119,5,20,0,0,119,121,5,8,0,0,120,118,1,0,0,0,121,122,1,0,0,0,122,
-        120,1,0,0,0,122,123,1,0,0,0,123,23,1,0,0,0,124,125,5,2,0,0,125,126,
-        3,26,13,0,126,127,5,18,0,0,127,128,3,28,14,0,128,129,5,16,0,0,129,
-        25,1,0,0,0,130,131,5,8,0,0,131,27,1,0,0,0,132,136,3,26,13,0,133,
-        136,3,30,15,0,134,136,3,22,11,0,135,132,1,0,0,0,135,133,1,0,0,0,
-        135,134,1,0,0,0,136,29,1,0,0,0,137,138,5,8,0,0,138,140,5,9,0,0,139,
-        141,3,6,3,0,140,139,1,0,0,0,140,141,1,0,0,0,141,142,1,0,0,0,142,
-        143,5,10,0,0,143,31,1,0,0,0,144,145,5,4,0,0,145,149,5,11,0,0,146,
-        148,3,34,17,0,147,146,1,0,0,0,148,151,1,0,0,0,149,147,1,0,0,0,149,
-        150,1,0,0,0,150,152,1,0,0,0,151,149,1,0,0,0,152,153,5,12,0,0,153,
-        33,1,0,0,0,154,155,3,4,2,0,155,156,5,15,0,0,156,157,3,28,14,0,157,
-        158,5,17,0,0,158,159,3,36,18,0,159,160,3,28,14,0,160,161,5,16,0,
-        0,161,35,1,0,0,0,162,163,5,13,0,0,163,164,5,8,0,0,164,165,5,14,0,
-        0,165,37,1,0,0,0,14,42,44,58,65,75,81,90,102,110,112,122,135,140,
-        149
+        4,
+        1,
+        29,
+        167,
+        2,
+        0,
+        7,
+        0,
+        2,
+        1,
+        7,
+        1,
+        2,
+        2,
+        7,
+        2,
+        2,
+        3,
+        7,
+        3,
+        2,
+        4,
+        7,
+        4,
+        2,
+        5,
+        7,
+        5,
+        2,
+        6,
+        7,
+        6,
+        2,
+        7,
+        7,
+        7,
+        2,
+        8,
+        7,
+        8,
+        2,
+        9,
+        7,
+        9,
+        2,
+        10,
+        7,
+        10,
+        2,
+        11,
+        7,
+        11,
+        2,
+        12,
+        7,
+        12,
+        2,
+        13,
+        7,
+        13,
+        2,
+        14,
+        7,
+        14,
+        2,
+        15,
+        7,
+        15,
+        2,
+        16,
+        7,
+        16,
+        2,
+        17,
+        7,
+        17,
+        2,
+        18,
+        7,
+        18,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        5,
+        0,
+        43,
+        8,
+        0,
+        10,
+        0,
+        12,
+        0,
+        46,
+        9,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        2,
+        1,
+        2,
+        1,
+        3,
+        3,
+        3,
+        59,
+        8,
+        3,
+        1,
+        3,
+        1,
+        3,
+        1,
+        3,
+        5,
+        3,
+        64,
+        8,
+        3,
+        10,
+        3,
+        12,
+        3,
+        67,
+        9,
+        3,
+        1,
+        4,
+        1,
+        4,
+        1,
+        5,
+        1,
+        5,
+        1,
+        5,
+        5,
+        5,
+        74,
+        8,
+        5,
+        10,
+        5,
+        12,
+        5,
+        77,
+        9,
+        5,
+        1,
+        6,
+        1,
+        6,
+        1,
+        6,
+        3,
+        6,
+        82,
+        8,
+        6,
+        1,
+        7,
+        1,
+        7,
+        1,
+        7,
+        1,
+        7,
+        1,
+        7,
+        1,
+        7,
+        1,
+        7,
+        3,
+        7,
+        91,
+        8,
+        7,
+        1,
+        8,
+        1,
+        8,
+        1,
+        8,
+        1,
+        8,
+        1,
+        8,
+        1,
+        9,
+        1,
+        9,
+        1,
+        9,
+        5,
+        9,
+        101,
+        8,
+        9,
+        10,
+        9,
+        12,
+        9,
+        104,
+        9,
+        9,
+        1,
+        10,
+        1,
+        10,
+        1,
+        10,
+        1,
+        10,
+        1,
+        10,
+        5,
+        10,
+        111,
+        8,
+        10,
+        10,
+        10,
+        12,
+        10,
+        114,
+        9,
+        10,
+        1,
+        10,
+        1,
+        10,
+        1,
+        11,
+        1,
+        11,
+        1,
+        11,
+        4,
+        11,
+        121,
+        8,
+        11,
+        11,
+        11,
+        12,
+        11,
+        122,
+        1,
+        12,
+        1,
+        12,
+        1,
+        12,
+        1,
+        12,
+        1,
+        12,
+        1,
+        12,
+        1,
+        13,
+        1,
+        13,
+        1,
+        14,
+        1,
+        14,
+        1,
+        14,
+        3,
+        14,
+        136,
+        8,
+        14,
+        1,
+        15,
+        1,
+        15,
+        1,
+        15,
+        3,
+        15,
+        141,
+        8,
+        15,
+        1,
+        15,
+        1,
+        15,
+        1,
+        16,
+        1,
+        16,
+        1,
+        16,
+        5,
+        16,
+        148,
+        8,
+        16,
+        10,
+        16,
+        12,
+        16,
+        151,
+        9,
+        16,
+        1,
+        16,
+        1,
+        16,
+        1,
+        17,
+        1,
+        17,
+        1,
+        17,
+        1,
+        17,
+        1,
+        17,
+        1,
+        17,
+        1,
+        17,
+        1,
+        17,
+        1,
+        18,
+        1,
+        18,
+        1,
+        18,
+        1,
+        18,
+        1,
+        18,
+        0,
+        0,
+        19,
+        0,
+        2,
+        4,
+        6,
+        8,
+        10,
+        12,
+        14,
+        16,
+        18,
+        20,
+        22,
+        24,
+        26,
+        28,
+        30,
+        32,
+        34,
+        36,
+        0,
+        4,
+        1,
+        0,
+        18,
+        19,
+        1,
+        0,
+        6,
+        7,
+        1,
+        0,
+        22,
+        23,
+        1,
+        0,
+        24,
+        25,
+        166,
+        0,
+        44,
+        1,
+        0,
+        0,
+        0,
+        2,
+        49,
+        1,
+        0,
+        0,
+        0,
+        4,
+        55,
+        1,
+        0,
+        0,
+        0,
+        6,
+        58,
+        1,
+        0,
+        0,
+        0,
+        8,
+        68,
+        1,
+        0,
+        0,
+        0,
+        10,
+        70,
+        1,
+        0,
+        0,
+        0,
+        12,
+        78,
+        1,
+        0,
+        0,
+        0,
+        14,
+        90,
+        1,
+        0,
+        0,
+        0,
+        16,
+        92,
+        1,
+        0,
+        0,
+        0,
+        18,
+        97,
+        1,
+        0,
+        0,
+        0,
+        20,
+        105,
+        1,
+        0,
+        0,
+        0,
+        22,
+        117,
+        1,
+        0,
+        0,
+        0,
+        24,
+        124,
+        1,
+        0,
+        0,
+        0,
+        26,
+        130,
+        1,
+        0,
+        0,
+        0,
+        28,
+        135,
+        1,
+        0,
+        0,
+        0,
+        30,
+        137,
+        1,
+        0,
+        0,
+        0,
+        32,
+        144,
+        1,
+        0,
+        0,
+        0,
+        34,
+        154,
+        1,
+        0,
+        0,
+        0,
+        36,
+        162,
+        1,
+        0,
+        0,
+        0,
+        38,
+        43,
+        3,
+        2,
+        1,
+        0,
+        39,
+        43,
+        3,
+        20,
+        10,
+        0,
+        40,
+        43,
+        3,
+        24,
+        12,
+        0,
+        41,
+        43,
+        3,
+        32,
+        16,
+        0,
+        42,
+        38,
+        1,
+        0,
+        0,
+        0,
+        42,
+        39,
+        1,
+        0,
+        0,
+        0,
+        42,
+        40,
+        1,
+        0,
+        0,
+        0,
+        42,
+        41,
+        1,
+        0,
+        0,
+        0,
+        43,
+        46,
+        1,
+        0,
+        0,
+        0,
+        44,
+        42,
+        1,
+        0,
+        0,
+        0,
+        44,
+        45,
+        1,
+        0,
+        0,
+        0,
+        45,
+        47,
+        1,
+        0,
+        0,
+        0,
+        46,
+        44,
+        1,
+        0,
+        0,
+        0,
+        47,
+        48,
+        5,
+        0,
+        0,
+        1,
+        48,
+        1,
+        1,
+        0,
+        0,
+        0,
+        49,
+        50,
+        5,
+        1,
+        0,
+        0,
+        50,
+        51,
+        5,
+        8,
+        0,
+        0,
+        51,
+        52,
+        7,
+        0,
+        0,
+        0,
+        52,
+        53,
+        3,
+        6,
+        3,
+        0,
+        53,
+        54,
+        5,
+        16,
+        0,
+        0,
+        54,
+        3,
+        1,
+        0,
+        0,
+        0,
+        55,
+        56,
+        7,
+        1,
+        0,
+        0,
+        56,
+        5,
+        1,
+        0,
+        0,
+        0,
+        57,
+        59,
+        3,
+        8,
+        4,
+        0,
+        58,
+        57,
+        1,
+        0,
+        0,
+        0,
+        58,
+        59,
+        1,
+        0,
+        0,
+        0,
+        59,
+        60,
+        1,
+        0,
+        0,
+        0,
+        60,
+        65,
+        3,
+        10,
+        5,
+        0,
+        61,
+        62,
+        7,
+        2,
+        0,
+        0,
+        62,
+        64,
+        3,
+        10,
+        5,
+        0,
+        63,
+        61,
+        1,
+        0,
+        0,
+        0,
+        64,
+        67,
+        1,
+        0,
+        0,
+        0,
+        65,
+        63,
+        1,
+        0,
+        0,
+        0,
+        65,
+        66,
+        1,
+        0,
+        0,
+        0,
+        66,
+        7,
+        1,
+        0,
+        0,
+        0,
+        67,
+        65,
+        1,
+        0,
+        0,
+        0,
+        68,
+        69,
+        7,
+        2,
+        0,
+        0,
+        69,
+        9,
+        1,
+        0,
+        0,
+        0,
+        70,
+        75,
+        3,
+        12,
+        6,
+        0,
+        71,
+        72,
+        7,
+        3,
+        0,
+        0,
+        72,
+        74,
+        3,
+        12,
+        6,
+        0,
+        73,
+        71,
+        1,
+        0,
+        0,
+        0,
+        74,
+        77,
+        1,
+        0,
+        0,
+        0,
+        75,
+        73,
+        1,
+        0,
+        0,
+        0,
+        75,
+        76,
+        1,
+        0,
+        0,
+        0,
+        76,
+        11,
+        1,
+        0,
+        0,
+        0,
+        77,
+        75,
+        1,
+        0,
+        0,
+        0,
+        78,
+        81,
+        3,
+        14,
+        7,
+        0,
+        79,
+        80,
+        5,
+        26,
+        0,
+        0,
+        80,
+        82,
+        3,
+        14,
+        7,
+        0,
+        81,
+        79,
+        1,
+        0,
+        0,
+        0,
+        81,
+        82,
+        1,
+        0,
+        0,
+        0,
+        82,
+        13,
+        1,
+        0,
+        0,
+        0,
+        83,
+        91,
+        3,
+        4,
+        2,
+        0,
+        84,
+        85,
+        5,
+        9,
+        0,
+        0,
+        85,
+        86,
+        3,
+        6,
+        3,
+        0,
+        86,
+        87,
+        5,
+        10,
+        0,
+        0,
+        87,
+        91,
+        1,
+        0,
+        0,
+        0,
+        88,
+        91,
+        3,
+        16,
+        8,
+        0,
+        89,
+        91,
+        5,
+        8,
+        0,
+        0,
+        90,
+        83,
+        1,
+        0,
+        0,
+        0,
+        90,
+        84,
+        1,
+        0,
+        0,
+        0,
+        90,
+        88,
+        1,
+        0,
+        0,
+        0,
+        90,
+        89,
+        1,
+        0,
+        0,
+        0,
+        91,
+        15,
+        1,
+        0,
+        0,
+        0,
+        92,
+        93,
+        5,
+        8,
+        0,
+        0,
+        93,
+        94,
+        5,
+        9,
+        0,
+        0,
+        94,
+        95,
+        3,
+        18,
+        9,
+        0,
+        95,
+        96,
+        5,
+        10,
+        0,
+        0,
+        96,
+        17,
+        1,
+        0,
+        0,
+        0,
+        97,
+        102,
+        3,
+        6,
+        3,
+        0,
+        98,
+        99,
+        5,
+        21,
+        0,
+        0,
+        99,
+        101,
+        3,
+        6,
+        3,
+        0,
+        100,
+        98,
+        1,
+        0,
+        0,
+        0,
+        101,
+        104,
+        1,
+        0,
+        0,
+        0,
+        102,
+        100,
+        1,
+        0,
+        0,
+        0,
+        102,
+        103,
+        1,
+        0,
+        0,
+        0,
+        103,
+        19,
+        1,
+        0,
+        0,
+        0,
+        104,
+        102,
+        1,
+        0,
+        0,
+        0,
+        105,
+        106,
+        5,
+        3,
+        0,
+        0,
+        106,
+        107,
+        5,
+        8,
+        0,
+        0,
+        107,
+        112,
+        5,
+        11,
+        0,
+        0,
+        108,
+        111,
+        3,
+        24,
+        12,
+        0,
+        109,
+        111,
+        3,
+        32,
+        16,
+        0,
+        110,
+        108,
+        1,
+        0,
+        0,
+        0,
+        110,
+        109,
+        1,
+        0,
+        0,
+        0,
+        111,
+        114,
+        1,
+        0,
+        0,
+        0,
+        112,
+        110,
+        1,
+        0,
+        0,
+        0,
+        112,
+        113,
+        1,
+        0,
+        0,
+        0,
+        113,
+        115,
+        1,
+        0,
+        0,
+        0,
+        114,
+        112,
+        1,
+        0,
+        0,
+        0,
+        115,
+        116,
+        5,
+        12,
+        0,
+        0,
+        116,
+        21,
+        1,
+        0,
+        0,
+        0,
+        117,
+        120,
+        5,
+        8,
+        0,
+        0,
+        118,
+        119,
+        5,
+        20,
+        0,
+        0,
+        119,
+        121,
+        5,
+        8,
+        0,
+        0,
+        120,
+        118,
+        1,
+        0,
+        0,
+        0,
+        121,
+        122,
+        1,
+        0,
+        0,
+        0,
+        122,
+        120,
+        1,
+        0,
+        0,
+        0,
+        122,
+        123,
+        1,
+        0,
+        0,
+        0,
+        123,
+        23,
+        1,
+        0,
+        0,
+        0,
+        124,
+        125,
+        5,
+        2,
+        0,
+        0,
+        125,
+        126,
+        3,
+        26,
+        13,
+        0,
+        126,
+        127,
+        5,
+        18,
+        0,
+        0,
+        127,
+        128,
+        3,
+        28,
+        14,
+        0,
+        128,
+        129,
+        5,
+        16,
+        0,
+        0,
+        129,
+        25,
+        1,
+        0,
+        0,
+        0,
+        130,
+        131,
+        5,
+        8,
+        0,
+        0,
+        131,
+        27,
+        1,
+        0,
+        0,
+        0,
+        132,
+        136,
+        3,
+        26,
+        13,
+        0,
+        133,
+        136,
+        3,
+        30,
+        15,
+        0,
+        134,
+        136,
+        3,
+        22,
+        11,
+        0,
+        135,
+        132,
+        1,
+        0,
+        0,
+        0,
+        135,
+        133,
+        1,
+        0,
+        0,
+        0,
+        135,
+        134,
+        1,
+        0,
+        0,
+        0,
+        136,
+        29,
+        1,
+        0,
+        0,
+        0,
+        137,
+        138,
+        5,
+        8,
+        0,
+        0,
+        138,
+        140,
+        5,
+        9,
+        0,
+        0,
+        139,
+        141,
+        3,
+        6,
+        3,
+        0,
+        140,
+        139,
+        1,
+        0,
+        0,
+        0,
+        140,
+        141,
+        1,
+        0,
+        0,
+        0,
+        141,
+        142,
+        1,
+        0,
+        0,
+        0,
+        142,
+        143,
+        5,
+        10,
+        0,
+        0,
+        143,
+        31,
+        1,
+        0,
+        0,
+        0,
+        144,
+        145,
+        5,
+        4,
+        0,
+        0,
+        145,
+        149,
+        5,
+        11,
+        0,
+        0,
+        146,
+        148,
+        3,
+        34,
+        17,
+        0,
+        147,
+        146,
+        1,
+        0,
+        0,
+        0,
+        148,
+        151,
+        1,
+        0,
+        0,
+        0,
+        149,
+        147,
+        1,
+        0,
+        0,
+        0,
+        149,
+        150,
+        1,
+        0,
+        0,
+        0,
+        150,
+        152,
+        1,
+        0,
+        0,
+        0,
+        151,
+        149,
+        1,
+        0,
+        0,
+        0,
+        152,
+        153,
+        5,
+        12,
+        0,
+        0,
+        153,
+        33,
+        1,
+        0,
+        0,
+        0,
+        154,
+        155,
+        3,
+        4,
+        2,
+        0,
+        155,
+        156,
+        5,
+        15,
+        0,
+        0,
+        156,
+        157,
+        3,
+        28,
+        14,
+        0,
+        157,
+        158,
+        5,
+        17,
+        0,
+        0,
+        158,
+        159,
+        3,
+        36,
+        18,
+        0,
+        159,
+        160,
+        3,
+        28,
+        14,
+        0,
+        160,
+        161,
+        5,
+        16,
+        0,
+        0,
+        161,
+        35,
+        1,
+        0,
+        0,
+        0,
+        162,
+        163,
+        5,
+        13,
+        0,
+        0,
+        163,
+        164,
+        5,
+        8,
+        0,
+        0,
+        164,
+        165,
+        5,
+        14,
+        0,
+        0,
+        165,
+        37,
+        1,
+        0,
+        0,
+        0,
+        14,
+        42,
+        44,
+        58,
+        65,
+        75,
+        81,
+        90,
+        102,
+        110,
+        112,
+        122,
+        135,
+        140,
+        149,
     ]
 
-class SpecParser ( Parser ):
 
-    grammarFileName = "Spec.g4"
+class SpecParser(Parser):
+    grammarFileName = 'Spec.g4'
 
     atn = ATNDeserializer().deserialize(serializedATN())
 
-    decisionsToDFA = [ DFA(ds, i) for i, ds in enumerate(atn.decisionToState) ]
+    decisionsToDFA = [DFA(ds, i) for i, ds in enumerate(atn.decisionToState)]
 
     sharedContextCache = PredictionContextCache()
 
-    literalNames = [ "<INVALID>", "'param'", "'let'", "'subsystem'", "'connect'", 
-                     "<INVALID>", "<INVALID>", "<INVALID>", "<INVALID>", 
-                     "'('", "')'", "'{'", "'}'", "'['", "']'", "':'", "';'", 
-                     "'-->'", "'='", "'~'", "'.'", "','", "'+'", "'-'", 
-                     "'*'", "'/'", "'^'" ]
+    literalNames = [
+        '<INVALID>',
+        "'param'",
+        "'let'",
+        "'subsystem'",
+        "'connect'",
+        '<INVALID>',
+        '<INVALID>',
+        '<INVALID>',
+        '<INVALID>',
+        "'('",
+        "')'",
+        "'{'",
+        "'}'",
+        "'['",
+        "']'",
+        "':'",
+        "';'",
+        "'-->'",
+        "'='",
+        "'~'",
+        "'.'",
+        "','",
+        "'+'",
+        "'-'",
+        "'*'",
+        "'/'",
+        "'^'",
+    ]
 
-    symbolicNames = [ "<INVALID>", "PARAM", "LET", "SUBSYSTEM", "CONNECT", 
-                      "STRING", "INT", "FLOAT", "ID", "LPAREN", "RPAREN", 
-                      "LCURLY", "RCURLY", "LSQUARE", "RSQUARE", "COLON", 
-                      "SEMICOLON", "RARROW", "ASSIGN", "TILDE", "DOT", "COMMA", 
-                      "PLUS", "MINUS", "TIMES", "DIVIDE", "POWER", "COMMENT", 
-                      "ML_COMMENT", "WS" ]
+    symbolicNames = [
+        '<INVALID>',
+        'PARAM',
+        'LET',
+        'SUBSYSTEM',
+        'CONNECT',
+        'STRING',
+        'INT',
+        'FLOAT',
+        'ID',
+        'LPAREN',
+        'RPAREN',
+        'LCURLY',
+        'RCURLY',
+        'LSQUARE',
+        'RSQUARE',
+        'COLON',
+        'SEMICOLON',
+        'RARROW',
+        'ASSIGN',
+        'TILDE',
+        'DOT',
+        'COMMA',
+        'PLUS',
+        'MINUS',
+        'TIMES',
+        'DIVIDE',
+        'POWER',
+        'COMMENT',
+        'ML_COMMENT',
+        'WS',
+    ]
 
     RULE_spec = 0
     RULE_param = 1
@@ -110,112 +1516,123 @@ class SpecParser ( Parser ):
     RULE_connectionRule = 17
     RULE_associationFieldname = 18
 
-    ruleNames =  [ "spec", "param", "number", "expr", "sign", "term", "fact", 
-                   "prim", "distributionSample", "parameters", "subsystem", 
-                   "subsystemSetAccess", "let", "variable", "assetSet", 
-                   "assetInstantiation", "connect", "connectionRule", "associationFieldname" ]
+    ruleNames = [
+        'spec',
+        'param',
+        'number',
+        'expr',
+        'sign',
+        'term',
+        'fact',
+        'prim',
+        'distributionSample',
+        'parameters',
+        'subsystem',
+        'subsystemSetAccess',
+        'let',
+        'variable',
+        'assetSet',
+        'assetInstantiation',
+        'connect',
+        'connectionRule',
+        'associationFieldname',
+    ]
 
     EOF = Token.EOF
-    PARAM=1
-    LET=2
-    SUBSYSTEM=3
-    CONNECT=4
-    STRING=5
-    INT=6
-    FLOAT=7
-    ID=8
-    LPAREN=9
-    RPAREN=10
-    LCURLY=11
-    RCURLY=12
-    LSQUARE=13
-    RSQUARE=14
-    COLON=15
-    SEMICOLON=16
-    RARROW=17
-    ASSIGN=18
-    TILDE=19
-    DOT=20
-    COMMA=21
-    PLUS=22
-    MINUS=23
-    TIMES=24
-    DIVIDE=25
-    POWER=26
-    COMMENT=27
-    ML_COMMENT=28
-    WS=29
+    PARAM = 1
+    LET = 2
+    SUBSYSTEM = 3
+    CONNECT = 4
+    STRING = 5
+    INT = 6
+    FLOAT = 7
+    ID = 8
+    LPAREN = 9
+    RPAREN = 10
+    LCURLY = 11
+    RCURLY = 12
+    LSQUARE = 13
+    RSQUARE = 14
+    COLON = 15
+    SEMICOLON = 16
+    RARROW = 17
+    ASSIGN = 18
+    TILDE = 19
+    DOT = 20
+    COMMA = 21
+    PLUS = 22
+    MINUS = 23
+    TIMES = 24
+    DIVIDE = 25
+    POWER = 26
+    COMMENT = 27
+    ML_COMMENT = 28
+    WS = 29
 
-    def __init__(self, input:TokenStream, output:TextIO = sys.stdout):
+    def __init__(self, input: TokenStream, output: TextIO = sys.stdout):
         super().__init__(input, output)
-        self.checkVersion("4.13.2")
-        self._interp = ParserATNSimulator(self, self.atn, self.decisionsToDFA, self.sharedContextCache)
+        self.checkVersion('4.13.2')
+        self._interp = ParserATNSimulator(
+            self, self.atn, self.decisionsToDFA, self.sharedContextCache
+        )
         self._predicates = None
-
-
-
 
     class SpecContext(ParserRuleContext):
         __slots__ = 'parser'
 
-        def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
+        def __init__(
+            self, parser, parent: ParserRuleContext = None, invokingState: int = -1
+        ):
             super().__init__(parent, invokingState)
             self.parser = parser
 
         def EOF(self):
             return self.getToken(SpecParser.EOF, 0)
 
-        def param(self, i:int=None):
+        def param(self, i: int = None):
             if i is None:
                 return self.getTypedRuleContexts(SpecParser.ParamContext)
             else:
-                return self.getTypedRuleContext(SpecParser.ParamContext,i)
+                return self.getTypedRuleContext(SpecParser.ParamContext, i)
 
-
-        def subsystem(self, i:int=None):
+        def subsystem(self, i: int = None):
             if i is None:
                 return self.getTypedRuleContexts(SpecParser.SubsystemContext)
             else:
-                return self.getTypedRuleContext(SpecParser.SubsystemContext,i)
+                return self.getTypedRuleContext(SpecParser.SubsystemContext, i)
 
-
-        def let(self, i:int=None):
+        def let(self, i: int = None):
             if i is None:
                 return self.getTypedRuleContexts(SpecParser.LetContext)
             else:
-                return self.getTypedRuleContext(SpecParser.LetContext,i)
+                return self.getTypedRuleContext(SpecParser.LetContext, i)
 
-
-        def connect(self, i:int=None):
+        def connect(self, i: int = None):
             if i is None:
                 return self.getTypedRuleContexts(SpecParser.ConnectContext)
             else:
-                return self.getTypedRuleContext(SpecParser.ConnectContext,i)
-
+                return self.getTypedRuleContext(SpecParser.ConnectContext, i)
 
         def getRuleIndex(self):
             return SpecParser.RULE_spec
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitSpec" ):
+        def accept(self, visitor: ParseTreeVisitor):
+            if hasattr(visitor, 'visitSpec'):
                 return visitor.visitSpec(self)
             else:
                 return visitor.visitChildren(self)
-
-
-
 
     def spec(self):
 
         localctx = SpecParser.SpecContext(self, self._ctx, self.state)
         self.enterRule(localctx, 0, self.RULE_spec)
-        self._la = 0 # Token type
+        self._la = 0  # Token type
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 44
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while (((_la) & ~0x3f) == 0 and ((1 << _la) & 30) != 0):
+            while ((_la) & ~0x3F) == 0 and ((1 << _la) & 30) != 0:
                 self.state = 42
                 self._errHandler.sync(self)
                 token = self._input.LA(1)
@@ -252,11 +1669,12 @@ class SpecParser ( Parser ):
             self.exitRule()
         return localctx
 
-
     class ParamContext(ParserRuleContext):
         __slots__ = 'parser'
 
-        def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
+        def __init__(
+            self, parser, parent: ParserRuleContext = None, invokingState: int = -1
+        ):
             super().__init__(parent, invokingState)
             self.parser = parser
 
@@ -267,8 +1685,7 @@ class SpecParser ( Parser ):
             return self.getToken(SpecParser.ID, 0)
 
         def expr(self):
-            return self.getTypedRuleContext(SpecParser.ExprContext,0)
-
+            return self.getTypedRuleContext(SpecParser.ExprContext, 0)
 
         def SEMICOLON(self):
             return self.getToken(SpecParser.SEMICOLON, 0)
@@ -282,20 +1699,17 @@ class SpecParser ( Parser ):
         def getRuleIndex(self):
             return SpecParser.RULE_param
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitParam" ):
+        def accept(self, visitor: ParseTreeVisitor):
+            if hasattr(visitor, 'visitParam'):
                 return visitor.visitParam(self)
             else:
                 return visitor.visitChildren(self)
-
-
-
 
     def param(self):
 
         localctx = SpecParser.ParamContext(self, self._ctx, self.state)
         self.enterRule(localctx, 2, self.RULE_param)
-        self._la = 0 # Token type
+        self._la = 0  # Token type
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 49
@@ -304,7 +1718,7 @@ class SpecParser ( Parser ):
             self.match(SpecParser.ID)
             self.state = 51
             _la = self._input.LA(1)
-            if not(_la==18 or _la==19):
+            if not (_la == 18 or _la == 19):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -321,11 +1735,12 @@ class SpecParser ( Parser ):
             self.exitRule()
         return localctx
 
-
     class NumberContext(ParserRuleContext):
         __slots__ = 'parser'
 
-        def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
+        def __init__(
+            self, parser, parent: ParserRuleContext = None, invokingState: int = -1
+        ):
             super().__init__(parent, invokingState)
             self.parser = parser
 
@@ -338,25 +1753,22 @@ class SpecParser ( Parser ):
         def getRuleIndex(self):
             return SpecParser.RULE_number
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitNumber" ):
+        def accept(self, visitor: ParseTreeVisitor):
+            if hasattr(visitor, 'visitNumber'):
                 return visitor.visitNumber(self)
             else:
                 return visitor.visitChildren(self)
-
-
-
 
     def number(self):
 
         localctx = SpecParser.NumberContext(self, self._ctx, self.state)
         self.enterRule(localctx, 4, self.RULE_number)
-        self._la = 0 # Token type
+        self._la = 0  # Token type
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 55
             _la = self._input.LA(1)
-            if not(_la==6 or _la==7):
+            if not (_la == 6 or _la == 7):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -369,32 +1781,31 @@ class SpecParser ( Parser ):
             self.exitRule()
         return localctx
 
-
     class ExprContext(ParserRuleContext):
         __slots__ = 'parser'
 
-        def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
+        def __init__(
+            self, parser, parent: ParserRuleContext = None, invokingState: int = -1
+        ):
             super().__init__(parent, invokingState)
             self.parser = parser
 
-        def term(self, i:int=None):
+        def term(self, i: int = None):
             if i is None:
                 return self.getTypedRuleContexts(SpecParser.TermContext)
             else:
-                return self.getTypedRuleContext(SpecParser.TermContext,i)
-
+                return self.getTypedRuleContext(SpecParser.TermContext, i)
 
         def sign(self):
-            return self.getTypedRuleContext(SpecParser.SignContext,0)
+            return self.getTypedRuleContext(SpecParser.SignContext, 0)
 
-
-        def PLUS(self, i:int=None):
+        def PLUS(self, i: int = None):
             if i is None:
                 return self.getTokens(SpecParser.PLUS)
             else:
                 return self.getToken(SpecParser.PLUS, i)
 
-        def MINUS(self, i:int=None):
+        def MINUS(self, i: int = None):
             if i is None:
                 return self.getTokens(SpecParser.MINUS)
             else:
@@ -403,39 +1814,35 @@ class SpecParser ( Parser ):
         def getRuleIndex(self):
             return SpecParser.RULE_expr
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitExpr" ):
+        def accept(self, visitor: ParseTreeVisitor):
+            if hasattr(visitor, 'visitExpr'):
                 return visitor.visitExpr(self)
             else:
                 return visitor.visitChildren(self)
-
-
-
 
     def expr(self):
 
         localctx = SpecParser.ExprContext(self, self._ctx, self.state)
         self.enterRule(localctx, 6, self.RULE_expr)
-        self._la = 0 # Token type
+        self._la = 0  # Token type
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 58
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==22 or _la==23:
+            if _la == 22 or _la == 23:
                 self.state = 57
                 self.sign()
-
 
             self.state = 60
             self.term()
             self.state = 65
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==22 or _la==23:
+            while _la == 22 or _la == 23:
                 self.state = 61
                 _la = self._input.LA(1)
-                if not(_la==22 or _la==23):
+                if not (_la == 22 or _la == 23):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -454,11 +1861,12 @@ class SpecParser ( Parser ):
             self.exitRule()
         return localctx
 
-
     class SignContext(ParserRuleContext):
         __slots__ = 'parser'
 
-        def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
+        def __init__(
+            self, parser, parent: ParserRuleContext = None, invokingState: int = -1
+        ):
             super().__init__(parent, invokingState)
             self.parser = parser
 
@@ -471,25 +1879,22 @@ class SpecParser ( Parser ):
         def getRuleIndex(self):
             return SpecParser.RULE_sign
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitSign" ):
+        def accept(self, visitor: ParseTreeVisitor):
+            if hasattr(visitor, 'visitSign'):
                 return visitor.visitSign(self)
             else:
                 return visitor.visitChildren(self)
-
-
-
 
     def sign(self):
 
         localctx = SpecParser.SignContext(self, self._ctx, self.state)
         self.enterRule(localctx, 8, self.RULE_sign)
-        self._la = 0 # Token type
+        self._la = 0  # Token type
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 68
             _la = self._input.LA(1)
-            if not(_la==22 or _la==23):
+            if not (_la == 22 or _la == 23):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -502,28 +1907,28 @@ class SpecParser ( Parser ):
             self.exitRule()
         return localctx
 
-
     class TermContext(ParserRuleContext):
         __slots__ = 'parser'
 
-        def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
+        def __init__(
+            self, parser, parent: ParserRuleContext = None, invokingState: int = -1
+        ):
             super().__init__(parent, invokingState)
             self.parser = parser
 
-        def fact(self, i:int=None):
+        def fact(self, i: int = None):
             if i is None:
                 return self.getTypedRuleContexts(SpecParser.FactContext)
             else:
-                return self.getTypedRuleContext(SpecParser.FactContext,i)
+                return self.getTypedRuleContext(SpecParser.FactContext, i)
 
-
-        def TIMES(self, i:int=None):
+        def TIMES(self, i: int = None):
             if i is None:
                 return self.getTokens(SpecParser.TIMES)
             else:
                 return self.getToken(SpecParser.TIMES, i)
 
-        def DIVIDE(self, i:int=None):
+        def DIVIDE(self, i: int = None):
             if i is None:
                 return self.getTokens(SpecParser.DIVIDE)
             else:
@@ -532,20 +1937,17 @@ class SpecParser ( Parser ):
         def getRuleIndex(self):
             return SpecParser.RULE_term
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitTerm" ):
+        def accept(self, visitor: ParseTreeVisitor):
+            if hasattr(visitor, 'visitTerm'):
                 return visitor.visitTerm(self)
             else:
                 return visitor.visitChildren(self)
-
-
-
 
     def term(self):
 
         localctx = SpecParser.TermContext(self, self._ctx, self.state)
         self.enterRule(localctx, 10, self.RULE_term)
-        self._la = 0 # Token type
+        self._la = 0  # Token type
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 70
@@ -553,10 +1955,10 @@ class SpecParser ( Parser ):
             self.state = 75
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==24 or _la==25:
+            while _la == 24 or _la == 25:
                 self.state = 71
                 _la = self._input.LA(1)
-                if not(_la==24 or _la==25):
+                if not (_la == 24 or _la == 25):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -575,20 +1977,20 @@ class SpecParser ( Parser ):
             self.exitRule()
         return localctx
 
-
     class FactContext(ParserRuleContext):
         __slots__ = 'parser'
 
-        def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
+        def __init__(
+            self, parser, parent: ParserRuleContext = None, invokingState: int = -1
+        ):
             super().__init__(parent, invokingState)
             self.parser = parser
 
-        def prim(self, i:int=None):
+        def prim(self, i: int = None):
             if i is None:
                 return self.getTypedRuleContexts(SpecParser.PrimContext)
             else:
-                return self.getTypedRuleContext(SpecParser.PrimContext,i)
-
+                return self.getTypedRuleContext(SpecParser.PrimContext, i)
 
         def POWER(self):
             return self.getToken(SpecParser.POWER, 0)
@@ -596,20 +1998,17 @@ class SpecParser ( Parser ):
         def getRuleIndex(self):
             return SpecParser.RULE_fact
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitFact" ):
+        def accept(self, visitor: ParseTreeVisitor):
+            if hasattr(visitor, 'visitFact'):
                 return visitor.visitFact(self)
             else:
                 return visitor.visitChildren(self)
-
-
-
 
     def fact(self):
 
         localctx = SpecParser.FactContext(self, self._ctx, self.state)
         self.enterRule(localctx, 12, self.RULE_fact)
-        self._la = 0 # Token type
+        self._la = 0  # Token type
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 78
@@ -617,12 +2016,11 @@ class SpecParser ( Parser ):
             self.state = 81
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==26:
+            if _la == 26:
                 self.state = 79
                 self.match(SpecParser.POWER)
                 self.state = 80
                 self.prim()
-
 
         except RecognitionException as re:
             localctx.exception = re
@@ -632,31 +2030,29 @@ class SpecParser ( Parser ):
             self.exitRule()
         return localctx
 
-
     class PrimContext(ParserRuleContext):
         __slots__ = 'parser'
 
-        def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
+        def __init__(
+            self, parser, parent: ParserRuleContext = None, invokingState: int = -1
+        ):
             super().__init__(parent, invokingState)
             self.parser = parser
 
         def number(self):
-            return self.getTypedRuleContext(SpecParser.NumberContext,0)
-
+            return self.getTypedRuleContext(SpecParser.NumberContext, 0)
 
         def LPAREN(self):
             return self.getToken(SpecParser.LPAREN, 0)
 
         def expr(self):
-            return self.getTypedRuleContext(SpecParser.ExprContext,0)
-
+            return self.getTypedRuleContext(SpecParser.ExprContext, 0)
 
         def RPAREN(self):
             return self.getToken(SpecParser.RPAREN, 0)
 
         def distributionSample(self):
-            return self.getTypedRuleContext(SpecParser.DistributionSampleContext,0)
-
+            return self.getTypedRuleContext(SpecParser.DistributionSampleContext, 0)
 
         def ID(self):
             return self.getToken(SpecParser.ID, 0)
@@ -664,14 +2060,11 @@ class SpecParser ( Parser ):
         def getRuleIndex(self):
             return SpecParser.RULE_prim
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitPrim" ):
+        def accept(self, visitor: ParseTreeVisitor):
+            if hasattr(visitor, 'visitPrim'):
                 return visitor.visitPrim(self)
             else:
                 return visitor.visitChildren(self)
-
-
-
 
     def prim(self):
 
@@ -680,7 +2073,7 @@ class SpecParser ( Parser ):
         try:
             self.state = 90
             self._errHandler.sync(self)
-            la_ = self._interp.adaptivePredict(self._input,6,self._ctx)
+            la_ = self._interp.adaptivePredict(self._input, 6, self._ctx)
             if la_ == 1:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 83
@@ -709,7 +2102,6 @@ class SpecParser ( Parser ):
                 self.match(SpecParser.ID)
                 pass
 
-
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -718,11 +2110,12 @@ class SpecParser ( Parser ):
             self.exitRule()
         return localctx
 
-
     class DistributionSampleContext(ParserRuleContext):
         __slots__ = 'parser'
 
-        def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
+        def __init__(
+            self, parser, parent: ParserRuleContext = None, invokingState: int = -1
+        ):
             super().__init__(parent, invokingState)
             self.parser = parser
 
@@ -733,8 +2126,7 @@ class SpecParser ( Parser ):
             return self.getToken(SpecParser.LPAREN, 0)
 
         def parameters(self):
-            return self.getTypedRuleContext(SpecParser.ParametersContext,0)
-
+            return self.getTypedRuleContext(SpecParser.ParametersContext, 0)
 
         def RPAREN(self):
             return self.getToken(SpecParser.RPAREN, 0)
@@ -742,14 +2134,11 @@ class SpecParser ( Parser ):
         def getRuleIndex(self):
             return SpecParser.RULE_distributionSample
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitDistributionSample" ):
+        def accept(self, visitor: ParseTreeVisitor):
+            if hasattr(visitor, 'visitDistributionSample'):
                 return visitor.visitDistributionSample(self)
             else:
                 return visitor.visitChildren(self)
-
-
-
 
     def distributionSample(self):
 
@@ -773,22 +2162,22 @@ class SpecParser ( Parser ):
             self.exitRule()
         return localctx
 
-
     class ParametersContext(ParserRuleContext):
         __slots__ = 'parser'
 
-        def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
+        def __init__(
+            self, parser, parent: ParserRuleContext = None, invokingState: int = -1
+        ):
             super().__init__(parent, invokingState)
             self.parser = parser
 
-        def expr(self, i:int=None):
+        def expr(self, i: int = None):
             if i is None:
                 return self.getTypedRuleContexts(SpecParser.ExprContext)
             else:
-                return self.getTypedRuleContext(SpecParser.ExprContext,i)
+                return self.getTypedRuleContext(SpecParser.ExprContext, i)
 
-
-        def COMMA(self, i:int=None):
+        def COMMA(self, i: int = None):
             if i is None:
                 return self.getTokens(SpecParser.COMMA)
             else:
@@ -797,20 +2186,17 @@ class SpecParser ( Parser ):
         def getRuleIndex(self):
             return SpecParser.RULE_parameters
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitParameters" ):
+        def accept(self, visitor: ParseTreeVisitor):
+            if hasattr(visitor, 'visitParameters'):
                 return visitor.visitParameters(self)
             else:
                 return visitor.visitChildren(self)
-
-
-
 
     def parameters(self):
 
         localctx = SpecParser.ParametersContext(self, self._ctx, self.state)
         self.enterRule(localctx, 18, self.RULE_parameters)
-        self._la = 0 # Token type
+        self._la = 0  # Token type
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 97
@@ -818,7 +2204,7 @@ class SpecParser ( Parser ):
             self.state = 102
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==21:
+            while _la == 21:
                 self.state = 98
                 self.match(SpecParser.COMMA)
                 self.state = 99
@@ -835,11 +2221,12 @@ class SpecParser ( Parser ):
             self.exitRule()
         return localctx
 
-
     class SubsystemContext(ParserRuleContext):
         __slots__ = 'parser'
 
-        def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
+        def __init__(
+            self, parser, parent: ParserRuleContext = None, invokingState: int = -1
+        ):
             super().__init__(parent, invokingState)
             self.parser = parser
 
@@ -855,37 +2242,32 @@ class SpecParser ( Parser ):
         def RCURLY(self):
             return self.getToken(SpecParser.RCURLY, 0)
 
-        def let(self, i:int=None):
+        def let(self, i: int = None):
             if i is None:
                 return self.getTypedRuleContexts(SpecParser.LetContext)
             else:
-                return self.getTypedRuleContext(SpecParser.LetContext,i)
+                return self.getTypedRuleContext(SpecParser.LetContext, i)
 
-
-        def connect(self, i:int=None):
+        def connect(self, i: int = None):
             if i is None:
                 return self.getTypedRuleContexts(SpecParser.ConnectContext)
             else:
-                return self.getTypedRuleContext(SpecParser.ConnectContext,i)
-
+                return self.getTypedRuleContext(SpecParser.ConnectContext, i)
 
         def getRuleIndex(self):
             return SpecParser.RULE_subsystem
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitSubsystem" ):
+        def accept(self, visitor: ParseTreeVisitor):
+            if hasattr(visitor, 'visitSubsystem'):
                 return visitor.visitSubsystem(self)
             else:
                 return visitor.visitChildren(self)
-
-
-
 
     def subsystem(self):
 
         localctx = SpecParser.SubsystemContext(self, self._ctx, self.state)
         self.enterRule(localctx, 20, self.RULE_subsystem)
-        self._la = 0 # Token type
+        self._la = 0  # Token type
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 105
@@ -897,7 +2279,7 @@ class SpecParser ( Parser ):
             self.state = 112
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==2 or _la==4:
+            while _la == 2 or _la == 4:
                 self.state = 110
                 self._errHandler.sync(self)
                 token = self._input.LA(1)
@@ -926,21 +2308,22 @@ class SpecParser ( Parser ):
             self.exitRule()
         return localctx
 
-
     class SubsystemSetAccessContext(ParserRuleContext):
         __slots__ = 'parser'
 
-        def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
+        def __init__(
+            self, parser, parent: ParserRuleContext = None, invokingState: int = -1
+        ):
             super().__init__(parent, invokingState)
             self.parser = parser
 
-        def ID(self, i:int=None):
+        def ID(self, i: int = None):
             if i is None:
                 return self.getTokens(SpecParser.ID)
             else:
                 return self.getToken(SpecParser.ID, i)
 
-        def DOT(self, i:int=None):
+        def DOT(self, i: int = None):
             if i is None:
                 return self.getTokens(SpecParser.DOT)
             else:
@@ -949,25 +2332,22 @@ class SpecParser ( Parser ):
         def getRuleIndex(self):
             return SpecParser.RULE_subsystemSetAccess
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitSubsystemSetAccess" ):
+        def accept(self, visitor: ParseTreeVisitor):
+            if hasattr(visitor, 'visitSubsystemSetAccess'):
                 return visitor.visitSubsystemSetAccess(self)
             else:
                 return visitor.visitChildren(self)
-
-
-
 
     def subsystemSetAccess(self):
 
         localctx = SpecParser.SubsystemSetAccessContext(self, self._ctx, self.state)
         self.enterRule(localctx, 22, self.RULE_subsystemSetAccess)
-        self._la = 0 # Token type
+        self._la = 0  # Token type
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 117
             self.match(SpecParser.ID)
-            self.state = 120 
+            self.state = 120
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             while True:
@@ -975,10 +2355,10 @@ class SpecParser ( Parser ):
                 self.match(SpecParser.DOT)
                 self.state = 119
                 self.match(SpecParser.ID)
-                self.state = 122 
+                self.state = 122
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if not (_la==20):
+                if not (_la == 20):
                     break
 
         except RecognitionException as re:
@@ -989,11 +2369,12 @@ class SpecParser ( Parser ):
             self.exitRule()
         return localctx
 
-
     class LetContext(ParserRuleContext):
         __slots__ = 'parser'
 
-        def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
+        def __init__(
+            self, parser, parent: ParserRuleContext = None, invokingState: int = -1
+        ):
             super().__init__(parent, invokingState)
             self.parser = parser
 
@@ -1001,15 +2382,13 @@ class SpecParser ( Parser ):
             return self.getToken(SpecParser.LET, 0)
 
         def variable(self):
-            return self.getTypedRuleContext(SpecParser.VariableContext,0)
-
+            return self.getTypedRuleContext(SpecParser.VariableContext, 0)
 
         def ASSIGN(self):
             return self.getToken(SpecParser.ASSIGN, 0)
 
         def assetSet(self):
-            return self.getTypedRuleContext(SpecParser.AssetSetContext,0)
-
+            return self.getTypedRuleContext(SpecParser.AssetSetContext, 0)
 
         def SEMICOLON(self):
             return self.getToken(SpecParser.SEMICOLON, 0)
@@ -1017,14 +2396,11 @@ class SpecParser ( Parser ):
         def getRuleIndex(self):
             return SpecParser.RULE_let
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitLet" ):
+        def accept(self, visitor: ParseTreeVisitor):
+            if hasattr(visitor, 'visitLet'):
                 return visitor.visitLet(self)
             else:
                 return visitor.visitChildren(self)
-
-
-
 
     def let(self):
 
@@ -1050,11 +2426,12 @@ class SpecParser ( Parser ):
             self.exitRule()
         return localctx
 
-
     class VariableContext(ParserRuleContext):
         __slots__ = 'parser'
 
-        def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
+        def __init__(
+            self, parser, parent: ParserRuleContext = None, invokingState: int = -1
+        ):
             super().__init__(parent, invokingState)
             self.parser = parser
 
@@ -1064,14 +2441,11 @@ class SpecParser ( Parser ):
         def getRuleIndex(self):
             return SpecParser.RULE_variable
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitVariable" ):
+        def accept(self, visitor: ParseTreeVisitor):
+            if hasattr(visitor, 'visitVariable'):
                 return visitor.visitVariable(self)
             else:
                 return visitor.visitChildren(self)
-
-
-
 
     def variable(self):
 
@@ -1089,37 +2463,32 @@ class SpecParser ( Parser ):
             self.exitRule()
         return localctx
 
-
     class AssetSetContext(ParserRuleContext):
         __slots__ = 'parser'
 
-        def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
+        def __init__(
+            self, parser, parent: ParserRuleContext = None, invokingState: int = -1
+        ):
             super().__init__(parent, invokingState)
             self.parser = parser
 
         def variable(self):
-            return self.getTypedRuleContext(SpecParser.VariableContext,0)
-
+            return self.getTypedRuleContext(SpecParser.VariableContext, 0)
 
         def assetInstantiation(self):
-            return self.getTypedRuleContext(SpecParser.AssetInstantiationContext,0)
-
+            return self.getTypedRuleContext(SpecParser.AssetInstantiationContext, 0)
 
         def subsystemSetAccess(self):
-            return self.getTypedRuleContext(SpecParser.SubsystemSetAccessContext,0)
-
+            return self.getTypedRuleContext(SpecParser.SubsystemSetAccessContext, 0)
 
         def getRuleIndex(self):
             return SpecParser.RULE_assetSet
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitAssetSet" ):
+        def accept(self, visitor: ParseTreeVisitor):
+            if hasattr(visitor, 'visitAssetSet'):
                 return visitor.visitAssetSet(self)
             else:
                 return visitor.visitChildren(self)
-
-
-
 
     def assetSet(self):
 
@@ -1128,7 +2497,7 @@ class SpecParser ( Parser ):
         try:
             self.state = 135
             self._errHandler.sync(self)
-            la_ = self._interp.adaptivePredict(self._input,11,self._ctx)
+            la_ = self._interp.adaptivePredict(self._input, 11, self._ctx)
             if la_ == 1:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 132
@@ -1147,7 +2516,6 @@ class SpecParser ( Parser ):
                 self.subsystemSetAccess()
                 pass
 
-
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -1156,11 +2524,12 @@ class SpecParser ( Parser ):
             self.exitRule()
         return localctx
 
-
     class AssetInstantiationContext(ParserRuleContext):
         __slots__ = 'parser'
 
-        def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
+        def __init__(
+            self, parser, parent: ParserRuleContext = None, invokingState: int = -1
+        ):
             super().__init__(parent, invokingState)
             self.parser = parser
 
@@ -1174,26 +2543,22 @@ class SpecParser ( Parser ):
             return self.getToken(SpecParser.RPAREN, 0)
 
         def expr(self):
-            return self.getTypedRuleContext(SpecParser.ExprContext,0)
-
+            return self.getTypedRuleContext(SpecParser.ExprContext, 0)
 
         def getRuleIndex(self):
             return SpecParser.RULE_assetInstantiation
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitAssetInstantiation" ):
+        def accept(self, visitor: ParseTreeVisitor):
+            if hasattr(visitor, 'visitAssetInstantiation'):
                 return visitor.visitAssetInstantiation(self)
             else:
                 return visitor.visitChildren(self)
-
-
-
 
     def assetInstantiation(self):
 
         localctx = SpecParser.AssetInstantiationContext(self, self._ctx, self.state)
         self.enterRule(localctx, 30, self.RULE_assetInstantiation)
-        self._la = 0 # Token type
+        self._la = 0  # Token type
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 137
@@ -1203,10 +2568,9 @@ class SpecParser ( Parser ):
             self.state = 140
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if (((_la) & ~0x3f) == 0 and ((1 << _la) & 12583872) != 0):
+            if ((_la) & ~0x3F) == 0 and ((1 << _la) & 12583872) != 0:
                 self.state = 139
                 self.expr()
-
 
             self.state = 142
             self.match(SpecParser.RPAREN)
@@ -1218,11 +2582,12 @@ class SpecParser ( Parser ):
             self.exitRule()
         return localctx
 
-
     class ConnectContext(ParserRuleContext):
         __slots__ = 'parser'
 
-        def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
+        def __init__(
+            self, parser, parent: ParserRuleContext = None, invokingState: int = -1
+        ):
             super().__init__(parent, invokingState)
             self.parser = parser
 
@@ -1235,30 +2600,26 @@ class SpecParser ( Parser ):
         def RCURLY(self):
             return self.getToken(SpecParser.RCURLY, 0)
 
-        def connectionRule(self, i:int=None):
+        def connectionRule(self, i: int = None):
             if i is None:
                 return self.getTypedRuleContexts(SpecParser.ConnectionRuleContext)
             else:
-                return self.getTypedRuleContext(SpecParser.ConnectionRuleContext,i)
-
+                return self.getTypedRuleContext(SpecParser.ConnectionRuleContext, i)
 
         def getRuleIndex(self):
             return SpecParser.RULE_connect
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitConnect" ):
+        def accept(self, visitor: ParseTreeVisitor):
+            if hasattr(visitor, 'visitConnect'):
                 return visitor.visitConnect(self)
             else:
                 return visitor.visitChildren(self)
-
-
-
 
     def connect(self):
 
         localctx = SpecParser.ConnectContext(self, self._ctx, self.state)
         self.enterRule(localctx, 32, self.RULE_connect)
-        self._la = 0 # Token type
+        self._la = 0  # Token type
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 144
@@ -1268,7 +2629,7 @@ class SpecParser ( Parser ):
             self.state = 149
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==6 or _la==7:
+            while _la == 6 or _la == 7:
                 self.state = 146
                 self.connectionRule()
                 self.state = 151
@@ -1285,34 +2646,32 @@ class SpecParser ( Parser ):
             self.exitRule()
         return localctx
 
-
     class ConnectionRuleContext(ParserRuleContext):
         __slots__ = 'parser'
 
-        def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
+        def __init__(
+            self, parser, parent: ParserRuleContext = None, invokingState: int = -1
+        ):
             super().__init__(parent, invokingState)
             self.parser = parser
 
         def number(self):
-            return self.getTypedRuleContext(SpecParser.NumberContext,0)
-
+            return self.getTypedRuleContext(SpecParser.NumberContext, 0)
 
         def COLON(self):
             return self.getToken(SpecParser.COLON, 0)
 
-        def assetSet(self, i:int=None):
+        def assetSet(self, i: int = None):
             if i is None:
                 return self.getTypedRuleContexts(SpecParser.AssetSetContext)
             else:
-                return self.getTypedRuleContext(SpecParser.AssetSetContext,i)
-
+                return self.getTypedRuleContext(SpecParser.AssetSetContext, i)
 
         def RARROW(self):
             return self.getToken(SpecParser.RARROW, 0)
 
         def associationFieldname(self):
-            return self.getTypedRuleContext(SpecParser.AssociationFieldnameContext,0)
-
+            return self.getTypedRuleContext(SpecParser.AssociationFieldnameContext, 0)
 
         def SEMICOLON(self):
             return self.getToken(SpecParser.SEMICOLON, 0)
@@ -1320,14 +2679,11 @@ class SpecParser ( Parser ):
         def getRuleIndex(self):
             return SpecParser.RULE_connectionRule
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitConnectionRule" ):
+        def accept(self, visitor: ParseTreeVisitor):
+            if hasattr(visitor, 'visitConnectionRule'):
                 return visitor.visitConnectionRule(self)
             else:
                 return visitor.visitChildren(self)
-
-
-
 
     def connectionRule(self):
 
@@ -1357,11 +2713,12 @@ class SpecParser ( Parser ):
             self.exitRule()
         return localctx
 
-
     class AssociationFieldnameContext(ParserRuleContext):
         __slots__ = 'parser'
 
-        def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
+        def __init__(
+            self, parser, parent: ParserRuleContext = None, invokingState: int = -1
+        ):
             super().__init__(parent, invokingState)
             self.parser = parser
 
@@ -1377,14 +2734,11 @@ class SpecParser ( Parser ):
         def getRuleIndex(self):
             return SpecParser.RULE_associationFieldname
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitAssociationFieldname" ):
+        def accept(self, visitor: ParseTreeVisitor):
+            if hasattr(visitor, 'visitAssociationFieldname'):
                 return visitor.visitAssociationFieldname(self)
             else:
                 return visitor.visitChildren(self)
-
-
-
 
     def associationFieldname(self):
 
@@ -1405,8 +2759,3 @@ class SpecParser ( Parser ):
         finally:
             self.exitRule()
         return localctx
-
-
-
-
-

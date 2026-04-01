@@ -5,7 +5,7 @@ from dataclasses import dataclass, field
 from typing import Dict, List, Set, Optional, Tuple
 
 # from antlr4 import Token
-from antlr4 import *
+from antlr4 import Token
 from maltoolbox.language import LanguageGraph
 from maltoolbox.language.language_graph_assoc import LanguageGraphAssociation
 
@@ -91,15 +91,15 @@ class MultiplicityWarning:
     threshold: float
 
     def __str__(self) -> str:
-        mult_max_str = "∞" if self.mult_max == INF else str(int(self.mult_max))
+        mult_max_str = '∞' if self.mult_max == INF else str(int(self.mult_max))
         return (
-            f"  line {self.line}, col {self.column}: "
+            f'  line {self.line}, col {self.column}: '
             f"Association field '{self.fieldname}' on '{self.asset_type}' "
-            f"(multiplicity {self.mult_min}..{mult_max_str}): "
-            f"P(single asset satisfied) ≈ {self.per_asset_probability:.2%}, "
-            f"with ~{self.n_assets_expected:.1f} assets "
-            f"P(all satisfied) ≈ {self.global_probability:.2%} "
-            f"(threshold: {self.threshold:.0%})"
+            f'(multiplicity {self.mult_min}..{mult_max_str}): '
+            f'P(single asset satisfied) ≈ {self.per_asset_probability:.2%}, '
+            f'with ~{self.n_assets_expected:.1f} assets '
+            f'P(all satisfied) ≈ {self.global_probability:.2%} '
+            f'(threshold: {self.threshold:.0%})'
         )
 
 
@@ -161,7 +161,7 @@ class StaticMultiplicityAnalyzer(SpecVisitor):
     # ── Helpers ───────────────────────────────────────────────────────────
 
     def _current_prefix(self) -> str:
-        return self._subsystem_stack[-1][0] if self._subsystem_stack else ""
+        return self._subsystem_stack[-1][0] if self._subsystem_stack else ''
 
     def _current_bounds(self) -> Dict[str, CardinalityBound]:
         return (
@@ -175,7 +175,7 @@ class StaticMultiplicityAnalyzer(SpecVisitor):
 
     def _scoped(self, raw_id: str) -> str:
         prefix = self._current_prefix()
-        return f"{prefix}.{raw_id}" if prefix else raw_id
+        return f'{prefix}.{raw_id}' if prefix else raw_id
 
     def _resolve_variable(
         self, var_id: str
@@ -216,10 +216,10 @@ class StaticMultiplicityAnalyzer(SpecVisitor):
         for i in range(1, len(ctx.term())):
             op = ctx.getChild(2 * i - (not leading_sign)).getText()
             tlo, thi = self._term_bounds(ctx.term(i))
-            if op == "+":
+            if op == '+':
                 lo += tlo
                 hi += thi
-            elif op == "-":
+            elif op == '-':
                 lo -= thi
                 hi -= tlo
 
@@ -230,10 +230,10 @@ class StaticMultiplicityAnalyzer(SpecVisitor):
         for i in range(1, len(ctx.fact())):
             op = ctx.getChild(2 * i - 1).getText()
             flo, fhi = self._fact_bounds(ctx.fact(i))
-            if op == "*":
+            if op == '*':
                 products = [lo * flo, lo * fhi, hi * flo, hi * fhi]
                 lo, hi = min(products), max(products)
-            elif op == "/":
+            elif op == '/':
                 # Avoid division by zero conservatively
                 if flo == 0:
                     flo = 1e-9
@@ -364,7 +364,7 @@ class StaticMultiplicityAnalyzer(SpecVisitor):
             ids = [tok.getText() for tok in ctx.subsystemSetAccess().ID()]
             prefix = self._current_prefix()
             # Build the full dotted key as the instantiator would
-            full_key = ".".join([f"{prefix}.{ids[0]}" if prefix else ids[0]] + ids[1:])
+            full_key = '.'.join([f'{prefix}.{ids[0]}' if prefix else ids[0]] + ids[1:])
             cb = self._current_bounds().get(full_key)
             t = self._current_types().get(full_key)
             if cb is None:
@@ -470,10 +470,10 @@ class StaticMultiplicityAnalyzer(SpecVisitor):
                         column=col,
                         description=(
                             f"Association field '{fieldname}' on asset '{asset_type}' "
-                            f"has multiplicity max={int(mult_max)}, but the specification "
-                            f"guarantees at least {int(acc.min_connections)} connections. "
-                            f"Reduce the size of the connected asset sets or lower the "
-                            f"connection weight."
+                            f'has multiplicity max={int(mult_max)}, but the specification '
+                            f'guarantees at least {int(acc.min_connections)} connections. '
+                            f'Reduce the size of the connected asset sets or lower the '
+                            f'connection weight.'
                         ),
                     )
                 )
@@ -485,10 +485,10 @@ class StaticMultiplicityAnalyzer(SpecVisitor):
                         column=col,
                         description=(
                             f"Association field '{fieldname}' on asset '{asset_type}' "
-                            f"has multiplicity min={mult_min}, but the specification "
-                            f"can produce at most {int(acc.max_connections)} connections. "
-                            f"Increase the size of the connected asset sets or add "
-                            f"additional connection rules."
+                            f'has multiplicity min={mult_min}, but the specification '
+                            f'can produce at most {int(acc.max_connections)} connections. '
+                            f'Increase the size of the connected asset sets or add '
+                            f'additional connection rules.'
                         ),
                     )
                 )
@@ -548,7 +548,7 @@ class ProbabilisticMultiplicityAnalyzer(SpecVisitor):
     # ── Helpers ───────────────────────────────────────────────────────────────
 
     def _current_prefix(self) -> str:
-        return self._subsystem_stack[-1][0] if self._subsystem_stack else ""
+        return self._subsystem_stack[-1][0] if self._subsystem_stack else ''
 
     def _current_counts(self) -> Dict[str, float]:
         return (
@@ -562,7 +562,7 @@ class ProbabilisticMultiplicityAnalyzer(SpecVisitor):
 
     def _scoped(self, raw_id: str) -> str:
         prefix = self._current_prefix()
-        return f"{prefix}.{raw_id}" if prefix else raw_id
+        return f'{prefix}.{raw_id}' if prefix else raw_id
 
     def _accumulate(
         self,
@@ -640,9 +640,9 @@ class ProbabilisticMultiplicityAnalyzer(SpecVisitor):
         for i in range(1, len(ctx.term())):
             op = ctx.getChild(2 * i - (not leading_sign)).getText()
             term_val = self._term_expected(ctx.term(i))
-            if op == "+":
+            if op == '+':
                 result += term_val
-            elif op == "-":
+            elif op == '-':
                 result -= term_val
         return result
 
@@ -651,9 +651,9 @@ class ProbabilisticMultiplicityAnalyzer(SpecVisitor):
         for i in range(1, len(ctx.fact())):
             op = ctx.getChild(2 * i - 1).getText()
             val = self._fact_expected(ctx.fact(i))
-            if op == "*":
+            if op == '*':
                 result *= val
-            elif op == "/":
+            elif op == '/':
                 result /= val if val != 0 else 1e-9
         return result
 
@@ -705,7 +705,7 @@ class ProbabilisticMultiplicityAnalyzer(SpecVisitor):
         elif ctx.subsystemSetAccess():
             ids = [tok.getText() for tok in ctx.subsystemSetAccess().ID()]
             prefix = self._current_prefix()
-            full_key = ".".join([f"{prefix}.{ids[0]}" if prefix else ids[0]] + ids[1:])
+            full_key = '.'.join([f'{prefix}.{ids[0]}' if prefix else ids[0]] + ids[1:])
             count = self._current_counts().get(full_key, 1.0)
             t = self._current_types().get(full_key)
             return count, t
@@ -885,7 +885,7 @@ class SpecAnalyzer(SpecVisitor):
     def __init__(self, lang_graph: LanguageGraph):
         self._error: Optional[AnalyzerError] = None
         self._lang_info: str = (
-            f"{lang_graph.metadata['id']}, {lang_graph.metadata['version']}"
+            f'{lang_graph.metadata["id"]}, {lang_graph.metadata["version"]}'
         )
         self._lang_assets: Set[str] = {asset for asset in lang_graph.assets.keys()}
         self._lang_associations: Set[Tuple[str, str, str]] = set()
@@ -899,7 +899,7 @@ class SpecAnalyzer(SpecVisitor):
         self._defined_subsystems: Dict[str, Dict[str, str]] = {}
         self._in_subsystem_context: bool = False
         self._subsystem_variable_types: Dict[str, str] = {}
-        self._current_variable: str = ""
+        self._current_variable: str = ''
         self._declared_params: Set[str] = set()
         self._current_param: Optional[str] = None
         self._spec_ctx: SpecParser.SpecContext = None
@@ -910,7 +910,7 @@ class SpecAnalyzer(SpecVisitor):
         self._defined_subsystems = {}
         self._in_subsystem_context = False
         self._subsystem_variable_types = {}
-        self._current_variable = ""
+        self._current_variable = ''
         self._declared_params = set()
         self._current_param = None
         self._spec_ctx = spec_ctx
@@ -952,7 +952,7 @@ class SpecAnalyzer(SpecVisitor):
             return None
 
         current_type = types[first]
-        for i, field in enumerate(ids[1:], start=1):
+        for i, f in enumerate(ids[1:], start=1):
             if current_type not in self._defined_subsystems:
                 self._report_error(
                     ctx.ID(i).getSymbol(),
@@ -961,14 +961,14 @@ class SpecAnalyzer(SpecVisitor):
                 return None
 
             subsystem_fields = self._defined_subsystems[current_type]
-            if field not in subsystem_fields:
+            if f not in subsystem_fields:
                 self._report_error(
                     ctx.ID(i).getSymbol(),
-                    f"Subsystem '{current_type}' has no member '{field}'.",
+                    f"Subsystem '{current_type}' has no member '{f}'.",
                 )
                 return None
 
-            current_type = subsystem_fields[field]
+            current_type = subsystem_fields[f]
         return current_type
 
     def visitParam(self, ctx: SpecParser.ParamContext):
@@ -1099,7 +1099,7 @@ class SpecAnalyzer(SpecVisitor):
         elif ctx.subsystemSetAccess():
             return self._resolve_subsystem_access(ctx.subsystemSetAccess())
         else:
-            raise RuntimeError("Unexpected error in SpecAnalyzer.visitAssetSet.")
+            raise RuntimeError('Unexpected error in SpecAnalyzer.visitAssetSet.')
 
     def visitAssetInstantiation(self, ctx: SpecParser.AssetInstantiationContext):
         if self._error is not None:
@@ -1110,7 +1110,7 @@ class SpecAnalyzer(SpecVisitor):
             if assetType in self._defined_subsystems:
                 variableName: str = self._current_variable
                 for set, type in self._defined_subsystems[assetType].items():
-                    self._variable_types[f"{variableName}.{set}"] = type
+                    self._variable_types[f'{variableName}.{set}'] = type
             else:
                 self._report_error(
                     ctx.ID().getSymbol(),
