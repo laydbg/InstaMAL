@@ -8,12 +8,19 @@ import random
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Set, Tuple
 
-from antlr4 import *
+from antlr4 import FileStream, CommonTokenStream
 from maltoolbox.language import LanguageGraph
 from maltoolbox.model import Model
 
-from instamal.instantiator.helpers import *
-from instamal.instantiator.helpers.MultiplicityAnalyzer import *
+from instamal.instantiation.spec_analysis import (
+    SpecAnalyzer,
+    StaticMultiplicityAnalyzer,
+    ProbabilisticMultiplicityAnalyzer,
+    AnalyzerError,
+    MultiplicityViolation,
+)
+from instamal.language import SpecLexer, SpecParser, SpecVisitor
+from instamal.distributions import distribution_functions
 
 
 @dataclass
@@ -112,7 +119,7 @@ class ModelInstantiator(SpecVisitor):
                     raise
                 else:
                     print(
-                        f"Warning: failed to instantiate a model (failure {i-successful}): {e}"
+                        f"Warning: failed to instantiate a model (failure {i - successful}): {e}"
                     )
         print(f"Successfully instantiated {successful}/{n} models.")
 
