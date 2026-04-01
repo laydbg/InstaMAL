@@ -1,0 +1,66 @@
+[project]
+name = "instamal"
+version = "0.2.0"
+authors = [{ name = "Birger Karlsson" }]
+description = "Domain-level specification language and tool for generating diverse MAL model instances."
+readme = "README.md"
+requires-python = ">=3.9"
+
+dependencies = [
+  "antlr4-python3-runtime==4.13.2",
+  "mal-toolbox",
+  "matplotlib==3.10.8",
+]
+
+[project.optional-dependencies]
+test = ["pytest"]
+dev = ["pytest", "ruff"]
+
+[project.scripts]
+instamal = "instamal.__main__:main"
+
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
+exclude = ["tests", "tests.*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-ra"
+
+[tool.ruff.format]
+quote-style = "single"
+
+[tool.ruff.lint]
+dummy-variable-rgx = "^_$"
+
+fixable = ["ALL"]
+
+[tool.ruff.lint.per-file-ignores]
+"**/tests/*" = [
+  "PLR2004", # Allow magic value comparisons
+  "S101",    # Allow `assert` statements
+  "S311",    # Allow use of the `random` module (no need for cryptographic security)
+]
+"instamal/language/SpecLexer.py" = [
+  "F403", # Allow star imports
+  "F405", # Do not warn on possibly undefined imports
+  "F401", # Allow unused imports
+]
+"instamal/language/SpecParser.py" = ["F403", "F405", "F401"]
+"instamal/language/SpecVisitor.py" = ["F403", "F405", "F401"]
+
+[tool.ruff.lint.flake8-pytest-style]
+fixture-parentheses = false
+mark-parentheses = false
+
+[tool.ruff.lint.isort]
+split-on-trailing-comma = true
+known-first-party = ["instamal"]
+
+[tool.ruff.lint.pycodestyle]
+max-doc-length = 88
