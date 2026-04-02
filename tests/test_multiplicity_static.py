@@ -1,92 +1,18 @@
-import os
-import pytest
-import tempfile
-
-from instamal import ModelInstantiator
-
-
-TESTLANG_MAL = """
-#id: "org.mal-lang.testLang"
-#version: "1.0.0"
-
-category Test {
-
-  asset Server {
-  }
-
-  asset Software {
-  }
-
-  asset Client {
-  }
-
-  asset Database {
-  }
-
-  asset Credential {
-  }
-}
-
-associations {
-  // A Server must have 1..3 Software installed
-  Server [hosts]          *    <-- SoftwareOnServer     --> 1..3   [installedSoftware] Software
-
-  // Each Client connects to exactly 1 Server; a Server serves 1..*  Clients
-  Server [server]         1    <-- ClientServerRelation  --> 1..*  [connectedClients]  Client
-
-  // A Database is hosted on exactly 1 Server
-  Database [databases]    *    <-- DatabaseOnServer      --> 1     [hostedOn]          Server
-
-  // A Credential belongs to exactly 1..2 Clients
-  Credential [credential] 1    <-- CredentialForClient   --> 1..2  [owner]             Client
-
-  // A Server must be monitored by at least 5 Servers
-  Server [monitoredBy]    5..* <-- ServerMonitoring      --> *     [monitors]          Server
-}
 """
+Static multiplicity analysis tests.
+
+These tests exercise the StaticMultiplicityAnalyzer via ModelInstantiator and
+verify that specs with guaranteed multiplicity violations are rejected before
+instantiation, while specs that are within bounds or only probabilistically
+unsafe are accepted.
+"""
+import pytest
 
 
-# ── Fixtures ──────────────────────────────────────────────────────────────────
+# Boundary and within-bounds cases
 
 
-@pytest.fixture(scope='module')
-def testlang_path():
-    """Write TESTLANG_MAL to a temp .mal file and yield its path."""
-    with tempfile.NamedTemporaryFile(
-        delete=False, mode='w', suffix='.mal', encoding='utf-8'
-    ) as f:
-        f.write(TESTLANG_MAL)
-        path = f.name
-    yield path
-    os.remove(path)
-
-
-@pytest.fixture(scope='function')
-def instantiate():
-    def _instantiate(spec: str, lang_src: str, n: int = 1) -> None:
-        tmp_spec_file_name = None
-        try:
-            with tempfile.NamedTemporaryFile(
-                delete=False, mode='w', encoding='utf-8'
-            ) as tmp_spec_file:
-                tmp_spec_file.write(spec)
-                tmp_spec_file_name = tmp_spec_file.name
-            with tempfile.TemporaryDirectory() as tmp_dir:
-                instantiator = ModelInstantiator(
-                    tmp_spec_file_name, lang_src, interactive=False
-                )
-                instantiator.instantiate(tmp_dir, n)
-        finally:
-            if tmp_spec_file_name is not None:
-                os.remove(tmp_spec_file_name)
-
-    return _instantiate
-
-
-# ── Boundary and within-bounds cases ──────────────────────────────────────────
-
-
-def test_no_violation_at_exact_upper_bound(instantiate, testlang_path):
+def test_no_violation_at_exact_upper_bound(instantiate, multiplicityLang_path):
     """Connecting exactly as many assets as the upper bound allows passes."""
     spec = """
 let servers = Server(1);
@@ -96,10 +22,10 @@ connect {
     1: servers --> [installedSoftware] software;
 }
 """
-    instantiate(spec, testlang_path)
+    instantiate(spec, multiplicityLang_path)
 
 
-def test_no_violation_at_exact_lower_bound(instantiate, testlang_path):
+def test_no_violation_at_exact_lower_bound(instantiate, multiplicityLang_path):
     """Connecting exactly as many assets as the lower bound requires passes."""
     spec = """
 let servers = Server(1);
@@ -109,10 +35,10 @@ connect {
     1: servers --> [installedSoftware] software;
 }
 """
-    instantiate(spec, testlang_path)
+    instantiate(spec, multiplicityLang_path)
 
 
-def test_no_violation_strictly_within_bounds(instantiate, testlang_path):
+def test_no_violation_strictly_within_bounds(instantiate, multiplicityLang_path):
     """Connecting a count strictly between lower and upper bound passes."""
     spec = """
 let servers = Server(1);
@@ -122,10 +48,10 @@ connect {
     1: servers --> [installedSoftware] software;
 }
 """
-    instantiate(spec, testlang_path)
+    instantiate(spec, multiplicityLang_path)
 
 
-def test_no_violation_unbounded_max(instantiate, testlang_path):
+def test_no_violation_unbounded_max(instantiate, multiplicityLang_path):
     """Connecting many assets to a field with no upper bound passes."""
     spec = """
 let servers = Server(1);
@@ -135,10 +61,10 @@ connect {
     1: servers --> [connectedClients] clients;
 }
 """
-    instantiate(spec, testlang_path)
+    instantiate(spec, multiplicityLang_path)
 
 
-def test_no_violation_exact_multiplicity_one(instantiate, testlang_path):
+def test_no_violation_exact_multiplicity_one(instantiate, multiplicityLang_path):
     """Connecting exactly one asset to a field with multiplicity 1 passes."""
     spec = """
 let servers = Server(1);
@@ -148,10 +74,13 @@ connect {
     1: databases --> [hostedOn] servers;
 }
 """
-    instantiate(spec, testlang_path)
+    instantiate(spec, multiplicityLang_path)
 
 
-def test_violation_guaranteed_over_upper_bound(instantiate, testlang_path):
+# Guaranteed violations
+
+
+def test_violation_guaranteed_over_upper_bound(instantiate, multiplicityLang_path):
     """A set whose minimum count exceeds the field's upper bound with weight=1
     is a guaranteed violation."""
     spec = """
@@ -163,10 +92,10 @@ connect {
 }
 """
     with pytest.raises(Exception, match='(?i)multiplicity'):
-        instantiate(spec, testlang_path)
+        instantiate(spec, multiplicityLang_path)
 
 
-def test_violation_guaranteed_over_multiplicity_one(instantiate, testlang_path):
+def test_violation_guaranteed_over_multiplicity_one(instantiate, multiplicityLang_path):
     """Connecting more than one asset to a field with multiplicity 1 with
     weight=1 is a guaranteed violation."""
     spec = """
@@ -178,10 +107,10 @@ connect {
 }
 """
     with pytest.raises(Exception, match='(?i)multiplicity'):
-        instantiate(spec, testlang_path)
+        instantiate(spec, multiplicityLang_path)
 
 
-def test_violation_guaranteed_under_lower_bound(instantiate, testlang_path):
+def test_violation_guaranteed_under_lower_bound(instantiate, multiplicityLang_path):
     """A set whose maximum count falls below the field's lower bound with
     weight=1 is a guaranteed violation."""
     spec = """
@@ -193,10 +122,12 @@ connect {
 }
 """
     with pytest.raises(Exception, match='(?i)multiplicity'):
-        instantiate(spec, testlang_path)
+        instantiate(spec, multiplicityLang_path)
 
 
-def test_violation_guaranteed_under_lower_bound_zero_assets(instantiate, testlang_path):
+def test_violation_guaranteed_under_lower_bound_zero_assets(
+    instantiate, multiplicityLang_path
+):
     """Connecting zero assets to a field with a lower bound greater than zero
     with weight=1 is a guaranteed violation."""
     spec = """
@@ -208,14 +139,14 @@ connect {
 }
 """
     with pytest.raises(Exception, match='(?i)multiplicity'):
-        instantiate(spec, testlang_path)
+        instantiate(spec, multiplicityLang_path)
 
 
-# ── Connection weight semantics ───────────────────────────────────────────────
+# Connection weight semantics
 
 
 def test_no_violation_weight_below_one_does_not_trigger_underconnection(
-    instantiate, testlang_path
+    instantiate, multiplicityLang_path
 ):
     """A rule with weight < 1.0 conservatively contributes 0 to the guaranteed
     minimum, so under-connection cannot be statically guaranteed — no
@@ -228,11 +159,11 @@ connect {
     0.5: servers --> [installedSoftware] software;
 }
 """
-    instantiate(spec, testlang_path)
+    instantiate(spec, multiplicityLang_path)
 
 
 def test_no_violation_multiple_rules_accumulate_within_upper_bound(
-    instantiate, testlang_path
+    instantiate, multiplicityLang_path
 ):
     """Multiple rules writing to the same field are accumulated correctly;
     total guaranteed minimum must not exceed the upper bound."""
@@ -246,10 +177,12 @@ connect {
     1: servers --> [installedSoftware] software_b;
 }
 """
-    instantiate(spec, testlang_path)
+    instantiate(spec, multiplicityLang_path)
 
 
-def test_no_violation_lower_bound_above_one_satisfied(instantiate, testlang_path):
+def test_no_violation_lower_bound_above_one_satisfied(
+    instantiate, multiplicityLang_path
+):
     """Connecting at least as many assets as a lower bound greater than 1
     requires passes."""
     spec = """
@@ -259,11 +192,11 @@ connect {
     1: servers --> [monitors] servers;
 }
 """
-    instantiate(spec, testlang_path)
+    instantiate(spec, multiplicityLang_path)
 
 
 def test_violation_guaranteed_over_upper_bound_multiple_rules_accumulated(
-    instantiate, testlang_path
+    instantiate, multiplicityLang_path
 ):
     """Multiple rules whose accumulated guaranteed minimum exceeds the upper
     bound is a violation."""
@@ -278,13 +211,15 @@ connect {
 }
 """
     with pytest.raises(Exception, match='(?i)multiplicity'):
-        instantiate(spec, testlang_path)
+        instantiate(spec, multiplicityLang_path)
 
 
-# ── Subsystem instantiation ───────────────────────────────────────────────────
+# Subsystem instantiation
 
 
-def test_no_violation_within_bounds_inside_subsystem(instantiate, testlang_path):
+def test_no_violation_within_bounds_inside_subsystem(
+    instantiate, multiplicityLang_path
+):
     """A connection inside a subsystem that satisfies the multiplicity passes."""
     spec = """
 subsystem Unit {
@@ -298,10 +233,12 @@ subsystem Unit {
 
 let units = Unit(4);
 """
-    instantiate(spec, testlang_path)
+    instantiate(spec, multiplicityLang_path)
 
 
-def test_no_violation_within_bounds_nested_subsystem(instantiate, testlang_path):
+def test_no_violation_within_bounds_nested_subsystem(
+    instantiate, multiplicityLang_path
+):
     """Connections inside a doubly-nested subsystem that satisfy multiplicities
     pass."""
     spec = """
@@ -320,11 +257,11 @@ subsystem Outer {
 
 let outer = Outer(3);
 """
-    instantiate(spec, testlang_path)
+    instantiate(spec, multiplicityLang_path)
 
 
 def test_violation_guaranteed_over_upper_bound_inside_subsystem(
-    instantiate, testlang_path
+    instantiate, multiplicityLang_path
 ):
     """A guaranteed over-connection inside a subsystem is caught."""
     spec = """
@@ -340,11 +277,11 @@ subsystem Unit {
 let units = Unit(2);
 """
     with pytest.raises(Exception, match='(?i)multiplicity'):
-        instantiate(spec, testlang_path)
+        instantiate(spec, multiplicityLang_path)
 
 
 def test_violation_guaranteed_under_lower_bound_inside_subsystem(
-    instantiate, testlang_path
+    instantiate, multiplicityLang_path
 ):
     """A guaranteed under-connection inside a subsystem is caught."""
     spec = """
@@ -360,13 +297,15 @@ subsystem Unit {
 let units = Unit(2);
 """
     with pytest.raises(Exception, match='(?i)multiplicity'):
-        instantiate(spec, testlang_path)
+        instantiate(spec, multiplicityLang_path)
 
 
-# ── Distribution expressions ──────────────────────────────────────────────────
+# Distribution expressions
 
 
-def test_no_violation_exact_upper_bound_with_distribution(instantiate, testlang_path):
+def test_no_violation_exact_upper_bound_with_distribution(
+    instantiate, multiplicityLang_path
+):
     """A distribution whose entire support fits within the multiplicity range
     passes."""
     spec = """
@@ -377,13 +316,15 @@ connect {
     1: servers --> [installedSoftware] software;
 }
 """
-    instantiate(spec, testlang_path)
+    instantiate(spec, multiplicityLang_path)
 
 
-def test_no_violation_distribution_with_uncertain_bounds(instantiate, testlang_path):
+def test_no_violation_distribution_with_uncertain_bounds(
+    instantiate, multiplicityLang_path
+):
     """A distribution whose bounds straddle the multiplicity limits cannot be
-    statically guaranteed to violate, so no error is raised by the static
-    analyzer. Runtime violations from maltoolbox are acceptable here."""
+    statically guaranteed to violate, so no static error is raised.
+    Runtime violations from maltoolbox are acceptable here."""
     spec = """
 let servers = Server(1);
 let software = Software(Binomial(5, 0.5));
@@ -393,13 +334,13 @@ connect {
 }
 """
     try:
-        instantiate(spec, testlang_path)
+        instantiate(spec, multiplicityLang_path)
     except ValueError:
         pass  # Probabilistic runtime violation, not a static analyzer error
 
 
 def test_no_violation_certain_count_at_upper_bound_with_distribution(
-    instantiate, testlang_path
+    instantiate, multiplicityLang_path
 ):
     """A distribution that always yields exactly the upper bound passes."""
     spec = """
@@ -410,11 +351,11 @@ connect {
     1: servers --> [installedSoftware] software;
 }
 """
-    instantiate(spec, testlang_path)
+    instantiate(spec, multiplicityLang_path)
 
 
 def test_violation_guaranteed_over_distribution_certain_above_upper_bound(
-    instantiate, testlang_path
+    instantiate, multiplicityLang_path
 ):
     """A distribution that always yields a count above the upper bound is a
     guaranteed violation."""
@@ -427,10 +368,12 @@ connect {
 }
 """
     with pytest.raises(Exception, match='(?i)multiplicity'):
-        instantiate(spec, testlang_path)
+        instantiate(spec, multiplicityLang_path)
 
 
-def test_violation_guaranteed_over_distribution_always_max(instantiate, testlang_path):
+def test_violation_guaranteed_over_distribution_always_max(
+    instantiate, multiplicityLang_path
+):
     """A distribution with p=1.0 that always yields its maximum, which exceeds
     the upper bound, is a guaranteed violation."""
     spec = """
@@ -442,13 +385,13 @@ connect {
 }
 """
     with pytest.raises(Exception, match='(?i)multiplicity'):
-        instantiate(spec, testlang_path)
+        instantiate(spec, multiplicityLang_path)
 
 
-# ── Param expressions ─────────────────────────────────────────────────────────
+# Param expressions
 
 
-def test_no_violation_param_constant_within_bounds(instantiate, testlang_path):
+def test_no_violation_param_constant_within_bounds(instantiate, multiplicityLang_path):
     """A param = constant used as asset count that stays within the
     multiplicity range passes the static check."""
     spec = """
@@ -461,10 +404,10 @@ connect {
     1: servers --> [installedSoftware] software;
 }
 """
-    instantiate(spec, testlang_path)
+    instantiate(spec, multiplicityLang_path)
 
 
-def test_violation_param_constant_over_upper_bound(instantiate, testlang_path):
+def test_violation_param_constant_over_upper_bound(instantiate, multiplicityLang_path):
     """A param = constant that puts the asset count above the multiplicity
     upper bound is a guaranteed violation."""
     spec = """
@@ -478,10 +421,12 @@ connect {
 }
 """
     with pytest.raises(Exception, match='(?i)multiplicity'):
-        instantiate(spec, testlang_path)
+        instantiate(spec, multiplicityLang_path)
 
 
-def test_violation_param_constant_under_lower_bound(instantiate, testlang_path):
+def test_violation_param_constant_under_lower_bound(
+    instantiate, multiplicityLang_path
+):
     """A param = constant that puts the asset count below the multiplicity
     lower bound is a guaranteed violation."""
     spec = """
@@ -495,10 +440,12 @@ connect {
 }
 """
     with pytest.raises(Exception, match='(?i)multiplicity'):
-        instantiate(spec, testlang_path)
+        instantiate(spec, multiplicityLang_path)
 
 
-def test_no_violation_param_distribution_within_bounds(instantiate, testlang_path):
+def test_no_violation_param_distribution_within_bounds(
+    instantiate, multiplicityLang_path
+):
     """A param ~ distribution whose entire support stays within the
     multiplicity range passes the static check."""
     spec = """
@@ -511,11 +458,11 @@ connect {
     1: servers --> [installedSoftware] software;
 }
 """
-    instantiate(spec, testlang_path)
+    instantiate(spec, multiplicityLang_path)
 
 
 def test_violation_param_distribution_always_over_upper_bound(
-    instantiate, testlang_path
+    instantiate, multiplicityLang_path
 ):
     """A param ~ distribution whose entire support exceeds the multiplicity
     upper bound is a guaranteed violation."""
@@ -530,10 +477,12 @@ connect {
 }
 """
     with pytest.raises(Exception, match='(?i)multiplicity'):
-        instantiate(spec, testlang_path)
+        instantiate(spec, multiplicityLang_path)
 
 
-def test_no_violation_param_arithmetic_within_bounds(instantiate, testlang_path):
+def test_no_violation_param_arithmetic_within_bounds(
+    instantiate, multiplicityLang_path
+):
     """A param defined via arithmetic on another param evaluates correctly
     and passes when the result is within bounds."""
     spec = """
@@ -547,10 +496,12 @@ connect {
     1: servers --> [installedSoftware] software;
 }
 """
-    instantiate(spec, testlang_path)
+    instantiate(spec, multiplicityLang_path)
 
 
-def test_violation_param_arithmetic_over_upper_bound(instantiate, testlang_path):
+def test_violation_param_arithmetic_over_upper_bound(
+    instantiate, multiplicityLang_path
+):
     """A param defined via arithmetic that evaluates above the multiplicity
     upper bound is a guaranteed violation."""
     spec = """
@@ -565,11 +516,11 @@ connect {
 }
 """
     with pytest.raises(Exception, match='(?i)multiplicity'):
-        instantiate(spec, testlang_path)
+        instantiate(spec, multiplicityLang_path)
 
 
 def test_no_violation_param_chained_arithmetic_within_bounds(
-    instantiate, testlang_path
+    instantiate, multiplicityLang_path
 ):
     """A chain of params each referencing the previous evaluates correctly
     and does not produce a false violation."""
@@ -585,10 +536,12 @@ connect {
     1: servers --> [installedSoftware] software;
 }
 """
-    instantiate(spec, testlang_path)
+    instantiate(spec, multiplicityLang_path)
 
 
-def test_no_violation_param_used_in_subsystem_within_bounds(instantiate, testlang_path):
+def test_no_violation_param_used_in_subsystem_within_bounds(
+    instantiate, multiplicityLang_path
+):
     """A global param used inside a subsystem for asset count propagates
     through subsystem multiplication without causing a violation."""
     spec = """
@@ -605,10 +558,12 @@ subsystem Unit {
 
 let units = Unit(1);
 """
-    instantiate(spec, testlang_path)
+    instantiate(spec, multiplicityLang_path)
 
 
-def test_violation_param_used_in_subsystem_over_upper_bound(instantiate, testlang_path):
+def test_violation_param_used_in_subsystem_over_upper_bound(
+    instantiate, multiplicityLang_path
+):
     """A global param used inside a subsystem that causes an over-connection
     is detected after subsystem bounds are propagated upward."""
     spec = """
@@ -626,4 +581,4 @@ subsystem Unit {
 let units = Unit(1);
 """
     with pytest.raises(Exception, match='(?i)multiplicity'):
-        instantiate(spec, testlang_path)
+        instantiate(spec, multiplicityLang_path)
