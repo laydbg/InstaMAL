@@ -5,6 +5,7 @@ These tests exercise the SemanticAnalyzer via ModelInstantiator and verify
 that well-formed specs instantiate without error while malformed specs raise
 exceptions whose messages identify the correct source location.
 """
+
 import pytest
 
 
@@ -372,9 +373,7 @@ connect {
     assert 'line 13' in str(exc_info.value).lower()
 
 
-def test_exception_on_undeclared_root_in_nested_access(
-    instantiate, trainingLang_path
-):
+def test_exception_on_undeclared_root_in_nested_access(instantiate, trainingLang_path):
     """Using an undeclared variable as the root of a dot-notation access
     should raise an error pointing to the offending line."""
     spec = """
@@ -485,9 +484,7 @@ param hosts = 4; // <- line 4
     assert 'line 4' in str(exc_info.value).lower()
 
 
-def test_exception_on_let_variable_conflicts_with_param(
-    instantiate, trainingLang_path
-):
+def test_exception_on_let_variable_conflicts_with_param(instantiate, trainingLang_path):
     """A let variable declared after a param with the same name should raise
     an error pointing to the offending line."""
     spec = """
@@ -580,9 +577,7 @@ param m = 4;
 # Inheritance
 
 
-def test_no_exception_on_association_via_inheritance(
-    instantiate, inheritanceLang_path
-):
+def test_no_exception_on_association_via_inheritance(instantiate, inheritanceLang_path):
     """A child asset should be usable in an association defined on its parent."""
     spec = """
 let children = Child(2);

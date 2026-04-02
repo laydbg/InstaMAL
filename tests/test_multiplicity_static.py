@@ -6,6 +6,7 @@ verify that specs with guaranteed multiplicity violations are rejected before
 instantiation, while specs that are within bounds or only probabilistically
 unsafe are accepted.
 """
+
 import pytest
 
 
@@ -424,9 +425,7 @@ connect {
         instantiate(spec, multiplicityLang_path)
 
 
-def test_violation_param_constant_under_lower_bound(
-    instantiate, multiplicityLang_path
-):
+def test_violation_param_constant_under_lower_bound(instantiate, multiplicityLang_path):
     """A param = constant that puts the asset count below the multiplicity
     lower bound is a guaranteed violation."""
     spec = """
