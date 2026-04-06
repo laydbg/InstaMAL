@@ -1,6 +1,6 @@
 from .specification_analyzers import (
-    AnalyzerError,
-    SpecAnalyzer,
+    SemanticError,
+    SemanticAnalyzer,
     MultiplicityViolation,
     MultiplicityWarning,
     ProbabilisticMultiplicityAnalyzer,
@@ -12,6 +12,6 @@ __all__ = [
     'MultiplicityWarning',
     'StaticMultiplicityAnalyzer',
     'ProbabilisticMultiplicityAnalyzer',
-    'AnalyzerError',
-    'SpecAnalyzer',
+    'SemanticError',
+    'SemanticAnalyzer',
 ]

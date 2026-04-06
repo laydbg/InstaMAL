@@ -1,26 +1,27 @@
 from __future__ import annotations
 
-import math
 import itertools as it
+import logging
+import math
 import os
 import random
 
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Set, Tuple
 
-from antlr4 import FileStream, CommonTokenStream
+from antlr4 import CommonTokenStream, FileStream
 from maltoolbox.language import LanguageGraph
 from maltoolbox.model import Model
 
+from instamal.distributions import distribution_functions
+from instamal.language import SpecLexer, SpecParser, SpecVisitor
 from instamal.instantiation.spec_analysis import (
-    SpecAnalyzer,
+    SemanticAnalyzer,
     StaticMultiplicityAnalyzer,
     ProbabilisticMultiplicityAnalyzer,
-    AnalyzerError,
-    MultiplicityViolation,
 )
-from instamal.language import SpecLexer, SpecParser, SpecVisitor
-from instamal.distributions import distribution_functions
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -50,32 +51,20 @@ class ModelInstantiator(SpecVisitor):
 
         spec_ctx = parser.spec()
 
-        # Semantic analysis
-        spec_analyzer: SpecAnalyzer = SpecAnalyzer(lang_graph)
-        error: Optional[AnalyzerError] = spec_analyzer.analyze(spec_ctx)
-        if error is not None:
-            raise Exception(
-                f'Semantic error on line {error.line}, col {error.column}: {error.description}'
-            )
+        # Semantic analysis, raises on the first error found
+        SemanticAnalyzer(lang_graph).analyze(spec_ctx)
 
-        # Static multiplicity check
-        stat_mult_analyzer = StaticMultiplicityAnalyzer(lang_graph)
-        violations: list[MultiplicityViolation] = stat_mult_analyzer.analyze(spec_ctx)
-        if violations:
-            messages = '\n'.join(
-                f'  line {v.line}, col {v.column}: {v.description}' for v in violations
-            )
-            raise Exception(f'Multiplicity violation(s) detected:\n{messages}')
+        # Static multiplicity check, raises if any guaranteed violations exist
+        StaticMultiplicityAnalyzer(lang_graph).analyze(spec_ctx)
 
-        # Probabilistic multiplicity check
-        prob_mult_analyzer = ProbabilisticMultiplicityAnalyzer(
-            lang_graph, threshold=0.9
+        # Probabilistic multiplicity check, returns warnings, does not raise
+        warnings = ProbabilisticMultiplicityAnalyzer(lang_graph, threshold=0.9).analyze(
+            spec_ctx
         )
-        warnings = prob_mult_analyzer.analyze(spec_ctx)
         if warnings:
-            print('Probabilistic multiplicity warnings:')
+            logger.warning('Probabilistic multiplicity warnings:')
             for w in warnings:
-                print(str(w))
+                logger.warning(str(w))
             if interactive:
                 answer = input('Proceed with instantiation? [y/N]: ').strip().lower()
                 if answer != 'y':
@@ -115,13 +104,14 @@ class ModelInstantiator(SpecVisitor):
                     tb = tb.tb_next
                 origin = tb.tb_frame.f_code.co_filename
                 if os.path.abspath(origin) == os.path.abspath(__file__):
-                    # Exception originated from this file
                     raise
                 else:
-                    print(
-                        f'Warning: failed to instantiate a model (failure {i - successful}): {e}'
+                    logger.warning(
+                        f'Failed to instantiate a model '
+                        f'(attempt {i + 1}, failure {i - successful + 1}): {e}'
                     )
-        print(f'Successfully instantiated {successful}/{n} models.')
+
+        logger.info(f'Successfully instantiated {successful}/{n} models.')
 
     def _instantiate_single_model(self, name: str) -> Model:
         """Instantiate a new model internally and return it."""
@@ -131,7 +121,8 @@ class ModelInstantiator(SpecVisitor):
         self._type_count = {}
         self._subsystems = {}
         self._subsystem_stack = []
-        self._params = {}
+        self._param_values = {}
+        self._param_exprs = {}
         self.visit(self._spec_ctx)
         return self._model
 
@@ -177,7 +168,7 @@ class ModelInstantiator(SpecVisitor):
     def _current_prefix(self) -> str:
         return self._subsystem_stack[-1].prefix if self._subsystem_stack else ''
 
-    # ── Expression evaluators ─────────────────────────────────────────────────
+    # Expression evaluators
 
     def _eval_expr(self, ctx: SpecParser.ExprContext) -> float:
         leading_sign = ctx.sign() is not None
@@ -283,7 +274,7 @@ class ModelInstantiator(SpecVisitor):
 
         return assets, asset_type
 
-    # ── Visitor overrides ─────────────────────────────────────────────────────
+    # Visitor overrides
 
     def visitParam(self, ctx: SpecParser.ParamContext) -> None:
         param_name = ctx.ID().getText()
