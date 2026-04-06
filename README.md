@@ -12,7 +12,7 @@ python -m pip install .
 
 ```
 $ instamal -h
-usage: instamal [-h] -s SPEC_PATH -l LANG_PATH [-n NUM_INSTANCES] [-o OUT_PATH] [-v VISUALIZE]
+usage: instamal [-h] -s SPEC_PATH -l LANG_PATH [-n N] [-o OUT_PATH] [-v N]
 
 Generate model instances based on specified domain specifications.
 
@@ -22,14 +22,14 @@ options:
                         path to the system domain specification
   -l LANG_PATH, --lang_path LANG_PATH
                         path to the MAL domain-specific language
-  -n NUM_INSTANCES, --num_instances NUM_INSTANCES
+  -n N, --num_instances N
                         number of model instances to generate (default: 1)
   -o OUT_PATH, --out_path OUT_PATH
-                        output path for the generated model instances (default: "models")
-  -v VISUALIZE, --visualize VISUALIZE
-                        Generate visualizations for the first n model instances (-v n). Creates a
-                        "vis" directory with .svg files and a `summary.pdf` in the output path. Use
-                        -v 0 to disable (default: 0).
+                        output path for the generated model instances (default:
+                        "models")
+  -v N, --visualize N   generate visualizations for the first N model instances.
+                        Creates a "vis" subdirectory with .svg files and a summary.pdf
+                        in the output path. Use 0 to disable (default: 0).
 ```
 
 ## Specification Language Overview
