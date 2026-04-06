@@ -1,9 +1,9 @@
-# Generated from /home/birger/github/master-thesis/src/instamal/instantiator/helpers/Spec.g4 by ANTLR 4.13.2
+# Generated from Spec.g4 by ANTLR 4.13.2
 from antlr4 import *
 if "." in __name__:
-    from .SpecParser import SpecParser
+    from .spec_parser import SpecParser
 else:
-    from SpecParser import SpecParser
+    from spec_parser import SpecParser
 
 # This class defines a complete generic visitor for a parse tree produced by SpecParser.
 
