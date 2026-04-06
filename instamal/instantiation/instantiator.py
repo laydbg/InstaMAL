@@ -86,18 +86,29 @@ class ModelInstantiator(SpecVisitor):
     def instantiate(
         self, outDirPath: str, n: int = 1, modelPrefix: str = 'model_'
     ) -> None:
-        """Instantiate and save up to n models to the specified directory."""
+        """Instantiate exactly n valid models and save them to the specified directory.
+
+        Retries on failure, consistent with rejection sampling from the MAL model
+        distribution. If the acceptance rate drops below 1 in 100 attempts a
+        warning is logged, but instantiation continues until n models are produced.
+        """
         assert n > 0
 
         os.makedirs(outDirPath, exist_ok=True)
 
+        warn_threshold = 100
+        warned = False
         successful = 0
-        for i in range(n):
+        attempts = 0
+
+        while successful < n:
+            attempts += 1
             modelName = f'{modelPrefix}{successful}'
             try:
                 model = self._instantiate_single_model(modelName)
                 model.save_to_file(f'{outDirPath}/{modelName}.yml')
                 successful += 1
+                warned = False
             except Exception as e:
                 tb = e.__traceback__
                 while tb.tb_next is not None:
@@ -106,12 +117,26 @@ class ModelInstantiator(SpecVisitor):
                 if os.path.abspath(origin) == os.path.abspath(__file__):
                     raise
                 else:
-                    logger.warning(
-                        f'Failed to instantiate a model '
-                        f'(attempt {i + 1}, failure {i - successful + 1}): {e}'
+                    logger.debug(
+                        f'Retrying after failed attempt {attempts} '
+                        f'({successful}/{n} succeeded so far): {e}'
                     )
 
-        logger.info(f'Successfully instantiated {successful}/{n} models.')
+            if (
+                not warned
+                and attempts - successful >= warn_threshold
+                and successful < n
+            ):
+                acceptance_rate = successful / attempts if attempts > 0 else 0
+                logger.warning(
+                    f'Low acceptance rate: {successful} valid model(s) produced in '
+                    f'{attempts} attempt(s) ({acceptance_rate:.1%}). The specification '
+                    f'may be too constrained for efficient rejection sampling. '
+                    f'Press Ctrl+C to abort.'
+                )
+                warned = True
+
+        logger.info(f'Successfully instantiated {n} models in {attempts} attempt(s).')
 
     def _instantiate_single_model(self, name: str) -> Model:
         """Instantiate a new model internally and return it."""
