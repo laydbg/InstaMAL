@@ -1,7 +1,7 @@
 grammar Spec;
 
 // Parser Rules
-spec: (param | subsystem | let | connect)* EOF;
+spec: (param | subsystem | let | connect)* prune? EOF;
 param: PARAM ID (ASSIGN | TILDE) expr SEMICOLON;
 number: INT | FLOAT;
 
@@ -18,20 +18,24 @@ subsystemSetAccess: ID (DOT ID)+;
 
 let: LET variable ASSIGN assetSet SEMICOLON;
 variable: ID;
-assetSet: variable | assetInstantiation | subsystemSetAccess;
+assetSet: namedAssetSet | assetInstantiation;
+namedAssetSet: variable | subsystemSetAccess;
 assetInstantiation: ID LPAREN expr? RPAREN;
 
 connect: CONNECT LCURLY connectionRule* RCURLY;
 connectionRule:
 	number COLON assetSet RARROW associationFieldname assetSet SEMICOLON;
-
 associationFieldname: LSQUARE ID RSQUARE;
+
+prune: PRUNE (LPAREN pruneParameters? RPAREN)? SEMICOLON;
+pruneParameters: namedAssetSet (COMMA namedAssetSet)*;
 
 // Lexer Rules
 PARAM: 'param';
 LET: 'let';
 SUBSYSTEM: 'subsystem';
 CONNECT: 'connect';
+PRUNE: 'prune';
 
 INT: [0-9]+;
 FLOAT: [0-9]* DOT [0-9]+;

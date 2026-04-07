@@ -261,19 +261,24 @@ class ModelInstantiator(SpecVisitor):
     ) -> Tuple[Set[str], Optional[str]]:
         if ctx.assetInstantiation():
             return self._eval_asset_instantiation(ctx.assetInstantiation(), name_prefix)
-        elif ctx.variable() or ctx.subsystemSetAccess():
-            variable_id = ctx.getText()
-            if self._subsystem_stack:
-                full_id = f'{self._current_prefix()}.{variable_id}'
-                return (
-                    self._subsystem_stack[-1].asset_sets.get(full_id, set()),
-                    self._types.get(full_id),
-                )
-            return (
-                self._asset_sets.get(variable_id, set()),
-                self._types.get(variable_id),
-            )
+        elif ctx.namedAssetSet():
+            return self._eval_named_asset_set(ctx.namedAssetSet())
         raise RuntimeError('Unexpected node in _eval_asset_set.')
+
+    def _eval_named_asset_set(
+        self, ctx: SpecParser.NamedAssetSetContext
+    ) -> Tuple[Set[str], Optional[str]]:
+        variable_id = ctx.getText()
+        if self._subsystem_stack:
+            full_id = f'{self._current_prefix()}.{variable_id}'
+            return (
+                self._subsystem_stack[-1].asset_sets.get(full_id, set()),
+                self._types.get(full_id),
+            )
+        return (
+            self._asset_sets.get(variable_id, set()),
+            self._types.get(variable_id),
+        )
 
     def _eval_asset_instantiation(
         self,
@@ -369,3 +374,66 @@ class ModelInstantiator(SpecVisitor):
             rules.append(ConnectionRule(weight, left_set, right_fieldname, right_set))
 
         self._random_connect(rules)
+
+    def visitPrune(self, ctx: SpecParser.PruneContext) -> None:
+        """Remove assets from the model based on connectivity.
+
+        With no arguments, retains only the assets belonging to the largest
+        connected component (the giant component).
+
+        With arguments, each argument is a named asset set acting as an anchor.
+        A connected component is retained if and only if it contains at least
+        one anchor asset. Components with no anchor are removed.
+
+        In both cases, removing an asset also removes all associations to and
+        from that asset in the model.
+        """
+        # Build an adjacency structure over asset names.
+        neighbours: Dict[str, Set[str]] = {
+            asset.name: {
+                assoc_asset.name
+                for assoc_set in asset.associated_assets.values()
+                for assoc_asset in assoc_set
+            }
+            for asset in self._model.assets.values()
+        }
+        all_assets: Set[str] = set(neighbours.keys())
+
+        # Find connected components via BFS.
+        components: List[Set[str]] = []
+        visited: Set[str] = set()
+        for start in all_assets:
+            if start in visited:
+                continue
+            component: Set[str] = set()
+            queue = [start]
+            while queue:
+                node = queue.pop()
+                if node in visited:
+                    continue
+                visited.add(node)
+                component.add(node)
+                queue.extend(neighbours[node] - visited)
+            components.append(component)
+
+        if ctx.pruneParameters() is None:
+            # Giant component: keep only the largest.
+            retain = max(components, key=len)
+        else:
+            # Anchor-set: collect all assets from all supplied named asset sets,
+            # then keep components that contain at least one anchor.
+            anchors: Set[str] = set()
+            for named_set_ctx in ctx.pruneParameters().namedAssetSet():
+                anchors.update(self._eval_named_asset_set(named_set_ctx)[0])
+
+            retain = {
+                asset_name
+                for component in components
+                if component & anchors
+                for asset_name in component
+            }
+
+        # Remove all assets not in the retained set.
+        assets_to_remove = all_assets - retain
+        for asset_name in assets_to_remove:
+            self._model.remove_asset(self._model.get_asset_by_name(asset_name))

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import inspect
 import math
 from abc import abstractmethod
 from dataclasses import dataclass, field
@@ -276,7 +277,14 @@ class MultiplicityAnalyzer(SpecVisitor):
     ) -> Tuple[float, Optional[str]]:
         if ctx.assetInstantiation():
             return self._visit_asset_instantiation(ctx.assetInstantiation())
-        elif ctx.variable():
+        elif ctx.namedAssetSet():
+            return self._visit_named_asset_set(ctx.namedAssetSet())
+        return 1.0, None
+
+    def _visit_named_asset_set(
+        self, ctx: SpecParser.NamedAssetSetContext
+    ) -> Tuple[float, Optional[str]]:
+        if ctx.variable():
             var_id = self._scoped(ctx.variable().getText())
             scalar = self._current_scalars().get(var_id, 1.0)
             t = self._current_types().get(var_id)
@@ -361,8 +369,8 @@ class StaticMultiplicityAnalyzer(MultiplicityAnalyzer):
     Performs a static multiplicity check over a parsed spec for any guaranteed
     violations, using conservative bound propagation rather than sampling.
 
-    Precision design
-    ----------------
+    Precision design:
+
     The static analyzer tracks every asset set size as a CardinalityBound
     (lo, hi) pair rather than as a single scalar. This is essential for
     correctness. Consider a distribution Uniform(2, 6) used as a right-set
@@ -532,7 +540,14 @@ class StaticMultiplicityAnalyzer(MultiplicityAnalyzer):
         """Resolve an asset set to its (lo, hi) CardinalityBound and type."""
         if ctx.assetInstantiation():
             return self._visit_asset_instantiation_bounds(ctx.assetInstantiation())
-        elif ctx.variable():
+        elif ctx.namedAssetSet():
+            return self._visit_named_asset_set_bounds(ctx.namedAssetSet())
+        return CardinalityBound(0, INF), None
+
+    def _visit_named_asset_set_bounds(
+        self, ctx: SpecParser.NamedAssetSetContext
+    ) -> Tuple[CardinalityBound, Optional[str]]:
+        if ctx.variable():
             var_id = self._scoped(ctx.variable().getText())
             cb = self._current_bounds().get(var_id)
             t = self._current_types().get(var_id)
@@ -978,18 +993,47 @@ class ProbabilisticMultiplicityAnalyzer(MultiplicityAnalyzer):
 # Semantic analyzer
 
 
+def _build_distribution_arities() -> Dict[str, int]:
+    """Return a mapping from distribution name to expected parameter count,
+    derived from the signatures of the bounds functions."""
+    return {
+        name: len(inspect.signature(fn).parameters)
+        for name, fn in distribution_bounds_functions.items()
+    }
+
+
+_DISTRIBUTION_ARITIES: Dict[str, int] = _build_distribution_arities()
+
+
 class SemanticAnalyzer(SpecVisitor):
     """
-    Performs semantic analysis of a spec language file. Stops after the first
-    error encountered.
+    Performs semantic analysis of a spec language file.
+
+    Raises an Exception immediately upon finding the first error, so every
+    visitor method is guaranteed to run in a valid state and none of them
+    need to guard against a previously recorded error.
+
+    Checks performed:
+
+    - All asset type names used in let declarations and inline instantiations
+      must exist in the DSL language assets.
+    - All param, variable and subsystem names must be unique across all three
+      namespaces.
+    - All distributionSample function names must be known, with the correct
+      number of arguments.
+    - All subsystemSetAccess paths must be valid given the subsystems and
+      variables declared so far.
+    - All variables must resolve to exactly one concrete MAL asset type .
+    - All connection rule weights must be in [0, 1].
+    - All connection rules must correspond to a valid association in the DSL.
+    - prune arguments must each resolve to a concrete asset type.
     """
 
-    def __init__(self, lang_graph: LanguageGraph):
-        self._error: Optional[SemanticError] = None
-        self._lang_info: str = (
+    def __init__(self, lang_graph: LanguageGraph) -> None:
+        self._lang_info = (
             f'{lang_graph.metadata["id"]}, {lang_graph.metadata["version"]}'
         )
-        self._lang_assets: Set[str] = {asset for asset in lang_graph.assets.keys()}
+        self._lang_assets: Set[str] = set(lang_graph.assets.keys())
         self._lang_associations: Set[Tuple[str, str, str]] = set()
         for asset in lang_graph.assets.values():
             for fieldname, assoc in asset.associations.items():
@@ -997,250 +1041,385 @@ class SemanticAnalyzer(SpecVisitor):
                 for sub_asset in target_asset.sub_assets:
                     self._lang_associations.add((asset.name, fieldname, sub_asset.name))
 
+        self._params: Set[str] = set()
+
+        self._subsystems: Set[str] = set()
+        self._subsystem_defs: Dict[str, Dict[str, str]] = {}
+
         self._variable_types: Dict[str, str] = {}
-        self._defined_subsystems: Dict[str, Dict[str, str]] = {}
-        self._in_subsystem_context: bool = False
-        self._subsystem_variable_types: Dict[str, str] = {}
+
+        self._current_subsystem_name: Optional[str] = None
+        self._current_subsystem_members: Optional[Dict[str, str]] = None
         self._current_variable: str = ''
-        self._declared_params: Set[str] = set()
-        self._current_param: Optional[str] = None
+
+    # Public entry point
 
     def analyze(self, spec_ctx: SpecParser.SpecContext) -> None:
-        """
-        Analyze the spec for semantic errors.
+        """Analyze the spec for semantic errors.
 
         Raises:
-            Exception: on the first semantic error found, with line/column info.
+            Exception: on the first semantic error found, with line/col info.
         """
-        self._error = None
+        self._params = set()
+        self._subsystems = set()
+        self._subsystem_defs = {}
         self._variable_types = {}
-        self._defined_subsystems = {}
-        self._in_subsystem_context = False
-        self._subsystem_variable_types = {}
+        self._current_subsystem_name = None
+        self._current_subsystem_members = None
         self._current_variable = ''
-        self._declared_params = set()
-        self._current_param = None
 
+        # First pass: register all subsystem definitions so that forward
+        # references from let declarations to subsystem types are valid.
+        for child in spec_ctx.getChildren():
+            if isinstance(child, SpecParser.SubsystemContext):
+                self._register_subsystem(child)
+
+        # Second pass: visit params, lets, connects and prune in order.
         self.visit(spec_ctx)
 
-        if self._error is not None:
-            e = self._error
-            raise Exception(
-                f'Semantic error on line {e.line}, col {e.column}: {e.description}'
-            )
+    # Error reporting
 
-    def _report_error(self, symbol: Token, description: str) -> None:
-        if self._error is None:
-            self._error = SemanticError(symbol.line, symbol.column, description)
+    def _fail(self, line: int, col: int, message: str) -> None:
+        raise Exception(f'Semantic error on line {line}, col {col}: {message}')
+
+    def _fail_token(self, token, message: str) -> None:
+        self._fail(token.line, token.column, message)
+
+    # Name uniqueness
 
     def _all_declared_names(self) -> Set[str]:
-        return (
-            self._declared_params
-            | set(self._variable_types.keys())
-            | set(self._defined_subsystems.keys())
-        )
+        return self._params | set(self._variable_types) | set(self._subsystems)
 
-    def _resolve_subsystem_access(
-        self, ctx: SpecParser.SubsystemSetAccessContext
-    ) -> Optional[str]:
-        if self._error is not None:
-            return None
-
-        ids = [id_token.getText() for id_token in ctx.ID()]
-        types = (
-            self._variable_types
-            if not self._in_subsystem_context
-            else self._subsystem_variable_types
-        )
-
-        first = ids[0]
-        if first not in types:
-            self._report_error(
-                ctx.ID(0).getSymbol(),
-                f"Variable name '{first}' has not been declared.",
+    def _assert_name_available(self, token) -> None:
+        name = token.getText() if hasattr(token, 'getText') else token
+        symbol = token.getSymbol() if hasattr(token, 'getSymbol') else token
+        if name in self._all_declared_names():
+            self._fail_token(
+                symbol,
+                f"Name '{name}' has already been declared.",
             )
-            return None
 
-        current_type = types[first]
-        for i, f in enumerate(ids[1:], start=1):
-            if current_type not in self._defined_subsystems:
-                self._report_error(
-                    ctx.ID(i).getSymbol(),
-                    f"Asset '{current_type}' has no members (not a subsystem).",
+    # Subsystem definition registration (first pass)
+
+    def _register_subsystem(self, ctx: SpecParser.SubsystemContext) -> None:
+        """Collect a subsystem's member types without executing any checks
+        that depend on the order of top-level declarations. Full validation
+        happens when the subsystem is visited in the second pass."""
+        name = ctx.ID().getText()
+        members: Dict[str, str] = {}
+
+        saved = self._current_subsystem_members
+        self._current_subsystem_members = members
+
+        for child in ctx.getChildren():
+            if isinstance(child, SpecParser.LetContext):
+                member_name = child.variable().ID().getText()
+                asset_set = child.assetSet()
+                if asset_set.assetInstantiation():
+                    type_name = asset_set.assetInstantiation().ID().getText()
+                    members[member_name] = type_name
+                elif asset_set.namedAssetSet():
+                    text = asset_set.namedAssetSet().getText()
+                    # For variable references, record the type from the
+                    # already-known members dict; for subsystem set accesses
+                    # record the raw text as a placeholder. Full validation
+                    # happens in the second pass.
+                    if asset_set.namedAssetSet().variable():
+                        ref_name = asset_set.namedAssetSet().variable().ID().getText()
+                        members[member_name] = members.get(ref_name, ref_name)
+                    else:
+                        members[member_name] = text
+
+        self._current_subsystem_members = saved
+        self._subsystem_defs[name] = members
+
+    # Helpers
+
+    def _resolve_named_asset_set(self, ctx: SpecParser.NamedAssetSetContext) -> str:
+        """Resolve a namedAssetSet to its concrete asset type string.
+
+        Raises on any resolution failure.
+        """
+        if ctx.variable():
+            return self._resolve_variable(ctx.variable())
+        else:
+            return self._resolve_subsystem_set_access(ctx.subsystemSetAccess())
+
+    def _resolve_variable(self, ctx: SpecParser.VariableContext) -> str:
+        """Resolve a plain variable reference to its asset type.
+
+        The variable must be declared and must map to a concrete MAL asset
+        type (not a subsystem name).
+        """
+        name = ctx.ID().getText()
+        symbol = ctx.ID().getSymbol()
+
+        types = (
+            self._current_subsystem_members
+            if self._current_subsystem_members is not None
+            else self._variable_types
+        )
+
+        if name not in types:
+            self._fail_token(symbol, f"Variable '{name}' has not been declared.")
+
+        resolved = types[name]
+        if resolved not in self._lang_assets:
+            self._fail_token(
+                symbol,
+                f"'{name}' refers to a subsystem, not an asset set. "
+                f'Use dot-access to refer to a member instead '
+                f'(e.g. {name}.variableName).',
+            )
+        return resolved
+
+    def _resolve_subsystem_set_access(
+        self, ctx: SpecParser.SubsystemSetAccessContext
+    ) -> str:
+        """Resolve a dot-access path to the asset type of its final segment.
+
+        Each intermediate segment must name a subsystem instantiation whose
+        definition is known; the final segment must be a member of that
+        subsystem that resolves to a concrete MAL asset type.
+
+        The first segment is looked up in the current scope (subsystem members
+        when inside a subsystem body, top-level variables otherwise), since
+        dot-access paths can start from a variable declared in either scope.
+        """
+        ids = [tok for tok in ctx.ID()]
+        first_name = ids[0].getText()
+
+        current_scope = (
+            self._current_subsystem_members
+            if self._current_subsystem_members is not None
+            else self._variable_types
+        )
+
+        if first_name not in current_scope:
+            self._fail_token(
+                ids[0].getSymbol(),
+                f"Variable '{first_name}' has not been declared.",
+            )
+
+        current_type = current_scope[first_name]
+
+        for tok in ids[1:]:
+            field = tok.getText()
+            if current_type not in self._subsystem_defs:
+                self._fail_token(
+                    tok.getSymbol(),
+                    f"'{current_type}' is not a subsystem and has no member '{field}'.",
                 )
-                return None
-
-            subsystem_fields = self._defined_subsystems[current_type]
-            if f not in subsystem_fields:
-                self._report_error(
-                    ctx.ID(i).getSymbol(),
-                    f"Subsystem '{current_type}' has no member '{f}'.",
+            members = self._subsystem_defs[current_type]
+            if field not in members:
+                self._fail_token(
+                    tok.getSymbol(),
+                    f"Subsystem '{current_type}' has no member '{field}'.",
                 )
-                return None
+            current_type = members[field]
 
-            current_type = subsystem_fields[f]
+        if current_type not in self._lang_assets:
+            last_tok = ids[-1]
+            self._fail_token(
+                last_tok.getSymbol(),
+                f"'{ctx.getText()}' resolves to subsystem '{current_type}', "
+                f'not an asset set. Continue the dot-access to a member.',
+            )
+
         return current_type
 
-    def visitParam(self, ctx: SpecParser.ParamContext):
-        if self._error is not None:
-            return None
+    # Visitor overrides
 
-        param_name: str = ctx.ID().getText()
+    def visitParam(self, ctx: SpecParser.ParamContext) -> None:
+        name_tok = ctx.ID()
+        name = name_tok.getText()
 
-        if param_name in self._lang_assets:
-            self._report_error(
-                ctx.ID().getSymbol(),
-                f"Cannot use asset name '{param_name}' as param name.",
+        if name in self._lang_assets:
+            self._fail_token(
+                name_tok.getSymbol(),
+                f"Cannot use asset type name '{name}' as a param name.",
             )
-            return None
+        self._assert_name_available(name_tok)
 
-        if param_name in self._all_declared_names():
-            self._report_error(
-                ctx.ID().getSymbol(),
-                f"Name '{param_name}' has already been declared.",
-            )
-            return None
-
-        self._current_param = param_name
         self.visitChildren(ctx)
-        self._current_param = None
 
-        self._declared_params.add(param_name)
-        return None
+        self._params.add(name)
 
-    def visitPrim(self, ctx: SpecParser.PrimContext):
-        if self._error is not None:
-            return None
+    def visitSubsystem(self, ctx: SpecParser.SubsystemContext) -> None:
+        name_tok = ctx.ID()
+        name = name_tok.getText()
 
+        if name in self._lang_assets:
+            self._fail_token(
+                name_tok.getSymbol(),
+                f"Cannot use asset type name '{name}' as a subsystem name.",
+            )
+        if name in self._all_declared_names():
+            self._fail_token(
+                name_tok.getSymbol(),
+                f"Name '{name}' has already been declared.",
+            )
+
+        self._subsystems.add(name)
+
+        # Visit body in subsystem scope.
+        saved_members = self._current_subsystem_members
+        saved_name = self._current_subsystem_name
+        self._current_subsystem_members = {}
+        self._current_subsystem_name = name
+        self.visitChildren(ctx)
+
+        # Record member types.
+        self._subsystem_defs[name] = self._current_subsystem_members
+        self._current_subsystem_members = saved_members
+        self._current_subsystem_name = saved_name
+
+    def visitLet(self, ctx: SpecParser.LetContext) -> None:
+        name_tok = ctx.variable().ID()
+        variable_name = name_tok.getText()
+
+        if variable_name in self._lang_assets:
+            self._fail_token(
+                name_tok.getSymbol(),
+                f"Cannot use asset type name '{variable_name}' as a variable name.",
+            )
+        if variable_name in self._all_declared_names():
+            self._fail_token(
+                name_tok.getSymbol(),
+                f"Name '{variable_name}' has already been declared.",
+            )
+
+        self._current_variable = variable_name
+        asset_type = self._visit_asset_set_for_type(ctx.assetSet())
+
+        if self._current_subsystem_members is not None:
+            self._current_subsystem_members[variable_name] = asset_type
+        else:
+            self._variable_types[variable_name] = asset_type
+
+    def _visit_asset_set_for_type(self, ctx: SpecParser.AssetSetContext) -> str:
+        """Validate an assetSet and return its concrete asset type."""
+        if ctx.assetInstantiation():
+            return self._visit_asset_instantiation_for_type(ctx.assetInstantiation())
+        elif ctx.namedAssetSet():
+            return self._resolve_named_asset_set(ctx.namedAssetSet())
+        raise RuntimeError('Unexpected assetSet node.')
+
+    def _visit_asset_instantiation_for_type(
+        self, ctx: SpecParser.AssetInstantiationContext
+    ) -> str:
+        """Validate an asset instantiation and return its asset type."""
+        type_tok = ctx.ID()
+        type_name = type_tok.getText()
+
+        if type_name in self._subsystem_defs:
+            if type_name == self._current_subsystem_name:
+                self._fail_token(
+                    type_tok.getSymbol(),
+                    f"Subsystem '{type_name}' cannot instantiate itself recursively.",
+                )
+            members = self._subsystem_defs[type_name]
+            scope = (
+                self._current_subsystem_members
+                if self._current_subsystem_members is not None
+                else self._variable_types
+            )
+            for member_name, member_type in members.items():
+                scope[f'{self._current_variable}.{member_name}'] = member_type
+
+            if ctx.expr():
+                self.visitChildren(ctx)
+            return type_name
+
+        if type_name not in self._lang_assets:
+            self._fail_token(
+                type_tok.getSymbol(),
+                f"Asset type '{type_name}' does not exist in {self._lang_info}.",
+            )
+
+        if ctx.expr():
+            self.visitChildren(ctx)
+
+        return type_name
+
+    def visitDistributionSample(
+        self, ctx: SpecParser.DistributionSampleContext
+    ) -> None:
+        func_tok = ctx.ID()
+        func_name = func_tok.getText()
+
+        if func_name not in _DISTRIBUTION_ARITIES:
+            self._fail_token(
+                func_tok.getSymbol(),
+                f"Unknown distribution function '{func_name}'. "
+                f'Supported distributions: '
+                f'{", ".join(sorted(_DISTRIBUTION_ARITIES))}.',
+            )
+
+        expected = _DISTRIBUTION_ARITIES[func_name]
+        actual = len(ctx.parameters().expr())
+        if actual != expected:
+            self._fail_token(
+                func_tok.getSymbol(),
+                f"Distribution '{func_name}' expects {expected} argument(s), "
+                f'got {actual}.',
+            )
+
+        self.visitChildren(ctx)
+
+    def visitPrim(self, ctx: SpecParser.PrimContext) -> None:
         if ctx.ID():
-            name: str = ctx.ID().getText()
-
-            if name not in self._declared_params:
-                if name == self._current_param:
-                    self._report_error(
+            name = ctx.ID().getText()
+            if name not in self._params:
+                if name == self._current_variable:
+                    self._fail_token(
                         ctx.ID().getSymbol(),
                         f"Param '{name}' cannot reference itself.",
                     )
                 else:
-                    self._report_error(
+                    self._fail_token(
                         ctx.ID().getSymbol(),
                         f"'{name}' has not been declared as a param.",
                     )
-                return None
-
-        return self.visitChildren(ctx)
-
-    def visitSubsystem(self, ctx: SpecParser.SubsystemContext):
-        if self._error is not None:
-            return None
-
-        subsystem_name: str = ctx.ID().getText()
-        if subsystem_name in self._lang_assets:
-            self._report_error(
-                ctx.ID().getSymbol(),
-                f"Cannot use asset name '{subsystem_name}' as subset name.",
-            )
-            return None
-        if subsystem_name in self._all_declared_names():
-            self._report_error(
-                ctx.ID().getSymbol(),
-                f"Name '{subsystem_name}' has already been declared.",
-            )
-            return None
-
-        self._in_subsystem_context = True
         self.visitChildren(ctx)
-        self._in_subsystem_context = False
 
-        self._defined_subsystems[subsystem_name] = self._subsystem_variable_types
-        self._subsystem_variable_types = {}
-        return None
-
-    def visitLet(self, ctx: SpecParser.LetContext):
-        if self._error is not None:
-            return None
-
-        variable_name: str = ctx.variable().ID().getText()
-        if variable_name in self._lang_assets:
-            self._report_error(
-                ctx.variable().ID().getSymbol(),
-                f"Cannot use asset name '{variable_name}' as variable name.",
+    def visitConnectionRule(self, ctx: SpecParser.ConnectionRuleContext) -> None:
+        weight = float(ctx.number().getText())
+        if not 0.0 <= weight <= 1.0:
+            num_tok = ctx.number().getStart()
+            self._fail_token(
+                num_tok,
+                f'Connection rule weight must be in [0, 1], got {weight}.',
             )
-            return None
-        if variable_name in self._all_declared_names():
-            self._report_error(
-                ctx.variable().ID().getSymbol(),
-                f"Name '{variable_name}' has already been declared.",
-            )
-            return None
 
-        set_type: str = self.visitAssetSet(ctx.assetSet())
-        if not self._in_subsystem_context:
-            self._variable_types[variable_name] = set_type
-        else:
-            self._subsystem_variable_types[variable_name] = set_type
+        left_type = self._resolve_named_asset_set_from_asset_set(ctx.assetSet(0))
+        fieldname = ctx.associationFieldname().ID().getText()
+        right_type = self._resolve_named_asset_set_from_asset_set(ctx.assetSet(1))
 
-        self._current_variable = variable_name
-        return self.visitChildren(ctx)
-
-    def visitAssetSet(self, ctx: SpecParser.AssetSetContext) -> str:
-        if self._error is not None:
-            return None
-
-        if ctx.variable():
-            variable_name: str = ctx.variable().ID().getText()
-            types: Dict[str, str] = (
-                self._variable_types
-                if not self._in_subsystem_context
-                else self._subsystem_variable_types
-            )
-            if variable_name not in types:
-                self._report_error(
-                    ctx.variable().ID().getSymbol(),
-                    f"Variable name '{variable_name}' has not been declared yet.",
-                )
-                return None
-            return types[variable_name]
-        elif ctx.assetInstantiation():
-            self.visitAssetInstantiation(ctx.assetInstantiation())
-            return ctx.assetInstantiation().ID().getText()
-        elif ctx.subsystemSetAccess():
-            return self._resolve_subsystem_access(ctx.subsystemSetAccess())
-        else:
-            raise RuntimeError('Unexpected error in SemanticAnalyzer.visitAssetSet.')
-
-    def visitAssetInstantiation(self, ctx: SpecParser.AssetInstantiationContext):
-        if self._error is not None:
-            return None
-
-        asset_type: str = ctx.ID().getText()
-        if asset_type not in self._lang_assets:
-            if asset_type in self._defined_subsystems:
-                variable_name: str = self._current_variable
-                for s, t in self._defined_subsystems[asset_type].items():
-                    self._variable_types[f'{variable_name}.{s}'] = t
-            else:
-                self._report_error(
-                    ctx.ID().getSymbol(),
-                    f"Asset '{asset_type}' does not exist in {self._lang_info}",
-                )
-                return None
-        return self.visitChildren(ctx)
-
-    def visitConnectionRule(self, ctx: SpecParser.ConnectionRuleContext):
-        if self._error is not None:
-            return None
-
-        left_type: str = self.visitAssetSet(ctx.assetSet(0))
-        right_fieldname: str = ctx.associationFieldname().ID().getText()
-        right_type: str = self.visitAssetSet(ctx.assetSet(1))
-
-        if (left_type, right_fieldname, right_type) not in self._lang_associations:
-            self._report_error(
+        if (left_type, fieldname, right_type) not in self._lang_associations:
+            self._fail_token(
                 ctx.associationFieldname().ID().getSymbol(),
-                f"The association with fieldname '{right_fieldname}' from asset "
-                f"'{left_type}' to '{right_type}' does not exist in "
-                f'{self._lang_info}.',
+                f"Association with fieldname '{fieldname}' from '{left_type}' "
+                f"to '{right_type}' does not exist in {self._lang_info}.",
             )
-            return None
-        return self.visitChildren(ctx)
+
+    def _resolve_named_asset_set_from_asset_set(
+        self, ctx: SpecParser.AssetSetContext
+    ) -> str:
+        """Resolve an assetSet used in a connection rule.
+
+        Connection rules may only reference named asset sets (variables or
+        subsystem set accesses) or inline instantiations.
+        """
+        if ctx.namedAssetSet():
+            return self._resolve_named_asset_set(ctx.namedAssetSet())
+        elif ctx.assetInstantiation():
+            return self._visit_asset_instantiation_for_type(ctx.assetInstantiation())
+        raise RuntimeError('Unexpected assetSet node in connection rule.')
+
+    def visitPrune(self, ctx: SpecParser.PruneContext) -> None:
+        if ctx.pruneParameters() is None:
+            return
+
+        for named_set_ctx in ctx.pruneParameters().namedAssetSet():
+            self._resolve_named_asset_set(named_set_ctx)

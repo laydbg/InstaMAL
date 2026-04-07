@@ -10,6 +10,7 @@ from typing import List
 import pytest
 from antlr4 import CommonTokenStream, FileStream
 from maltoolbox.language import LanguageGraph
+from maltoolbox.model import Model
 
 from instamal import ModelInstantiator
 from instamal.instantiation.spec_analysis import (
@@ -24,6 +25,7 @@ TESTDATA_DIR = Path(__file__).resolve().parent / 'testdata'
 TRAININGLANG_PATH = str(TESTDATA_DIR / 'org.mal-lang.trainingLang-1.0.0.mar')
 MULTIPLICITYLANG_PATH = str(TESTDATA_DIR / 'multiplicityLang.mal')
 INHERITANCELANG_PATH = str(TESTDATA_DIR / 'inheritanceLang.mal')
+PRUNELANG_PATH = str(TESTDATA_DIR / 'pruneLang.mal')
 
 
 # Language path fixtures
@@ -42,6 +44,11 @@ def multiplicityLang_path():
 @pytest.fixture(scope='session')
 def inheritanceLang_path():
     return INHERITANCELANG_PATH
+
+
+@pytest.fixture(scope='session')
+def pruneLang_path():
+    return PRUNELANG_PATH
 
 
 # Instantiation fixture
@@ -78,6 +85,46 @@ def instantiate():
                 os.remove(tmp_spec_path)
 
     return _instantiate
+
+
+@pytest.fixture(scope='function')
+def instantiate_and_load():
+    """
+    Return a helper that writes a spec string to a temp file, runs
+    ModelInstantiator, and returns the first generated model loaded from disk
+    as a maltoolbox Model object.
+
+    Useful for tests that need to inspect the assets or associations of the
+    resulting model rather than just asserting that instantiation succeeded.
+
+    Usage::
+
+        model = instantiate_and_load(spec, lang_path)
+        assert len(model.assets) == 3
+    """
+
+    def _instantiate_and_load(spec: str, lang_src: str) -> Model:
+        tmp_spec_path = None
+        try:
+            with tempfile.NamedTemporaryFile(
+                delete=False, mode='w', encoding='utf-8'
+            ) as f:
+                f.write(spec)
+                tmp_spec_path = f.name
+
+            with tempfile.TemporaryDirectory() as tmp_dir:
+                instantiator = ModelInstantiator(
+                    tmp_spec_path, lang_src, interactive=False
+                )
+                instantiator.instantiate(tmp_dir, n=1)
+                model_path = os.path.join(tmp_dir, 'model_0.yml')
+                lang_graph = LanguageGraph.load_from_file(lang_src)
+                return Model.load_from_file(model_path, lang_graph)
+        finally:
+            if tmp_spec_path is not None:
+                os.remove(tmp_spec_path)
+
+    return _instantiate_and_load
 
 
 # Probabilistic analysis helper
