@@ -84,6 +84,11 @@ class SpecVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by SpecParser#namedAssetSet.
+    def visitNamedAssetSet(self, ctx:SpecParser.NamedAssetSetContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by SpecParser#assetInstantiation.
     def visitAssetInstantiation(self, ctx:SpecParser.AssetInstantiationContext):
         return self.visitChildren(ctx)
@@ -101,6 +106,16 @@ class SpecVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by SpecParser#associationFieldname.
     def visitAssociationFieldname(self, ctx:SpecParser.AssociationFieldnameContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by SpecParser#prune.
+    def visitPrune(self, ctx:SpecParser.PruneContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by SpecParser#pruneParameters.
+    def visitPruneParameters(self, ctx:SpecParser.PruneParametersContext):
         return self.visitChildren(ctx)
 
 
