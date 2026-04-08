@@ -1,6 +1,6 @@
 [project]
 name = "instamal"
-version = "0.2.0"
+version = "0.3.0"
 authors = [{ name = "Birger Karlsson" }]
 description = "Domain-level specification language and tool for generating diverse MAL model instances."
 readme = "README.md"
