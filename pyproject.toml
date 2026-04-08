@@ -1,0 +1,67 @@
+[project]
+name = "instamal"
+version = "0.3.0"
+authors = [{ name = "Birger Karlsson" }]
+description = "Domain-level specification language and tool for generating diverse MAL model instances."
+readme = "README.md"
+requires-python = ">=3.9"
+
+dependencies = [
+  "antlr4-python3-runtime==4.13.2",
+  "mal-toolbox",
+  "matplotlib>=3.9",
+  "scipy",
+]
+
+[project.optional-dependencies]
+test = ["pytest"]
+dev = ["pytest", "ruff"]
+
+[project.scripts]
+instamal = "instamal.__main__:main"
+
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
+exclude = ["tests", "tests.*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-ra"
+
+[tool.ruff]
+exclude = [
+  "instamal/language/spec_lexer.py",
+  "instamal/language/spec_parser.py",
+  "instamal/language/spec_visitor.py",
+]
+
+[tool.ruff.format]
+quote-style = "single"
+
+[tool.ruff.lint]
+dummy-variable-rgx = "^_$"
+
+fixable = ["ALL"]
+
+[tool.ruff.lint.per-file-ignores]
+"**/tests/*" = [
+  "PLR2004", # Allow magic value comparisons
+  "S101",    # Allow `assert` statements
+  "S311",    # Allow use of the `random` module (no need for cryptographic security)
+]
+
+[tool.ruff.lint.flake8-pytest-style]
+fixture-parentheses = false
+mark-parentheses = false
+
+[tool.ruff.lint.isort]
+split-on-trailing-comma = true
+known-first-party = ["instamal"]
+
+[tool.ruff.lint.pycodestyle]
+max-doc-length = 88

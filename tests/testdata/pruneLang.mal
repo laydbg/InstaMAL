@@ -1,0 +1,13 @@
+#id: "org.mal-lang.pruneLang"
+#version: "1.0.0"
+
+category Test {
+  asset Node { }
+  asset Satellite { }
+}
+
+associations {
+  Node [leftNodes] * <-- NodeConnection --> * [rightNodes] Node
+  Node [nodes]     * <-- NodeSatellite  --> * [satellites] Satellite
+}
+

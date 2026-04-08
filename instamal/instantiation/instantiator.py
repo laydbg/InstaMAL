@@ -1,19 +1,27 @@
 from __future__ import annotations
 
-import math
 import itertools as it
+import logging
+import math
 import os
 import random
 
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Set, Tuple
 
-from antlr4 import *
+from antlr4 import CommonTokenStream, FileStream
 from maltoolbox.language import LanguageGraph
 from maltoolbox.model import Model
 
-from instamal.instantiator.helpers import *
-from instamal.instantiator.helpers.MultiplicityAnalyzer import *
+from instamal.distributions import distribution_functions
+from instamal.language import SpecLexer, SpecParser, SpecVisitor
+from instamal.instantiation.spec_analysis import (
+    SemanticAnalyzer,
+    StaticMultiplicityAnalyzer,
+    ProbabilisticMultiplicityAnalyzer,
+)
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -43,37 +51,25 @@ class ModelInstantiator(SpecVisitor):
 
         spec_ctx = parser.spec()
 
-        # Semantic analysis
-        spec_analyzer: SpecAnalyzer = SpecAnalyzer(lang_graph)
-        error: Optional[AnalyzerError] = spec_analyzer.analyze(spec_ctx)
-        if error is not None:
-            raise Exception(
-                f"Semantic error on line {error.line}, col {error.column}: {error.description}"
-            )
+        # Semantic analysis, raises on the first error found
+        SemanticAnalyzer(lang_graph).analyze(spec_ctx)
 
-        # Static multiplicity check
-        stat_mult_analyzer = StaticMultiplicityAnalyzer(lang_graph)
-        violations: list[MultiplicityViolation] = stat_mult_analyzer.analyze(spec_ctx)
-        if violations:
-            messages = "\n".join(
-                f"  line {v.line}, col {v.column}: {v.description}" for v in violations
-            )
-            raise Exception(f"Multiplicity violation(s) detected:\n{messages}")
+        # Static multiplicity check, raises if any guaranteed violations exist
+        StaticMultiplicityAnalyzer(lang_graph).analyze(spec_ctx)
 
-        # Probabilistic multiplicity check
-        prob_mult_analyzer = ProbabilisticMultiplicityAnalyzer(
-            lang_graph, threshold=0.9
+        # Probabilistic multiplicity check, returns warnings, does not raise
+        warnings = ProbabilisticMultiplicityAnalyzer(lang_graph, threshold=0.9).analyze(
+            spec_ctx
         )
-        warnings = prob_mult_analyzer.analyze(spec_ctx)
         if warnings:
-            print("Probabilistic multiplicity warnings:")
+            logger.warning('Probabilistic multiplicity warnings:')
             for w in warnings:
-                print(str(w))
+                logger.warning(str(w))
             if interactive:
-                answer = input("Proceed with instantiation? [y/N]: ").strip().lower()
-                if answer != "y":
+                answer = input('Proceed with instantiation? [y/N]: ').strip().lower()
+                if answer != 'y':
                     raise Exception(
-                        "Instantiation aborted by user due to multiplicity warnings."
+                        'Instantiation aborted by user due to multiplicity warnings.'
                     )
 
         self._model: Model = None
@@ -88,33 +84,59 @@ class ModelInstantiator(SpecVisitor):
         self._param_exprs: Dict[str, SpecParser.ExprContext] = {}
 
     def instantiate(
-        self, outDirPath: str, n: int = 1, modelPrefix: str = "model_"
+        self, outDirPath: str, n: int = 1, modelPrefix: str = 'model_'
     ) -> None:
-        """Instantiate and save up to n models to the specified directory."""
+        """Instantiate exactly n valid models and save them to the specified directory.
+
+        Retries on failure, consistent with rejection sampling from the MAL model
+        distribution. If the acceptance rate drops below 1 in 100 attempts a
+        warning is logged, but instantiation continues until n models are produced.
+        """
         assert n > 0
 
         os.makedirs(outDirPath, exist_ok=True)
 
+        warn_threshold = 100
+        warned = False
         successful = 0
-        for i in range(n):
-            modelName = f"{modelPrefix}{successful}"
+        attempts = 0
+
+        while successful < n:
+            attempts += 1
+            modelName = f'{modelPrefix}{successful}'
             try:
                 model = self._instantiate_single_model(modelName)
-                model.save_to_file(f"{outDirPath}/{modelName}.yml")
+                model.save_to_file(f'{outDirPath}/{modelName}.yml')
                 successful += 1
+                warned = False
             except Exception as e:
                 tb = e.__traceback__
                 while tb.tb_next is not None:
                     tb = tb.tb_next
                 origin = tb.tb_frame.f_code.co_filename
                 if os.path.abspath(origin) == os.path.abspath(__file__):
-                    # Exception originated from this file
                     raise
                 else:
-                    print(
-                        f"Warning: failed to instantiate a model (failure {i-successful}): {e}"
+                    logger.debug(
+                        f'Retrying after failed attempt {attempts} '
+                        f'({successful}/{n} succeeded so far): {e}'
                     )
-        print(f"Successfully instantiated {successful}/{n} models.")
+
+            if (
+                not warned
+                and attempts - successful >= warn_threshold
+                and successful < n
+            ):
+                acceptance_rate = successful / attempts if attempts > 0 else 0
+                logger.warning(
+                    f'Low acceptance rate: {successful} valid model(s) produced in '
+                    f'{attempts} attempt(s) ({acceptance_rate:.1%}). The specification '
+                    f'may be too constrained for efficient rejection sampling. '
+                    f'Press Ctrl+C to abort.'
+                )
+                warned = True
+
+        logger.info(f'Successfully instantiated {n} models in {attempts} attempt(s).')
 
     def _instantiate_single_model(self, name: str) -> Model:
         """Instantiate a new model internally and return it."""
@@ -124,7 +146,8 @@ class ModelInstantiator(SpecVisitor):
         self._type_count = {}
         self._subsystems = {}
         self._subsystem_stack = []
-        self._params = {}
+        self._param_values = {}
+        self._param_exprs = {}
         self.visit(self._spec_ctx)
         return self._model
 
@@ -134,7 +157,7 @@ class ModelInstantiator(SpecVisitor):
             self._type_count[name_prefix] = 1
         else:
             self._type_count[name_prefix] += 1
-        return f"{name_prefix}:{self._type_count[name_prefix]}"
+        return f'{name_prefix}:{self._type_count[name_prefix]}'
 
     def _random_connect(self, rules: List[ConnectionRule]) -> None:
         """Connect assets using the heterogeneous random geometric graph algorithm."""
@@ -168,9 +191,9 @@ class ModelInstantiator(SpecVisitor):
                     )
 
     def _current_prefix(self) -> str:
-        return self._subsystem_stack[-1].prefix if self._subsystem_stack else ""
+        return self._subsystem_stack[-1].prefix if self._subsystem_stack else ''
 
-    # ── Expression evaluators ─────────────────────────────────────────────────
+    # Expression evaluators
 
     def _eval_expr(self, ctx: SpecParser.ExprContext) -> float:
         leading_sign = ctx.sign() is not None
@@ -181,9 +204,9 @@ class ModelInstantiator(SpecVisitor):
         for i in range(1, len(ctx.term())):
             op = ctx.getChild(2 * i - (not leading_sign)).getText()
             term_val = self._eval_term(ctx.term(i))
-            if op == "+":
+            if op == '+':
                 result += term_val
-            elif op == "-":
+            elif op == '-':
                 result -= term_val
         return result
 
@@ -192,9 +215,9 @@ class ModelInstantiator(SpecVisitor):
         for i in range(1, len(ctx.fact())):
             op = ctx.getChild(2 * i - 1).getText()
             val = self._eval_fact(ctx.fact(i))
-            if op == "*":
+            if op == '*':
                 result *= val
-            elif op == "/":
+            elif op == '/':
                 result /= val
         return result
 
@@ -217,7 +240,7 @@ class ModelInstantiator(SpecVisitor):
             if name in self._param_exprs:
                 return self._eval_expr(self._param_exprs[name])
             raise ValueError(f"Undeclared param '{name}' referenced at runtime.")
-        raise ValueError("Unexpected prim node.")
+        raise ValueError('Unexpected prim node.')
 
     def _eval_distribution_sample(
         self, ctx: SpecParser.DistributionSampleContext
@@ -226,7 +249,7 @@ class ModelInstantiator(SpecVisitor):
         params = [self._eval_expr(e) for e in ctx.parameters().expr()]
         if func_name in distribution_functions:
             return distribution_functions[func_name](*params)
-        raise ValueError(f"Unknown distribution function: {func_name}")
+        raise ValueError(f'Unknown distribution function: {func_name}')
 
     def _eval_number(self, ctx: SpecParser.NumberContext) -> float:
         if ctx.INT() is not None:
@@ -238,19 +261,24 @@ class ModelInstantiator(SpecVisitor):
     ) -> Tuple[Set[str], Optional[str]]:
         if ctx.assetInstantiation():
             return self._eval_asset_instantiation(ctx.assetInstantiation(), name_prefix)
-        elif ctx.variable() or ctx.subsystemSetAccess():
-            variable_id = ctx.getText()
-            if self._subsystem_stack:
-                full_id = f"{self._current_prefix()}.{variable_id}"
-                return (
-                    self._subsystem_stack[-1].asset_sets.get(full_id, set()),
-                    self._types.get(full_id),
-                )
+        elif ctx.namedAssetSet():
+            return self._eval_named_asset_set(ctx.namedAssetSet())
+        raise RuntimeError('Unexpected node in _eval_asset_set.')
+
+    def _eval_named_asset_set(
+        self, ctx: SpecParser.NamedAssetSetContext
+    ) -> Tuple[Set[str], Optional[str]]:
+        variable_id = ctx.getText()
+        if self._subsystem_stack:
+            full_id = f'{self._current_prefix()}.{variable_id}'
             return (
-                self._asset_sets.get(variable_id, set()),
-                self._types.get(variable_id),
+                self._subsystem_stack[-1].asset_sets.get(full_id, set()),
+                self._types.get(full_id),
             )
-        raise RuntimeError("Unexpected node in _eval_asset_set.")
+        return (
+            self._asset_sets.get(variable_id, set()),
+            self._types.get(variable_id),
+        )
 
     def _eval_asset_instantiation(
         self,
@@ -258,25 +286,40 @@ class ModelInstantiator(SpecVisitor):
         name_prefix: Optional[str] = None,
     ) -> Tuple[Set[str], str]:
         asset_type = ctx.ID().getText()
+
+        aip = ctx.assetInstantiationParameters()
         num_assets = 1
-        if ctx.expr():
-            num_assets = math.floor(self._eval_expr(ctx.expr()))
+        if aip and aip.expr():
+            num_assets = max(0, math.floor(self._eval_expr(aip.expr())))
+
+        # Evaluate defense controls: clamp each value to [0, 1].
+        defenses: Optional[dict] = None
+        if aip and aip.defenseControl():
+            defenses = {}
+            for dc in aip.defenseControl():
+                defense_name = dc.ID().getText()
+                raw = self._eval_expr(dc.expr())
+                defenses[defense_name] = max(0.0, min(1.0, float(raw)))
 
         # If no name prefix was provided this is an inline instantiation
-        prefix = name_prefix if name_prefix is not None else f"_{asset_type}"
+        prefix = name_prefix if name_prefix is not None else f'_{asset_type}'
 
         assets: Set[str] = set()
         for _ in range(num_assets):
             asset_id = self._generate_asset_id(prefix)
             assets.add(asset_id)
-            self._model.add_asset(asset_type=asset_type, name=asset_id)
+            self._model.add_asset(
+                asset_type=asset_type,
+                name=asset_id,
+                defenses=defenses,
+            )
 
         for aid in assets:
             self._types[aid] = asset_type
 
         return assets, asset_type
 
-    # ── Visitor overrides ─────────────────────────────────────────────────────
+    # Visitor overrides
 
     def visitParam(self, ctx: SpecParser.ParamContext) -> None:
         param_name = ctx.ID().getText()
@@ -291,17 +334,16 @@ class ModelInstantiator(SpecVisitor):
     def visitLet(self, ctx: SpecParser.LetContext) -> None:
         raw_variable_id = ctx.variable().getText()
         prefix = self._current_prefix()
-        variable_id = f"{prefix}.{raw_variable_id}" if prefix else raw_variable_id
+        variable_id = f'{prefix}.{raw_variable_id}' if prefix else raw_variable_id
 
         asset_instantiation = ctx.assetSet().assetInstantiation()
         if asset_instantiation:
             type_name = asset_instantiation.ID().getText()
             if type_name in self._subsystems:
+                aip = asset_instantiation.assetInstantiationParameters()
                 num_subsystems = 1
-                if asset_instantiation.expr():
-                    num_subsystems = math.floor(
-                        self._eval_expr(asset_instantiation.expr())
-                    )
+                if aip and aip.expr():
+                    num_subsystems = max(0, math.floor(self._eval_expr(aip.expr())))
 
                 for _ in range(num_subsystems):
                     self._subsystem_stack.append(SubsystemContext(prefix=variable_id))
@@ -338,7 +380,7 @@ class ModelInstantiator(SpecVisitor):
             weight = float(rule_ctx.number().getText())
             if not 0 <= weight <= 1:
                 raise ValueError(
-                    f"Connection rule weight must be in [0,1], got {weight}."
+                    f'Connection rule weight must be in [0,1], got {weight}.'
                 )
             left_set = self._eval_asset_set(rule_ctx.assetSet(0))[0]
             right_fieldname = rule_ctx.associationFieldname().ID().getText()
@@ -346,3 +388,66 @@ class ModelInstantiator(SpecVisitor):
             rules.append(ConnectionRule(weight, left_set, right_fieldname, right_set))
 
         self._random_connect(rules)
+
+    def visitPrune(self, ctx: SpecParser.PruneContext) -> None:
+        """Remove assets from the model based on connectivity.
+
+        With no arguments, retains only the assets belonging to the largest
+        connected component (the giant component).
+
+        With arguments, each argument is a named asset set acting as an anchor.
+        A connected component is retained if and only if it contains at least
+        one anchor asset. Components with no anchor are removed.
+
+        In both cases, removing an asset also removes all associations to and
+        from that asset in the model.
+        """
+        # Build an adjacency structure over asset names.
+        neighbours: Dict[str, Set[str]] = {
+            asset.name: {
+                assoc_asset.name
+                for assoc_set in asset.associated_assets.values()
+                for assoc_asset in assoc_set
+            }
+            for asset in self._model.assets.values()
+        }
+        all_assets: Set[str] = set(neighbours.keys())
+
+        # Find connected components via BFS.
+        components: List[Set[str]] = []
+        visited: Set[str] = set()
+        for start in all_assets:
+            if start in visited:
+                continue
+            component: Set[str] = set()
+            queue = [start]
+            while queue:
+                node = queue.pop()
+                if node in visited:
+                    continue
+                visited.add(node)
+                component.add(node)
+                queue.extend(neighbours[node] - visited)
+            components.append(component)
+
+        if ctx.pruneParameters() is None:
+            # Giant component: keep only the largest.
+            retain = max(components, key=len)
+        else:
+            # Anchor-set: collect all assets from all supplied named asset sets,
+            # then keep components that contain at least one anchor.
+            anchors: Set[str] = set()
+            for named_set_ctx in ctx.pruneParameters().namedAssetSet():
+                anchors.update(self._eval_named_asset_set(named_set_ctx)[0])
+
+            retain = {
+                asset_name
+                for component in components
+                if component & anchors
+                for asset_name in component
+            }
+
+        # Remove all assets not in the retained set.
+        assets_to_remove = all_assets - retain
+        for asset_name in assets_to_remove:
+            self._model.remove_asset(self._model.get_asset_by_name(asset_name))

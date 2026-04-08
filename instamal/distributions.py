@@ -53,14 +53,14 @@ def uniform(a, b):
 
 
 distribution_functions = {
-    "Bernoulli": bernoulli,
-    "Binomial": binomial,
-    "Exponential": exponential,
-    "Gamma": gamma,
-    "LogNormal": lognormal,
-    "Pareto": pareto,
-    "TruncatedNormal": truncated_normal,
-    "Uniform": uniform,
+    'Bernoulli': bernoulli,
+    'Binomial': binomial,
+    'Exponential': exponential,
+    'Gamma': gamma,
+    'LogNormal': lognormal,
+    'Pareto': pareto,
+    'TruncatedNormal': truncated_normal,
+    'Uniform': uniform,
 }
 
 # ── Bounds ────────────────────────────────────────────────────────────────
@@ -112,14 +112,14 @@ def uniform_bounds(a: float, b: float) -> tuple[int, int]:
 
 
 distribution_bounds_functions = {
-    "Bernoulli": bernoulli_bounds,
-    "Binomial": binomial_bounds,
-    "Exponential": exponential_bounds,
-    "Gamma": gamma_bounds,
-    "LogNormal": lognormal_bounds,
-    "Pareto": pareto_bounds,
-    "TruncatedNormal": truncated_normal_bounds,
-    "Uniform": uniform_bounds,
+    'Bernoulli': bernoulli_bounds,
+    'Binomial': binomial_bounds,
+    'Exponential': exponential_bounds,
+    'Gamma': gamma_bounds,
+    'LogNormal': lognormal_bounds,
+    'Pareto': pareto_bounds,
+    'TruncatedNormal': truncated_normal_bounds,
+    'Uniform': uniform_bounds,
 }
 
 
@@ -176,12 +176,12 @@ def uniform_expected(a: float, b: float) -> float:
 
 
 distribution_expected_functions = {
-    "Bernoulli": bernoulli_expected,
-    "Binomial": binomial_expected,
-    "Exponential": exponential_expected,
-    "Gamma": gamma_expected,
-    "LogNormal": lognormal_expected,
-    "Pareto": pareto_expected,
-    "TruncatedNormal": truncated_normal_expected,
-    "Uniform": uniform_expected,
+    'Bernoulli': bernoulli_expected,
+    'Binomial': binomial_expected,
+    'Exponential': exponential_expected,
+    'Gamma': gamma_expected,
+    'LogNormal': lognormal_expected,
+    'Pareto': pareto_expected,
+    'TruncatedNormal': truncated_normal_expected,
+    'Uniform': uniform_expected,
 }

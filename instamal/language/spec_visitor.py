@@ -1,9 +1,9 @@
-# Generated from /home/birger/github/master-thesis/src/instamal/instantiator/helpers/Spec.g4 by ANTLR 4.13.2
+# Generated from Spec.g4 by ANTLR 4.13.2
 from antlr4 import *
 if "." in __name__:
-    from .SpecParser import SpecParser
+    from .spec_parser import SpecParser
 else:
-    from SpecParser import SpecParser
+    from spec_parser import SpecParser
 
 # This class defines a complete generic visitor for a parse tree produced by SpecParser.
 
@@ -84,8 +84,23 @@ class SpecVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by SpecParser#namedAssetSet.
+    def visitNamedAssetSet(self, ctx:SpecParser.NamedAssetSetContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by SpecParser#assetInstantiation.
     def visitAssetInstantiation(self, ctx:SpecParser.AssetInstantiationContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by SpecParser#assetInstantiationParameters.
+    def visitAssetInstantiationParameters(self, ctx:SpecParser.AssetInstantiationParametersContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by SpecParser#defenseControl.
+    def visitDefenseControl(self, ctx:SpecParser.DefenseControlContext):
         return self.visitChildren(ctx)
 
 
@@ -101,6 +116,16 @@ class SpecVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by SpecParser#associationFieldname.
     def visitAssociationFieldname(self, ctx:SpecParser.AssociationFieldnameContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by SpecParser#prune.
+    def visitPrune(self, ctx:SpecParser.PruneContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by SpecParser#pruneParameters.
+    def visitPruneParameters(self, ctx:SpecParser.PruneParametersContext):
         return self.visitChildren(ctx)
 
 

@@ -1,0 +1,14 @@
+#id: "org.mal-lang.inheritanceLang"
+#version: "1.0.0"
+
+category Test {
+  asset Base { }
+
+  asset Child extends Base { }
+
+  asset Other { }
+}
+
+associations {
+  Base [bases] * <-- BaseOtherRelation --> * [others] Other
+}
