@@ -252,8 +252,13 @@ class MultiplicityAnalyzer(SpecVisitor):
 
             if type_name in self._subsystems:
                 num = 1.0
-                if asset_instantiation.expr():
-                    num = max(0.0, self._eval_expr(asset_instantiation.expr()))
+                if asset_instantiation.assetInstantiationParameters():
+                    num = max(
+                        0.0,
+                        self._eval_expr(
+                            asset_instantiation.assetInstantiationParameters().expr()
+                        ),
+                    )
 
                 sub_ctx = self._subsystems[type_name]
                 self._subsystem_stack.append((scoped_id, {}, {}))
@@ -303,8 +308,10 @@ class MultiplicityAnalyzer(SpecVisitor):
     ) -> Tuple[float, str]:
         asset_type: str = ctx.ID().getText()
         scalar = 1.0
-        if ctx.expr():
-            scalar = max(0.0, self._eval_expr(ctx.expr()))
+        if ctx.assetInstantiationParameters():
+            scalar = max(
+                0.0, self._eval_expr(ctx.assetInstantiationParameters().expr())
+            )
         return scalar, asset_type
 
     def visitConnect(self, ctx: SpecParser.ConnectContext):
@@ -569,8 +576,8 @@ class StaticMultiplicityAnalyzer(MultiplicityAnalyzer):
         self, ctx: SpecParser.AssetInstantiationContext
     ) -> Tuple[CardinalityBound, str]:
         asset_type: str = ctx.ID().getText()
-        if ctx.expr():
-            lo, hi = self._expr_bounds(ctx.expr())
+        if ctx.assetInstantiationParameters():
+            lo, hi = self._expr_bounds(ctx.assetInstantiationParameters().expr())
         else:
             lo, hi = 1.0, 1.0
         lo = max(0.0, lo)
@@ -598,8 +605,10 @@ class StaticMultiplicityAnalyzer(MultiplicityAnalyzer):
 
             if type_name in self._subsystems:
                 # Determine how many copies of the subsystem are instantiated.
-                if asset_instantiation.expr():
-                    num_lo, num_hi = self._expr_bounds(asset_instantiation.expr())
+                if asset_instantiation.assetInstantiationParameters():
+                    num_lo, num_hi = self._expr_bounds(
+                        asset_instantiation.assetInstantiationParameters().expr()
+                    )
                     num_lo = max(0.0, num_lo)
                 else:
                     num_lo, num_hi = 1.0, 1.0
@@ -1027,6 +1036,9 @@ class SemanticAnalyzer(SpecVisitor):
     - All connection rule weights must be in [0, 1].
     - All connection rules must correspond to a valid association in the DSL.
     - prune arguments must each resolve to a concrete asset type.
+    - All defenseControl names in an assetInstantiation must be valid defenses
+      of that asset type, and no defense may be set more than once in the same
+      instantiation.
     """
 
     def __init__(self, lang_graph: LanguageGraph) -> None:
@@ -1040,6 +1052,14 @@ class SemanticAnalyzer(SpecVisitor):
                 target_asset = assoc.get_field(fieldname).asset
                 for sub_asset in target_asset.sub_assets:
                     self._lang_associations.add((asset.name, fieldname, sub_asset.name))
+
+        self._asset_defenses: Dict[str, Set[str]] = {}
+        for asset_name, asset in lang_graph.assets.items():
+            defenses: Set[str] = set()
+            for step_name, step in asset.attack_steps.items():
+                if step.type == 'defense':
+                    defenses.add(step_name)
+            self._asset_defenses[asset_name] = defenses
 
         self._params: Set[str] = set()
 
@@ -1065,7 +1085,6 @@ class SemanticAnalyzer(SpecVisitor):
         self._subsystem_defs = {}
         self._variable_types = {}
         self._current_subsystem_name = None
-        self._current_subsystem_members = None
         self._current_variable = ''
 
         # First pass: register all subsystem definitions so that forward
@@ -1120,10 +1139,6 @@ class SemanticAnalyzer(SpecVisitor):
                     members[member_name] = type_name
                 elif asset_set.namedAssetSet():
                     text = asset_set.namedAssetSet().getText()
-                    # For variable references, record the type from the
-                    # already-known members dict; for subsystem set accesses
-                    # record the raw text as a placeholder. Full validation
-                    # happens in the second pass.
                     if asset_set.namedAssetSet().variable():
                         ref_name = asset_set.namedAssetSet().variable().ID().getText()
                         members[member_name] = members.get(ref_name, ref_name)
@@ -1318,6 +1333,16 @@ class SemanticAnalyzer(SpecVisitor):
                     type_tok.getSymbol(),
                     f"Subsystem '{type_name}' cannot instantiate itself recursively.",
                 )
+            if (
+                ctx.assetInstantiationParameters()
+                and ctx.assetInstantiationParameters().defenseControl()
+            ):
+                first_dc = ctx.assetInstantiationParameters().defenseControl(0)
+                self._fail_token(
+                    first_dc.ID().getSymbol(),
+                    f'Defense controls cannot be applied to a subsystem '
+                    f"instantiation of '{type_name}'.",
+                )
             members = self._subsystem_defs[type_name]
             scope = (
                 self._current_subsystem_members
@@ -1327,8 +1352,9 @@ class SemanticAnalyzer(SpecVisitor):
             for member_name, member_type in members.items():
                 scope[f'{self._current_variable}.{member_name}'] = member_type
 
-            if ctx.expr():
-                self.visitChildren(ctx)
+            aip = ctx.assetInstantiationParameters()
+            if aip and aip.expr():
+                self.visitExpr(aip.expr())
             return type_name
 
         if type_name not in self._lang_assets:
@@ -1337,8 +1363,31 @@ class SemanticAnalyzer(SpecVisitor):
                 f"Asset type '{type_name}' does not exist in {self._lang_info}.",
             )
 
-        if ctx.expr():
-            self.visitChildren(ctx)
+        aip = ctx.assetInstantiationParameters()
+        if aip and aip.expr():
+            self.visitExpr(aip.expr())
+
+        if aip and aip.defenseControl():
+            valid_defenses = self._asset_defenses.get(type_name, set())
+            seen: Set[str] = set()
+            for dc in aip.defenseControl():
+                defense_tok = dc.ID()
+                defense_name = defense_tok.getText()
+                if defense_name not in valid_defenses:
+                    self._fail_token(
+                        defense_tok.getSymbol(),
+                        f"'{defense_name}' is not a defense of asset type "
+                        f"'{type_name}'. Valid defenses: "
+                        f'{", ".join(sorted(valid_defenses)) or "(none)"}.',
+                    )
+                if defense_name in seen:
+                    self._fail_token(
+                        defense_tok.getSymbol(),
+                        f"Defense '{defense_name}' is set more than once in "
+                        f"this instantiation of '{type_name}'.",
+                    )
+                seen.add(defense_name)
+                self.visitExpr(dc.expr())
 
         return type_name
 

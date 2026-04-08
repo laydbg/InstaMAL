@@ -20,7 +20,9 @@ let: LET variable ASSIGN assetSet SEMICOLON;
 variable: ID;
 assetSet: namedAssetSet | assetInstantiation;
 namedAssetSet: variable | subsystemSetAccess;
-assetInstantiation: ID LPAREN expr? RPAREN;
+assetInstantiation: ID LPAREN assetInstantiationParameters? RPAREN;
+assetInstantiationParameters: expr (COMMA defenseControl)*;
+defenseControl: ID ASSIGN expr;
 
 connect: CONNECT LCURLY connectionRule* RCURLY;
 connectionRule:
