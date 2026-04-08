@@ -94,6 +94,16 @@ class SpecVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by SpecParser#assetInstantiationParameters.
+    def visitAssetInstantiationParameters(self, ctx:SpecParser.AssetInstantiationParametersContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by SpecParser#defenseControl.
+    def visitDefenseControl(self, ctx:SpecParser.DefenseControlContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by SpecParser#connect.
     def visitConnect(self, ctx:SpecParser.ConnectContext):
         return self.visitChildren(ctx)

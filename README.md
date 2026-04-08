@@ -115,3 +115,21 @@ prune(data, networks.network);
 ```
 
 With arguments, each argument must be a declared asset set or a subsystem member access. A connected component is retained if and only if it contains at least one asset from any of the supplied sets, while components with no overlap are discarded. This lets you anchor the model around a known structural core while pruning isolated fragments.
+
+---
+
+Assign defense values to assets on instantiation by supplying named defense controls after the asset count.
+
+```
+let hosts = Host(5, notPresent=0.8);
+```
+
+Each defense control takes the form `<defenseName>=<expr>` where `expr` evaluates to a Bernoulli probability in `[0, 1]`. Values outside this range are clamped automatically. Defense names must match defenses defined on the asset type in the DSL. Multiple defenses can be set in a single instantiation, separated by commas.
+
+```
+param pNotPresent ~ Uniform(0.6, 1.0);
+
+let hosts = Host(Uniform(4, 12), notPresent=pNotPresent);
+```
+
+Defense controls can appear on any asset instantiation, including those inside subsystem bodies, and expressions may reference any previously declared `param`.

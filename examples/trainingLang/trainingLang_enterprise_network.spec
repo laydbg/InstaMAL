@@ -6,12 +6,17 @@ param numSites     = Binomial(4, 0.7);      // Number of office sites, sampled o
 param usersPerHost ~ TruncatedNormal(3, 1); // Resampled for each host group
 param dataPerHost  ~ Uniform(2, 8);         // Resampled for each host group
 
+// Defense posture parameters
+
+param serverHardening      ~ Uniform(0.8, 1.0); // Servers are well-maintained
+param workstationHardening ~ Uniform(0.5, 0.9); // Workstations vary more
+
 // Subsystem definitions
 
 subsystem HostGroup {
-  let host  = Host();
-  let users = User(usersPerHost);
-  let data  = Data(dataPerHost);
+  let host  = Host(1,            notPresent=serverHardening);
+  let users = User(usersPerHost, notPresent=Uniform(0.6, 1.0));
+  let data  = Data(dataPerHost,  notPresent=Uniform(0.7, 1.0));
 
   connect {
     1: host --> [users] users;

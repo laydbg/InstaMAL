@@ -286,9 +286,20 @@ class ModelInstantiator(SpecVisitor):
         name_prefix: Optional[str] = None,
     ) -> Tuple[Set[str], str]:
         asset_type = ctx.ID().getText()
+
+        aip = ctx.assetInstantiationParameters()
         num_assets = 1
-        if ctx.expr():
-            num_assets = math.floor(self._eval_expr(ctx.expr()))
+        if aip and aip.expr():
+            num_assets = max(0, math.floor(self._eval_expr(aip.expr())))
+
+        # Evaluate defense controls: clamp each value to [0, 1].
+        defenses: Optional[dict] = None
+        if aip and aip.defenseControl():
+            defenses = {}
+            for dc in aip.defenseControl():
+                defense_name = dc.ID().getText()
+                raw = self._eval_expr(dc.expr())
+                defenses[defense_name] = max(0.0, min(1.0, float(raw)))
 
         # If no name prefix was provided this is an inline instantiation
         prefix = name_prefix if name_prefix is not None else f'_{asset_type}'
@@ -297,7 +308,11 @@ class ModelInstantiator(SpecVisitor):
         for _ in range(num_assets):
             asset_id = self._generate_asset_id(prefix)
             assets.add(asset_id)
-            self._model.add_asset(asset_type=asset_type, name=asset_id)
+            self._model.add_asset(
+                asset_type=asset_type,
+                name=asset_id,
+                defenses=defenses,
+            )
 
         for aid in assets:
             self._types[aid] = asset_type
@@ -325,11 +340,10 @@ class ModelInstantiator(SpecVisitor):
         if asset_instantiation:
             type_name = asset_instantiation.ID().getText()
             if type_name in self._subsystems:
+                aip = asset_instantiation.assetInstantiationParameters()
                 num_subsystems = 1
-                if asset_instantiation.expr():
-                    num_subsystems = math.floor(
-                        self._eval_expr(asset_instantiation.expr())
-                    )
+                if aip and aip.expr():
+                    num_subsystems = max(0, math.floor(self._eval_expr(aip.expr())))
 
                 for _ in range(num_subsystems):
                     self._subsystem_stack.append(SubsystemContext(prefix=variable_id))
