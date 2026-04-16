@@ -328,7 +328,8 @@ class MultiplicityAnalyzer(SpecVisitor):
         override this method entirely so that they can call their own
         _visit_asset_set_bounds instead of the scalar-only _visit_asset_set.
         """
-        weight: float = float(ctx.number().getText())
+        raw_weight: float = self._eval_expr(ctx.expr())
+        weight: float = max(0.0, min(1.0, float(raw_weight)))
 
         left_scalar, left_type = self._visit_asset_set(ctx.assetSet(0))
         fieldname: str = ctx.associationFieldname().ID().getText()
@@ -650,7 +651,8 @@ class StaticMultiplicityAnalyzer(MultiplicityAnalyzer):
 
     def _process_connection_rule(self, ctx: SpecParser.ConnectionRuleContext) -> None:
         """Override the base class to use CardinalityBound pairs throughout."""
-        weight: float = float(ctx.number().getText())
+        raw_weight: float = self._eval_expr(ctx.expr())
+        weight: float = max(0.0, min(1.0, float(raw_weight)))
 
         left_cb, left_type = self._visit_asset_set_bounds(ctx.assetSet(0))
         fieldname: str = ctx.associationFieldname().ID().getText()
@@ -1433,14 +1435,6 @@ class SemanticAnalyzer(SpecVisitor):
         self.visitChildren(ctx)
 
     def visitConnectionRule(self, ctx: SpecParser.ConnectionRuleContext) -> None:
-        weight = float(ctx.number().getText())
-        if not 0.0 <= weight <= 1.0:
-            num_tok = ctx.number().getStart()
-            self._fail_token(
-                num_tok,
-                f'Connection rule weight must be in [0, 1], got {weight}.',
-            )
-
         left_type = self._resolve_named_asset_set_from_asset_set(ctx.assetSet(0))
         fieldname = ctx.associationFieldname().ID().getText()
         right_type = self._resolve_named_asset_set_from_asset_set(ctx.assetSet(1))
