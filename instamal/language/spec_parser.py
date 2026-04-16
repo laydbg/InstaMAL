@@ -71,7 +71,7 @@ def serializedATN():
         0,0,0,172,173,5,4,0,0,173,177,5,11,0,0,174,176,3,40,20,0,175,174,
         1,0,0,0,176,179,1,0,0,0,177,175,1,0,0,0,177,178,1,0,0,0,178,180,
         1,0,0,0,179,177,1,0,0,0,180,181,5,12,0,0,181,39,1,0,0,0,182,183,
-        3,4,2,0,183,184,5,15,0,0,184,185,3,28,14,0,185,186,5,17,0,0,186,
+        3,6,3,0,183,184,5,15,0,0,184,185,3,28,14,0,185,186,5,17,0,0,186,
         187,3,42,21,0,187,188,3,28,14,0,188,189,5,16,0,0,189,41,1,0,0,0,
         190,191,5,13,0,0,191,192,5,8,0,0,192,193,5,14,0,0,193,43,1,0,0,0,
         194,200,5,5,0,0,195,197,5,9,0,0,196,198,3,46,23,0,197,196,1,0,0,
@@ -1466,7 +1466,7 @@ class SpecParser ( Parser ):
             self.state = 177
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==6 or _la==7:
+            while (((_la) & ~0x3f) == 0 and ((1 << _la) & 12583872) != 0):
                 self.state = 174
                 self.connectionRule()
                 self.state = 179
@@ -1491,8 +1491,8 @@ class SpecParser ( Parser ):
             super().__init__(parent, invokingState)
             self.parser = parser
 
-        def number(self):
-            return self.getTypedRuleContext(SpecParser.NumberContext,0)
+        def expr(self):
+            return self.getTypedRuleContext(SpecParser.ExprContext,0)
 
 
         def COLON(self):
@@ -1534,7 +1534,7 @@ class SpecParser ( Parser ):
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 182
-            self.number()
+            self.expr()
             self.state = 183
             self.match(SpecParser.COLON)
             self.state = 184
