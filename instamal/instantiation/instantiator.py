@@ -377,7 +377,8 @@ class ModelInstantiator(SpecVisitor):
 
         rules: List[ConnectionRule] = []
         for rule_ctx in ctx.connectionRule():
-            weight = float(rule_ctx.number().getText())
+            raw_weight: float = self._eval_expr(rule_ctx.expr())
+            weight: float = max(0.0, min(1.0, float(raw_weight)))
             if not 0 <= weight <= 1:
                 raise ValueError(
                     f'Connection rule weight must be in [0,1], got {weight}.'
