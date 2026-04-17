@@ -5,6 +5,7 @@
 param numSites     = Binomial(4, 0.7);      // Number of office sites, sampled once
 param usersPerHost ~ TruncatedNormal(3, 1); // Resampled for each host group
 param dataPerHost  ~ Uniform(2, 8);         // Resampled for each host group
+param epsilon      ~ Uniform(-0.1, 0.1);    // Connection rule weight variance
 
 // Defense posture parameters
 
@@ -31,10 +32,10 @@ subsystem Office {
   let workstations    = HostGroup(TruncatedNormal(12, 4));
 
   connect {
-    1:   externalNetwork   --> [toNetworks] internalNetwork;
-    1:   servers.host      --> [networks]   internalNetwork;
-    1:   workstations.host --> [networks]   internalNetwork;
-    0.3: servers.host      --> [networks]   externalNetwork;
+    1:             externalNetwork   --> [toNetworks] internalNetwork;
+    1:             workstations.host --> [networks]   internalNetwork;
+    1:             servers.host      --> [networks]   internalNetwork;
+    0.3 + epsilon: servers.host      --> [networks]   externalNetwork;
   }
 }
 
@@ -44,13 +45,13 @@ let sites = Office(numSites);
 
 // All internal networks are partially interconnected across sites
 connect {
-  0.4: sites.internalNetwork --> [toNetworks] sites.internalNetwork;
+  0.4 + epsilon: sites.internalNetwork --> [toNetworks] sites.internalNetwork;
 }
 
 // A small pool of external users can reach exposed servers across all sites
 let externalUsers = User(TruncatedNormal(8, 3));
 connect {
-  0.2: externalUsers --> [hosts] sites.servers.host;
+  0.2 + epsilon: externalUsers --> [hosts] sites.servers.host;
 }
 
 // Do not retain lone external users in the model

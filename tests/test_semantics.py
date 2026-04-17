@@ -136,6 +136,24 @@ connect {
     instantiate(spec, trainingLang_path, n=5)
 
 
+def test_no_exception_on_connection_rule_weight_expression(
+    instantiate, trainingLang_path
+):
+    """Using an expression for the weight of connection rules should
+    instantiate with no errors."""
+    spec = """
+param p ~ Binomial(14, 0.4)
+
+let hosts = Host(4);
+let data = Data(6)
+
+connect {
+    Uniform(0, 0.5)*p^(1/2)/2: hosts --> [data] data;
+}
+"""
+    instantiate(spec, trainingLang_path, n=5)
+
+
 # Undeclared and non-existent names
 
 
@@ -269,7 +287,7 @@ subsystem HostWithData { // <- line 6
     assert 'line 6' in str(exc_info.value).lower()
 
 
-# ── Subsystem access errors ───────────────────────────────────────────────────
+# Subsystem access errors
 
 
 def test_exception_on_recursive_subsystem(instantiate, trainingLang_path):
@@ -391,7 +409,7 @@ connect {
     assert 'line 7' in str(exc_info.value).lower()
 
 
-# ── Params ────────────────────────────────────────────────────────────────────
+# Params
 
 
 def test_no_exception_on_valid_param_constant(instantiate, trainingLang_path):
@@ -640,3 +658,6 @@ connect {
         instantiate(spec, inheritanceLang_path)
 
     assert 'line 6' in str(exc_info.value).lower()
+
+
+# Connection rule weight

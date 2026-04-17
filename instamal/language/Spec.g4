@@ -26,7 +26,7 @@ defenseControl: ID ASSIGN expr;
 
 connect: CONNECT LCURLY connectionRule* RCURLY;
 connectionRule:
-	number COLON assetSet RARROW associationFieldname assetSet SEMICOLON;
+	expr COLON assetSet RARROW associationFieldname assetSet SEMICOLON;
 associationFieldname: LSQUARE ID RSQUARE;
 
 prune: PRUNE (LPAREN pruneParameters? RPAREN)? SEMICOLON;
