@@ -7,7 +7,7 @@ from maltoolbox.model import Model
 
 def iter_model_files(models_dir: str):
     for path in sorted(Path(models_dir).iterdir()):
-        if path.suffix in {".json", ".yml", ".yaml"}:
+        if path.suffix in {'.json', '.yml', '.yaml'}:
             yield path
 
 
@@ -31,7 +31,7 @@ def write_associations_from_models_dir(
 
     asset_id_offset = 0
 
-    with open(output_path, "w", encoding="utf-8") as out:
+    with open(output_path, 'w', encoding='utf-8') as out:
         # Asset and associations types are globally static across models
         # Asset instanciations are globally unique across models
         for model_path in iter_model_files(models_dir):
@@ -72,7 +72,7 @@ def write_associations_from_models_dir(
 
                 undirected_count = min(count_ab, count_ba)
                 for _ in range(undirected_count):
-                    out.write(f"{a} {b} {a_type} {b_type} {assoc_id}\n")
+                    out.write(f'{a} {b} {a_type} {b_type} {assoc_id}\n')
 
                 processed.add((a, b, assoc_id))
                 processed.add((b, a, assoc_id))
@@ -86,42 +86,42 @@ def write_associations_from_models_dir(
 def write_id_maps(type_to_id, assoc_to_id, output_dir: Path, prefix: str):
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    with open(output_dir / f"{prefix}_types.txt", "w", encoding="utf-8") as f:
+    with open(output_dir / f'{prefix}_types.txt', 'w', encoding='utf-8') as f:
         for name, i in sorted(type_to_id.items(), key=lambda x: x[1]):
-            f.write(f"{i} {name}\n")
+            f.write(f'{i} {name}\n')
 
-    with open(output_dir / f"{prefix}_assocs.txt", "w", encoding="utf-8") as f:
+    with open(output_dir / f'{prefix}_assocs.txt', 'w', encoding='utf-8') as f:
         for name, i in sorted(assoc_to_id.items(), key=lambda x: x[1]):
-            f.write(f"{i} {name}\n")
+            f.write(f'{i} {name}\n')
 
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Export associations from multiple MAL models using global IDs"
+        description='Export associations from multiple MAL models using global IDs'
     )
     parser.add_argument(
-        "models_dir",
-        help="Directory containing model files (.json/.yml/.yaml)",
+        'models_dir',
+        help='Directory containing model files (.json/.yml/.yaml)',
     )
     parser.add_argument(
-        "output_dir",
-        help="Directory to write output files (edge list + ID maps)",
+        'output_dir',
+        help='Directory to write output files (edge list + ID maps)',
     )
     parser.add_argument(
-        "--lang",
+        '--lang',
         required=True,
-        help="Path to the MAL language file",
+        help='Path to the MAL language file',
     )
     parser.add_argument(
-        "--dict-prefix",
-        default="ids",
-        help="Prefix for ID mapping files",
+        '--dict-prefix',
+        default='ids',
+        help='Prefix for ID mapping files',
     )
 
     args = parser.parse_args()
 
     output_dir = Path(args.output_dir)
-    output_file = output_dir / "edges.txt"
+    output_file = output_dir / 'edges.txt'
 
     lang_graph = LanguageGraph.load_from_file(args.lang)
 
@@ -134,5 +134,5 @@ def main():
     write_id_maps(type_to_id, assoc_to_id, output_dir, args.dict_prefix)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
