@@ -1,4 +1,4 @@
-# InstaMal
+# InstaMAL
 
 ## Installation
 
@@ -41,7 +41,7 @@ let networks = Network(2);
 let hosts    = Host(10);
 ```
 
-Add variability using any of [the supported distributions](src/instamal/instantiator/helpers/distributions.py).
+Add variability using any of [the supported distributions](instamal/distributions.py).
 
 ```
 let users = User(TruncatedNormal(15, 4));
@@ -133,4 +133,3 @@ let hosts = Host(Uniform(4, 12), notPresent=pNotPresent);
 ```
 
 Defense controls can appear on any asset instantiation, including those inside subsystem bodies, and expressions may reference any previously declared `param`.
-
