@@ -421,7 +421,7 @@ class StaticMultiplicityAnalyzer(MultiplicityAnalyzer):
         # Stack frames for bounds: mirrors _subsystem_stack but holds bounds
         self._bounds_stack: List[Dict[str, CardinalityBound]] = []
         # (asset_type, fieldname) -> FieldAccumulator
-        self._field_accumulators: Dict[Tuple[str, str], FieldAccumulator] = {}
+        self._field_accumulators: Dict[Tuple[str, str, str], FieldAccumulator] = {}
 
     # Public entry point
 
@@ -456,6 +456,28 @@ class StaticMultiplicityAnalyzer(MultiplicityAnalyzer):
 
     def _current_bounds(self) -> Dict[str, CardinalityBound]:
         return self._bounds_stack[-1] if self._bounds_stack else self._variable_bounds
+
+    def _get_source_key(
+        self, ctx: SpecParser.AssetSetContext, token: Token, side: str
+    ) -> str:
+        """Return a stable bucket key for an asset set used as a rule source.
+
+        Named variable references (plain or subsystem dot-access) return their
+        fully scoped identifier, so that two rules sharing the same source
+        variable accumulate into the same bucket. Inline instantiations always
+        produce fresh, disjoint assets and receive a token-position-plus-side
+        sentinel that is unique per rule side, so their contributions are never
+        merged with those of other rules.
+        """
+        if ctx.namedAssetSet():
+            nas = ctx.namedAssetSet()
+            if nas.variable():
+                return self._scoped(nas.variable().getText())
+            elif nas.subsystemSetAccess():
+                ids = [tok.getText() for tok in nas.subsystemSetAccess().ID()]
+                prefix = self._current_prefix()
+                return '.'.join([f'{prefix}.{ids[0]}' if prefix else ids[0]] + ids[1:])
+        return f'__inline_{token.line}_{token.column}_{side}'
 
     # Expression bound evaluator
 
@@ -662,6 +684,8 @@ class StaticMultiplicityAnalyzer(MultiplicityAnalyzer):
             return
 
         token = ctx.associationFieldname().ID().getSymbol()
+        left_key = self._get_source_key(ctx.assetSet(0), token, 'L')
+        right_key = self._get_source_key(ctx.assetSet(1), token, 'R')
         self._accumulate_bounds(
             left_type,
             fieldname,
@@ -669,6 +693,7 @@ class StaticMultiplicityAnalyzer(MultiplicityAnalyzer):
             right_cb.max,
             weight,
             token,
+            source_key=left_key,
         )
 
         assoc = self._assoc_map.get((left_type, fieldname, right_type))
@@ -687,6 +712,7 @@ class StaticMultiplicityAnalyzer(MultiplicityAnalyzer):
                 left_cb.max,
                 weight,
                 token,
+                source_key=right_key,
             )
 
     # Accumulation
@@ -699,6 +725,7 @@ class StaticMultiplicityAnalyzer(MultiplicityAnalyzer):
         hi: float,
         weight: float,
         token: Token,
+        source_key: Optional[str] = None,
     ) -> None:
         """Accumulate one connection rule's contribution.
 
@@ -715,7 +742,11 @@ class StaticMultiplicityAnalyzer(MultiplicityAnalyzer):
         per_asset_min = lo if is_certain else 0.0
         per_asset_max = hi
 
-        key = (asset_type, fieldname)
+        key = (
+            source_key if source_key is not None else asset_type,
+            asset_type,
+            fieldname,
+        )  # changed
         if key not in self._field_accumulators:
             self._field_accumulators[key] = FieldAccumulator()
         acc = self._field_accumulators[key]
@@ -727,7 +758,11 @@ class StaticMultiplicityAnalyzer(MultiplicityAnalyzer):
 
     def _collect_violations(self) -> List[MultiplicityViolation]:
         violations = []
-        for (asset_type, fieldname), acc in self._field_accumulators.items():
+        for (
+            source_key,
+            asset_type,
+            fieldname,
+        ), acc in self._field_accumulators.items():
             assoc = self._find_assoc_for_field(asset_type, fieldname)
             if assoc is None:
                 continue
