@@ -1,4 +1,4 @@
-# InstaMal
+# InstaMAL
 
 ## Installation
 
@@ -41,7 +41,7 @@ let networks = Network(2);
 let hosts    = Host(10);
 ```
 
-Add variability using any of [the supported distributions](src/instamal/instantiator/helpers/distributions.py).
+Add variability using any of [the supported distributions](instamal/distributions.py).
 
 ```
 let users = User(TruncatedNormal(15, 4));
@@ -69,7 +69,7 @@ connect {
 }
 ```
 
-Each connection rule takes the form `<weight>: <left_asset_set> --> [<fieldname>] <right_asset_set>`. The `weight` can be an expression and is clamped in range [0, 1] after evaluation. A `weight` of `1` creates the specified association from each asset in the left asset set to all other assets in the right asset set, while `weight` of `0` creates no associations at all. The higher weight and the more assets in the sets, the more likely associations are to form.
+Each connection rule takes the form `<weight>: <left_asset_set> --> [<fieldname>] <right_asset_set>`. The `weight` can be an expression and is clamped in range `[0, 1]` after evaluation. A `weight` of `1` creates the specified association from each asset in the left asset set to all other assets in the right asset set, while `weight` of `0` creates no associations at all. The higher weight and the more assets in the sets, the more likely associations are to form.
 
 ---
 
@@ -133,4 +133,3 @@ let hosts = Host(Uniform(4, 12), notPresent=pNotPresent);
 ```
 
 Defense controls can appear on any asset instantiation, including those inside subsystem bodies, and expressions may reference any previously declared `param`.
-
