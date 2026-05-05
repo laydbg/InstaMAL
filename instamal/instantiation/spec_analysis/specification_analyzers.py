@@ -192,6 +192,28 @@ class MultiplicityAnalyzer(SpecVisitor):
         prefix = self._current_prefix()
         return f'{prefix}.{raw_id}' if prefix else raw_id
 
+    def _get_source_key(
+        self, ctx: SpecParser.AssetSetContext, token: Token, side: str
+    ) -> str:
+        """Return a stable bucket key for an asset set used as a rule source.
+
+        Named variable references (plain or subsystem dot-access) return their
+        fully scoped identifier, so that two rules sharing the same source
+        variable accumulate into the same bucket. Inline instantiations always
+        produce fresh, disjoint assets and receive a token-position-plus-side
+        sentinel that is unique per rule side, so their contributions are never
+        merged with those of other rules.
+        """
+        if ctx.namedAssetSet():
+            nas = ctx.namedAssetSet()
+            if nas.variable():
+                return self._scoped(nas.variable().getText())
+            elif nas.subsystemSetAccess():
+                ids = [tok.getText() for tok in nas.subsystemSetAccess().ID()]
+                prefix = self._current_prefix()
+                return '.'.join([f'{prefix}.{ids[0]}' if prefix else ids[0]] + ids[1:])
+        return f'__inline_{token.line}_{token.column}_{side}'
+
     # Shared number helper
 
     def _number_value(self, ctx: SpecParser.NumberContext) -> float:
@@ -221,6 +243,7 @@ class MultiplicityAnalyzer(SpecVisitor):
         hi: float,
         weight: float,
         token: Token,
+        source_key: Optional[str] = None,
     ) -> None:
         """Record one connection rule's contribution to a field accumulator.
 
@@ -339,10 +362,19 @@ class MultiplicityAnalyzer(SpecVisitor):
             return
 
         token = ctx.associationFieldname().ID().getSymbol()
+        left_key = self._get_source_key(ctx.assetSet(0), token, 'L')  # new
+        right_key = self._get_source_key(ctx.assetSet(1), token, 'R')
+
         # Pass scalar as both lo and hi; subclasses that need distinct bounds
         # override this method rather than _accumulate_bounds.
         self._accumulate_bounds(
-            left_type, fieldname, right_scalar, right_scalar, weight, token
+            left_type,
+            fieldname,
+            right_scalar,
+            right_scalar,
+            weight,
+            token,
+            source_key=left_key,
         )
 
         assoc = self._assoc_map.get((left_type, fieldname, right_type))
@@ -361,6 +393,7 @@ class MultiplicityAnalyzer(SpecVisitor):
                 left_scalar,
                 weight,
                 token,
+                source_key=right_key,
             )
 
     def _find_assoc_for_field(
@@ -456,28 +489,6 @@ class StaticMultiplicityAnalyzer(MultiplicityAnalyzer):
 
     def _current_bounds(self) -> Dict[str, CardinalityBound]:
         return self._bounds_stack[-1] if self._bounds_stack else self._variable_bounds
-
-    def _get_source_key(
-        self, ctx: SpecParser.AssetSetContext, token: Token, side: str
-    ) -> str:
-        """Return a stable bucket key for an asset set used as a rule source.
-
-        Named variable references (plain or subsystem dot-access) return their
-        fully scoped identifier, so that two rules sharing the same source
-        variable accumulate into the same bucket. Inline instantiations always
-        produce fresh, disjoint assets and receive a token-position-plus-side
-        sentinel that is unique per rule side, so their contributions are never
-        merged with those of other rules.
-        """
-        if ctx.namedAssetSet():
-            nas = ctx.namedAssetSet()
-            if nas.variable():
-                return self._scoped(nas.variable().getText())
-            elif nas.subsystemSetAccess():
-                ids = [tok.getText() for tok in nas.subsystemSetAccess().ID()]
-                prefix = self._current_prefix()
-                return '.'.join([f'{prefix}.{ids[0]}' if prefix else ids[0]] + ids[1:])
-        return f'__inline_{token.line}_{token.column}_{side}'
 
     # Expression bound evaluator
 
@@ -830,7 +841,7 @@ class ProbabilisticMultiplicityAnalyzer(MultiplicityAnalyzer):
     def __init__(self, lang_graph: LanguageGraph, threshold: float = 0.9) -> None:
         super().__init__(lang_graph)
         self._threshold = threshold
-        self._field_estimates: Dict[Tuple[str, str], FieldEstimate] = {}
+        self._field_estimates: Dict[Tuple[str, str, str], FieldEstimate] = {}
 
     # Public entry point
 
@@ -960,6 +971,7 @@ class ProbabilisticMultiplicityAnalyzer(MultiplicityAnalyzer):
         hi: float,  # noqa: ARG002 — unused; probabilistic analyzer uses lo only
         weight: float,
         token: Token,
+        source_key: Optional[str] = None,
     ) -> None:
         """Record one connection rule's contribution.
 
@@ -968,7 +980,11 @@ class ProbabilisticMultiplicityAnalyzer(MultiplicityAnalyzer):
         expected_value).
         """
         p = self._rgg_connection_probability(weight)
-        key = (asset_type, fieldname)
+        key = (
+            source_key if source_key is not None else asset_type,
+            asset_type,
+            fieldname,
+        )
         if key not in self._field_estimates:
             self._field_estimates[key] = FieldEstimate()
         est = self._field_estimates[key]
@@ -979,7 +995,7 @@ class ProbabilisticMultiplicityAnalyzer(MultiplicityAnalyzer):
 
     def _compute_warnings(self) -> List[MultiplicityWarning]:
         warnings = []
-        for (asset_type, fieldname), est in self._field_estimates.items():
+        for (source_key, asset_type, fieldname), est in self._field_estimates.items():
             assoc = self._find_assoc_for_field(asset_type, fieldname)
             if assoc is None:
                 continue
@@ -1005,7 +1021,12 @@ class ProbabilisticMultiplicityAnalyzer(MultiplicityAnalyzer):
             hi = min(int(mult_max), max_k) if mult_max != INF else max_k
             per_asset_p = sum(pmf[lo : hi + 1])
 
-            n_expected = self._get_expected_asset_count(asset_type)
+            n_src = self._variable_scalars.get(source_key)
+            n_expected = (
+                n_src
+                if n_src is not None
+                else self._get_expected_asset_count(asset_type)
+            )
             global_p = per_asset_p**n_expected if n_expected > 0 else 1.0
 
             if global_p < self._threshold:

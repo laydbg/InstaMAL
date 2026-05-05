@@ -716,3 +716,54 @@ connect {
     p_param = ws_param[0].per_asset_probability if ws_param else 1.0
     p_lit = ws_lit[0].per_asset_probability if ws_lit else 1.0
     assert p_param == pytest.approx(p_lit, abs=0.05)
+
+
+# Regression tests
+
+
+def test_no_warning_nonoverlapping_source_sets_same_type(multiplicityLang_path):
+    """Two rules with the same source asset type but different source variables
+    must not be accumulated together. Each client connects to exactly one
+    credential (weight=1), satisfying mult_max=1.
+
+    Regression test: the bug accumulated both rules into one (Client, credential)
+    estimate, computing a guaranteed degree of 2 > 1 and generating a
+    spurious zero-probability warning."""
+    spec = """
+let client_a = Client(1);
+let client_b = Client(1);
+let cred_a   = Credential(1);
+let cred_b   = Credential(1);
+
+connect {
+    1: client_a --> [credential] cred_a;
+    1: client_b --> [credential] cred_b;
+}
+"""
+    warnings = run_probabilistic_analysis(spec, multiplicityLang_path)
+    assert warnings_for(warnings, 'Client', 'credential') == []
+
+
+def test_same_source_variable_accumulates_for_probability(
+    multiplicityLang_path,
+):
+    """Two rules sharing the same source variable must accumulate: one
+    client connecting to two credentials has a degree of 2 against mult_max=1,
+    giving per_asset_p ≈ 0.0 and a warning."""
+    spec = """
+let clients = Client(1);
+let cred_a  = Credential(1);
+let cred_b  = Credential(1);
+
+connect {
+    1: clients --> [credential] cred_a;
+    1: clients --> [credential] cred_b;
+}
+"""
+    ws = warnings_for(
+        run_probabilistic_analysis(spec, multiplicityLang_path, threshold=0.5),
+        'Client',
+        'credential',
+    )
+    assert len(ws) == 1
+    assert ws[0].per_asset_probability == pytest.approx(0.0, abs=1e-6)
