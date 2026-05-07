@@ -1,3 +1,23 @@
+"""
+Rubric checks for menuPass scenario 1.
+
+Usage:
+    python test_menuPass_scenario1.py [--regen] [--n N]
+
+Flags:
+    --regen     Regenerate model instances even if they already exist.
+    --n N       Number of instances to generate/check (default: 100).
+
+Directory layout:
+    evaluation/
+        specifications/menuPass_scenario1.spec
+        tests/
+            test_menuPass_scenario1.py
+            testdata/org.mal-lang.coreLang-1.0.0.mar
+            generated/menuPass_scenario1/
+                model_0.yml ... model_N.yml
+"""
+
 from __future__ import annotations
 
 import argparse
@@ -145,7 +165,9 @@ def domain_controller(assets: dict) -> int | None:
     if ntds is None:
         return None
     candidates = assoc(assets, ntds, 'containingApp') & internal_machines(assets)
-    return next(iter(candidates), None)
+
+    assert len(candidates) == 1, 'ntds_data must be contained in one machine only'
+    return list(candidates)[0]
 
 
 def servers(assets: dict) -> set[int]:
@@ -162,7 +184,7 @@ def sam_data(assets: dict, app: int) -> int | None:
         if not info:
             continue
         all_hashes = True
-        has_local = False
+        has_local = 0
         for cred in info:
             if cred not in assets:
                 all_hashes = False
@@ -171,16 +193,17 @@ def sam_data(assets: dict, app: int) -> int | None:
             if not origs:
                 all_hashes = False
                 break
-            for orig in origs:
-                if orig not in assets:
-                    continue
-                for ident in assoc(assets, orig, 'identities'):
-                    scope = assoc(assets, ident, 'highPrivApps') | assoc(
-                        assets, ident, 'lowPrivApps'
-                    )
-                    if app in scope:
-                        has_local = True
-        if all_hashes and has_local:
+            assert len(origs) == 1, 'A credential hash has only one origCreds'
+            orig = list(origs)[0]
+            if orig not in assets:
+                continue
+            for ident in assoc(assets, orig, 'identities'):
+                scope = assoc(assets, ident, 'highPrivApps') | assoc(
+                    assets, ident, 'lowPrivApps'
+                )
+                if app in scope:
+                    has_local += 1
+        if all_hashes and has_local == len(info):
             return data
     return None
 
@@ -205,19 +228,9 @@ def lsass_data(assets: dict, app: int) -> int | None:
     return None
 
 
-def msp_admin(assets: dict, machine_set: set[int]) -> int | None:
-    """M9: Identity with highPrivApps equal to the full machine set."""
-    for aid, a in assets.items():
-        if (
-            a['type'] == 'Identity'
-            and assoc(assets, aid, 'highPrivApps') == machine_set
-        ):
-            return aid
-    return None
-
-
-def domain_admin(assets: dict, dc: int | None) -> int | None:
+def domain_admin(assets: dict) -> int | None:
     """M10: Identity with credentials and highPrivApps containing the DC."""
+    dc = domain_controller(assets)
     if dc is None:
         return None
     for aid, a in assets.items():
@@ -228,6 +241,23 @@ def domain_admin(assets: dict, dc: int | None) -> int | None:
         ):
             return aid
     return None
+
+
+def msp_admin(assets: dict) -> int | None:
+    """M9: Identity with highPrivApps equal to the full machine set."""
+    candidates = set()
+    machine_set = machines(assets)
+    for aid, a in assets.items():
+        if (
+            a['type'] == 'Identity'
+            and assoc(assets, aid, 'highPrivApps') == machine_set
+        ):
+            candidates.add(aid)
+    if not candidates:
+        return None
+    candidates.discard(domain_admin(assets))
+    assert len(candidates) == 1, 'There should only be one candidate for msp_admin'
+    return list(candidates)[0]
 
 
 def local_users(
@@ -244,8 +274,10 @@ def local_users(
         scope = assoc(assets, aid, 'highPrivApps') | assoc(assets, aid, 'lowPrivApps')
         if len(scope) != 1:
             continue
-        mid = next(iter(scope))
+        mid = list(scope)[0]
         if mid not in machine_set:
+            continue
+        if aid == msp_admin(assets) or aid == domain_admin(assets):
             continue
         for cred in assoc(assets, aid, 'credentials'):
             if cred not in assets:
@@ -260,26 +292,35 @@ def local_users(
 
 
 def external_network(assets: dict) -> int | None:
-    """M12: Network whose CRs only have outbound application roles (no server-side apps)."""
+    """M12: Network whose CRs only have outbound or inbound application roles (no
+    bidirectional role)."""
+    candidates = set()
     for nid, a in assets.items():
         if a['type'] != 'Network':
             continue
         crs = assoc(assets, nid, 'netConnections')
         if not crs:
             continue
-        has_out = False
-        is_ext = True
+        has_in_or_out = False
+        has_bidir = False
         for cr in crs:
             if cr not in assets:
                 continue
-            if assoc(assets, cr, 'applications') or assoc(assets, cr, 'inApplications'):
-                is_ext = False
+            if assoc(assets, cr, 'applications'):
+                has_bidir = True
                 break
-            if assoc(assets, cr, 'outApplications'):
-                has_out = True
-        if is_ext and has_out:
-            return nid
-    return None
+            if assoc(assets, cr, 'inApplications') or assoc(
+                assets, cr, 'outApplications'
+            ):
+                has_in_or_out = True
+        if not has_bidir and has_in_or_out:
+            candidates.add(nid)
+    if not candidates:
+        return None
+    assert len(candidates) == 1, (
+        'There should only be one candidate for external_network'
+    )
+    return list(candidates)[0]
 
 
 def internal_networks(assets: dict) -> set[int]:
@@ -386,10 +427,12 @@ def check_r2(instances: list) -> None:
     _header('R2: MSP Admin covers all machines')
     failures = []
     for idx, a in enumerate(instances):
-        ms = machines(a)
-        if msp_admin(a, ms) is None:
+        if msp_admin(a) is None:
             failures.append(
-                (idx, f'no Identity with highPrivApps == all {len(ms)} machines')
+                (
+                    idx,
+                    f'no Identity with highPrivApps == all {len(machines(a))} machines',
+                )
             )
     _report('R2', len(instances), failures, require_all=True)
 
@@ -490,7 +533,7 @@ def check_r6(instances: list) -> None:
     dc_only, sprawled, unclassified = 0, 0, 0
     for a in instances:
         dc = domain_controller(a)
-        da = domain_admin(a, dc)
+        da = domain_admin(a)
         if da is None:
             unclassified += 1
             continue
@@ -528,12 +571,10 @@ def check_r7(instances: list) -> None:
     _header('R7: Local user privilege variation')
     all_std, has_admin = 0, 0
     for a in instances:
-        ms = machines(a)
         ws = workstations(a)
         srv = servers(a)
-        msp = msp_admin(a, ms)
-        dc = domain_controller(a)
-        da = domain_admin(a, dc)
+        msp = msp_admin(a)
+        da = domain_admin(a)
         exclude = {x for x in (msp, da) if x is not None}
         lu = local_users(a, ws | srv, exclude)
         if any(assoc(a, uid, 'highPrivApps') for uid in lu):
@@ -587,8 +628,7 @@ def check_r9(instances: list) -> None:
     _header('R9: MSP admin credential storage variation')
     no_creds, dc_only, has_mgmt = 0, 0, 0
     for a in instances:
-        ms = machines(a)
-        msp = msp_admin(a, ms)
+        msp = msp_admin(a)
         if msp is None or not assoc(a, msp, 'credentials'):
             no_creds += 1
             continue
