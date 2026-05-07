@@ -2,7 +2,7 @@
 Rubric checks for menuPass scenario 1.
 
 Usage:
-    python test_menuPass_scenario1.py [--regen] [--n N]
+    python test_menuPass_scenario1.py [--regen] [-n N]
 
 Flags:
     --regen     Regenerate model instances even if they already exist.
@@ -53,6 +53,13 @@ def generate_instances(n: int, regen: bool) -> None:
         return
 
     print(f'[generate] generating {n} instances to {OUT_DIR}')
+
+    if existing:
+        for path in existing:
+            try:
+                os.remove(path)
+            except OSError as e:
+                print(f'[generate] warning: failed to delete {path}: {e}')
 
     ModelInstantiator(SPEC_PATH, LANG_PATH, interactive=False).instantiate(
         OUT_DIR, n=n, modelPrefix=MODEL_PREFIX
@@ -394,6 +401,8 @@ def check_r1(instances: list) -> None:
 
         dc = domain_controller(a)
 
+        assert dc is not None and ntds is not None
+
         reachable = any(
             net in internal_networks(a)
             for cr in assoc(a, dc, 'appConnections')
@@ -508,7 +517,9 @@ def check_r5(instances: list) -> None:
             e_counts.append(e)
         all_nets = of_type(a, 'Network')
         third_seg.append(
-            bool(all_nets - internal_networks(a) - ({ext} if ext else set()))
+            bool(
+                all_nets - internal_networks(a) - ({ext} if ext is not None else set())
+            )
         )
 
     c1 = sum(1 for e in e_counts if e == 1)
@@ -532,7 +543,6 @@ def check_r6(instances: list) -> None:
     _header('R6: Domain admin credential sprawl')
     dc_only, sprawled, unclassified = 0, 0, 0
     for a in instances:
-        dc = domain_controller(a)
         da = domain_admin(a)
         if da is None:
             unclassified += 1
@@ -549,7 +559,7 @@ def check_r6(instances: list) -> None:
         }
         if not containers:
             unclassified += 1
-        elif containers == {dc}:
+        elif containers == {domain_controller(a)}:
             dc_only += 1
         else:
             sprawled += 1
@@ -603,7 +613,7 @@ def check_r8(instances: list) -> None:
             failures_a.append(
                 (idx, f'no server with containedData (servers: {len(srv)})')
             )
-        if internet_facing_apps(a):
+        if any(s in internet_facing_apps(a) for s in srv):
             facing += 1
         else:
             internal += 1
@@ -629,10 +639,10 @@ def check_r9(instances: list) -> None:
     no_creds, dc_only, has_mgmt = 0, 0, 0
     for a in instances:
         msp = msp_admin(a)
-        if msp is None or not assoc(a, msp, 'credentials'):
+        assert msp is not None
+        if not assoc(a, msp, 'credentials'):
             no_creds += 1
             continue
-        srv = servers(a)
         containers = {
             app
             for orig in assoc(a, msp, 'credentials')
@@ -645,10 +655,12 @@ def check_r9(instances: list) -> None:
         }
         if not containers:
             no_creds += 1
-        elif any(s in containers for s in srv):
+        elif any(s in containers for s in servers(a)):
             has_mgmt += 1
-        else:
+        elif containers == {domain_controller(a)}:
             dc_only += 1
+        else:
+            raise RuntimeError('Unexpected state in check_r9')
 
     n = len(instances)
     t = n // 4
@@ -668,7 +680,7 @@ def check_r9(instances: list) -> None:
 def main() -> None:
     ap = argparse.ArgumentParser(description='menuPass scenario 1 rubric checks')
     ap.add_argument('--regen', action='store_true', help='overwrite existing instances')
-    ap.add_argument('--n', type=int, default=N_INSTANCES, help='number of instances')
+    ap.add_argument('-n', type=int, default=N_INSTANCES, help='number of instances')
     args = ap.parse_args()
 
     try:
