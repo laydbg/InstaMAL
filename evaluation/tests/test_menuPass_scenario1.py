@@ -184,8 +184,8 @@ def servers(assets: dict) -> set[int]:
 
 
 def sam_data(assets: dict, app: int) -> int | None:
-    """M7: Local account database on app (contained Data where every
-    information entry is a hash whose origCreds are scoped to app)."""
+    """M7: Local account database on app (contained Data where every information
+    entry is a hash and at least one hash's origCreds are scoped to app)."""
     for data in assoc(assets, app, 'containedData'):
         info = assoc(assets, data, 'information')
         if not info:
@@ -210,7 +210,7 @@ def sam_data(assets: dict, app: int) -> int | None:
                 )
                 if app in scope:
                     has_local += 1
-        if all_hashes and has_local == len(info):
+        if all_hashes and has_local >= 1:
             return data
     return None
 
