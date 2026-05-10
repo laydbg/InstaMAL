@@ -299,8 +299,8 @@ def local_users(
 
 
 def external_network(assets: dict) -> int | None:
-    """M12: Network whose CRs only have outbound or inbound application roles (no
-    bidirectional role)."""
+    """M12: Network whose CRs have outbound application roles and no
+    bidirectional role."""
     candidates = set()
     for nid, a in assets.items():
         if a['type'] != 'Network':
@@ -308,7 +308,7 @@ def external_network(assets: dict) -> int | None:
         crs = assoc(assets, nid, 'netConnections')
         if not crs:
             continue
-        has_in_or_out = False
+        has_out = False
         has_bidir = False
         for cr in crs:
             if cr not in assets:
@@ -316,11 +316,9 @@ def external_network(assets: dict) -> int | None:
             if assoc(assets, cr, 'applications'):
                 has_bidir = True
                 break
-            if assoc(assets, cr, 'inApplications') or assoc(
-                assets, cr, 'outApplications'
-            ):
-                has_in_or_out = True
-        if not has_bidir and has_in_or_out:
+            if assoc(assets, cr, 'outApplications'):
+                has_out = True
+        if not has_bidir and has_out:
             candidates.add(nid)
     if not candidates:
         return None
@@ -508,19 +506,28 @@ def check_r5(instances: list) -> None:
         ext = external_network(a)
         if ext is None:
             e_counts.append(0)
+            third_seg.append(False)
         else:
-            e = sum(
-                len(assoc(a, cr, 'outApplications'))
+            e = {
+                v
                 for cr in assoc(a, ext, 'netConnections')
                 if cr in a
-            )
-            e_counts.append(e)
-        all_nets = of_type(a, 'Network')
-        third_seg.append(
-            bool(
-                all_nets - internal_networks(a) - ({ext} if ext is not None else set())
-            )
-        )
+                for v in (
+                    assoc(a, cr, 'inApplications') | assoc(a, cr, 'outApplications')
+                )
+            }
+            third_seg_e = {
+                v
+                for cr1 in assoc(a, ext, 'outgoingNetConnections')
+                if cr1 in a
+                for net in assoc(a, cr1, 'inNetworks')
+                if net in a and net != ext
+                for cr2 in assoc(a, net, 'netConnections')
+                if cr2 in a
+                for v in assoc(a, cr2, 'inApplications')
+            }
+            e_counts.append(len(e | third_seg_e))
+            third_seg.append(bool(len(third_seg_e)))
 
     c1 = sum(1 for e in e_counts if e == 1)
     c2 = sum(1 for e in e_counts if e >= 2)
