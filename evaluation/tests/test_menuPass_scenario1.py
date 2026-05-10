@@ -354,6 +354,13 @@ def internet_facing_apps(assets: dict) -> set[int]:
             continue
         result |= assoc(assets, cr, 'applications')
         result |= assoc(assets, cr, 'inApplications')
+        result |= assoc(assets, cr, 'outApplications')
+    for cr1 in assoc(assets, ext, 'outgoingNetConnections'):
+        for net in assoc(assets, cr1, 'inNetworks'):
+            if net == ext:
+                continue
+            for cr2 in assoc(assets, net, 'netConnections'):
+                result |= assoc(assets, cr2, 'inApplications')
     return result
 
 
