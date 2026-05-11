@@ -236,7 +236,7 @@ def lsass_data(assets: dict, app: int) -> int | None:
 
 
 def domain_admin(assets: dict) -> int | None:
-    """M10: Identity with credentials and highPrivApps containing the DC."""
+    """M9: Identity with credentials and highPrivApps containing the DC."""
     dc = domain_controller(assets)
     if dc is None:
         return None
@@ -251,7 +251,7 @@ def domain_admin(assets: dict) -> int | None:
 
 
 def msp_admin(assets: dict) -> int | None:
-    """M9: Identity with highPrivApps equal to the full machine set."""
+    """M10: Identity with highPrivApps equal to the full machine set."""
     candidates = set()
     machine_set = machines(assets)
     for aid, a in assets.items():
