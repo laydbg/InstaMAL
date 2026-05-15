@@ -292,7 +292,7 @@ connect { // vpn
 
     1: wan --> [outgoingNetConnections] wanToVpn;
     1: vpn --> [ingoingNetConnections]  wanToVpn;
-    1: vpn --> [netConnections]          vpnInbound;
+    1: vpn --> [netConnections]         vpnInbound;
     // Some servers have inbound connection from the vpn (when present)
     wVpnReachableServer: vpnInbound --> [inApplications] serversStd.machine;
     wVpnReachableServer: vpnInbound --> [inApplications] serversAdm.machine;
