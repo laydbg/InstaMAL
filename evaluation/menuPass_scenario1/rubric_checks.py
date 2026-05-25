@@ -1,23 +1,3 @@
-"""
-Rubric checks for menuPass scenario 1.
-
-Usage:
-    python test_menuPass_scenario1.py [--regen] [-n N]
-
-Flags:
-    --regen     Regenerate model instances even if they already exist.
-    --n N       Number of instances to generate/check (default: 100).
-
-Directory layout:
-    evaluation/
-        specifications/menuPass_scenario1.spec
-        tests/
-            test_menuPass_scenario1.py
-            testdata/org.mal-lang.coreLang-1.0.0.mar
-            generated/menuPass_scenario1/
-                model_0.yml ... model_N.yml
-"""
-
 from __future__ import annotations
 
 import argparse
@@ -36,9 +16,9 @@ N_INSTANCES = 100
 _THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 _EVAL_DIR = os.path.join(_THIS_DIR, '..')
 
-SPEC_PATH = os.path.join(_EVAL_DIR, 'specifications', 'menuPass_scenario1.spec')
-LANG_PATH = os.path.join(_THIS_DIR, 'testdata', 'org.mal-lang.coreLang-1.0.0.mar')
-OUT_DIR = os.path.join(_THIS_DIR, 'generated', 'menuPass_scenario1')
+SPEC_PATH = os.path.join(_THIS_DIR, 'specification.spec')
+LANG_PATH = os.path.join(_EVAL_DIR, 'org.mal-lang.coreLang-1.0.0.mar')
+OUT_DIR = os.path.join(_THIS_DIR, 'generated')
 MODEL_PREFIX = 'model_'
 
 # Generation
