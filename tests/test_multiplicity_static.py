@@ -581,3 +581,48 @@ let units = Unit(1);
 """
     with pytest.raises(Exception, match='(?i)multiplicity'):
         instantiate(spec, multiplicityLang_path)
+
+
+# Regression tests
+
+
+def test_no_violation_nonoverlapping_source_sets_same_type(
+    instantiate, multiplicityLang_path
+):
+    """Two rules with the same source asset type but different source variables
+    must not be accumulated together. Each source set connects to at most one
+    Credential, satisfying mult_max=1 for the 'credential' field.
+
+    Regression test: previously, the static analyzer accumulated both
+    contributions into a single (Credentials, credential) bucket, reporting
+    a guaranteed minimum of 2 > 1 and incorrectly raising a violation."""
+    spec = """
+let client_a = Client(1);
+let client_b = Client(1);
+let cred_a   = Credential(1);
+let cred_b   = Credential(1);
+
+connect {
+    1: client_a --> [credential] cred_a;
+    1: client_b --> [credential] cred_b;
+}
+"""
+    instantiate(spec, multiplicityLang_path)
+
+
+def test_violation_same_source_variable_accumulates(instantiate, multiplicityLang_path):
+    """Two rules with the same source variable must accumulate: the
+    single source Client connects to two distinct Credentials, exceeding
+    mult_max=1 for the 'credential' field."""
+    spec = """
+let clients = Client(1);
+let cred_a  = Credential(1);
+let cred_b  = Credential(1);
+
+connect {
+    1: clients --> [credential] cred_a;
+    1: clients --> [credential] cred_b;
+}
+"""
+    with pytest.raises(Exception, match='(?i)multiplicity'):
+        instantiate(spec, multiplicityLang_path)

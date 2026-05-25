@@ -1,0 +1,31 @@
+You are a cybersecurity architect with experience in enterprise network security, adversarial attack modeling, and the design of training environments for automated cyber defense systems.
+
+Below is a description of a concrete system that has been modeled as part of a cyber attack scenario. The description captures the types of assets present, their relationships, the privilege structure, and the attack surface relevant to the scenario.
+
+[SYSTEM DESCRIPTION]
+
+Your task has two parts.
+
+Part 1: Domain characterization.
+Treat the described system as one representative instance of a broader class of similar systems. In two to four sentences, characterize the domain that this system belongs to: what kinds of organizations or environments this domain covers, what the defining structural features of systems in this domain are, and what makes this domain interesting from a security perspective.
+
+Part 2: Variability requirements.
+A security researcher wants to generate a large collection of system model instances for this domain to use as a diverse training environment for autonomous cyber defense agents. Each model instance is a typed graph of assets and associations representing one concrete system in the domain, where assets include things such as workstations, servers, user accounts, credentials, networks, and applications, connected by associations representing relationships such as network membership, credential storage, and application hosting.
+
+The described system above should be understood as one plausible instance of the domain. The collection should be diverse enough that agents trained on it generalize to a range of systems in this domain rather than overfitting to the specific configuration above.
+
+Generate 6 to 9 requirements that the collection of model instances should satisfy. Requirements may concern individual instances, what is typical across instances, or how instances vary relative to one another. Requirements are encouraged to reflect security-meaningful structural properties such as attack entry points, credential storage and access paths, privilege levels, lateral movement opportunities, and exposure to external networks, as long as these translate to structural properties of the asset and association graph that are directly readable from the graph without executing attack logic.
+
+For each requirement, provide a rubric item specifying how to check whether the requirement is met given a collection of model instance files. Each rubric item must be checkable by inspecting the graph structure of the instances directly, for example by counting asset types, checking association patterns, or verifying connectivity properties, without requiring knowledge beyond what is stated in the system description above. Where a requirement concerns variation across instances rather than a property of individual instances, the rubric item should specify what to measure across the collection and what would constitute a satisfactory distribution, without fixing a specific number of instances to check against.
+
+Format your response as follows:
+
+Domain characterization: [your characterization]
+
+Requirements:
+
+1. Requirement: [the requirement]
+   Rubric: [how to check it]
+2. Requirement: [the requirement]
+   Rubric: [how to check it]
+   [and so on]
