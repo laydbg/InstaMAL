@@ -6,7 +6,7 @@ import math
 PRACTICAL_MAX = 10000
 
 
-# ── Sampling ──────────────────────────────────────────────────────────────
+# Sampling
 
 
 def bernoulli(p):
@@ -63,7 +63,8 @@ distribution_functions = {
     'Uniform': uniform,
 }
 
-# ── Bounds ────────────────────────────────────────────────────────────────
+
+# Bounds
 
 
 def bernoulli_bounds(p: float) -> tuple[int, int]:
@@ -123,7 +124,7 @@ distribution_bounds_functions = {
 }
 
 
-# ── Expected values ───────────────────────────────────────────────────────
+# Expected values
 
 
 def _standard_normal_pdf(x: float) -> float:
