@@ -1,6 +1,6 @@
 # InstaMAL
 
-InstaMAL is an instance generation tool for [MAL](https://mal-lang.org/) (Meta Attack Language). It takes a compact domain-level specification and a MAL DSL as input and produces a collection of diverse, structurally valid system model instances as output.
+InstaMAL is an instance generation tool for [MAL](https://github.com/mal-lang) (Meta Attack Language). It takes a compact domain-level specification and a MAL DSL as input and produces a collection of diverse, structurally valid system model instances as output.
 
 A MAL DSL like [coreLang](https://github.com/mal-lang/coreLang) defines the asset types, associations, and attack logic for a domain. A single model instance of that DSL describes one concrete system. InstaMAL sits one level above: instead of describing one system, you describe a _family_ of systems (specifying distributions over asset counts, association structure and defense configurations) and InstaMAL samples concrete instances from that description.
 
