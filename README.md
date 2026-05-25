@@ -141,3 +141,7 @@ let hosts = Host(Uniform(4, 12), notPresent=pNotPresent);
 ```
 
 Defense controls can appear on any asset instantiation, including those inside subsystem bodies, and expressions may reference any previously declared `param`.
+
+## License
+
+Licensed under the [Apache License, Version 2.0](LICENSE).
